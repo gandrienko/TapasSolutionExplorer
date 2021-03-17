@@ -102,11 +102,25 @@ public class InfoCanvas extends JPanel {
       for (int j=0; j<counts[i].length; j++)
         if (counts[i][j]>0) {
           int hh=(h-2)*counts[i][j]/counts_max;
-          g.setColor(Color.gray);
-          g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
-          g.setColor(Color.darkGray);
-          g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
-          g.drawLine(x0+j, y0+(i+1)*h, x0+j, y0+(i+1)*h);
+          //g.setColor(Color.gray);
+          //g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
+          int n[]=new int[6];
+          n[0]=dk.getCount("CountFlights-noDelay",i,j);
+          n[1]=n[0]+dk.getCount("CountFlights-Delay1to4",i,j);
+          n[2]=n[1]+dk.getCount("CountFlights-Delay5to9",i,j);
+          n[3]=n[2]+dk.getCount("CountFlights-Delay10to29",i,j);
+          n[4]=n[3]+dk.getCount("CountFlights-Delay30to59",i,j);
+          n[5]=n[4]+dk.getCount("CountFlights-DelayOver60",i,j);
+          for (int k=5; k>=0; k--) {
+            int rgb=255-32*k;
+            g.setColor(new Color(rgb,rgb,rgb));
+            hh=(h-2)*n[k]/counts_max;
+            g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
+
+          }
+          //g.setColor(Color.darkGray);
+          //g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
+          //g.drawLine(x0+j, y0+(i+1)*h, x0+j, y0+(i+1)*h);
           if (capacity<counts[i][j]) {
             hh = (h - 2) * capacity / counts_max;
             g.setColor(Color.red);
