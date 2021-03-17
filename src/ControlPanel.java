@@ -20,6 +20,7 @@ public class ControlPanel extends JPanel implements ActionListener {
       String sector=(String)JCsectors.getSelectedItem();
       System.out.println("* aggregating for "+sector);
       dk.aggregate(sector);
+      dk.checkEqual();
       dk.getCounts("CountFlights");
       ic.setSector(sector);
     }
@@ -31,6 +32,7 @@ public class ControlPanel extends JPanel implements ActionListener {
       String sector=(String)JCsectors.getSelectedItem();
       System.out.println("* aggregating for "+sector);
       dk.aggregate(sector);
+      dk.checkEqual();
       dk.getCounts("CountFlights");
       ic.setSector(sector);
       ic.repaint();

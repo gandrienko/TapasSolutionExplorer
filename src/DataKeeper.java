@@ -82,7 +82,6 @@ public class DataKeeper {
       for (int j=0; j<recsInCells[i].length; j++)
         recsInCells[i][j]=new Vector<Record>(10,10);
     }
-
     for (int i=0; i<Nsteps; i++) {
       String key=sector+"_"+i;
       Vector<Record> vr=records.get(key);
@@ -96,7 +95,41 @@ public class DataKeeper {
         }
       }
     }
+  }
 
+  public Vector<int[]> checkEqual () {
+    Vector<int[]> list=new Vector(10,10);
+    boolean blist[]=new boolean[Nsteps];
+    for (int step=1; step<this.Nsteps; step++) {
+      boolean equal = true;
+      for (int i = 0; i < this.Nintervals && equal; i++) {
+        equal = recsInCells[i][step].size()==recsInCells[i][step - 1].size();
+        if (equal)
+          for (int k=0; k<recsInCells[i][step].size() && equal; k++)
+            equal=recsInCells[i][step].elementAt(k).flight.equals(recsInCells[i][step-1].elementAt(k).flight);
+      }
+      blist[step]=equal;
+      //if (step==1000)
+        //System.out.println("* step " + step + " is equal to " + (step - 1));
+      //if (equal)
+        //System.out.println("* " + step + " is equal to " + (step - 1));
+      //else
+        //System.out.println("* " + step + " is NOT equal to " + (step - 1));
+    }
+    int N=10;
+    for (int step=1; step<Nsteps-N; step++)
+      if (blist[step]) {
+        // count N of equal steps
+        int end=step;
+        for (int i=step+1; step<Nsteps-1 && (i<blist.length && blist[i]); i++)
+          end=i;
+        if (end-step>=N-1) {
+          list.addElement(new int[]{step-1,end});
+          System.out.println("equal steps:" + (step - 1) + ".." + end);
+        }
+        step=end+1;
+      }
+    return list;
   }
 
   public int getCount (String operation, int i,int j) {
