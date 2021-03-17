@@ -22,6 +22,35 @@ public class InfoCanvas extends JPanel {
     this.sector=sector;
   }
 
+  /**
+   * The image with the whole plot, which is used for the optimisation of the drawing
+   * (helps in case of many objects).
+   */
+  protected Image plotImage=null;
+  /**
+   * Indicates whether the full image is valid
+   */
+  protected boolean plotImageValid=false;
+
+  public void prepareImage () {
+    Dimension size=getSize();
+    if (size==null) return;
+    int w=size.width, h=size.height;
+    if (w<20 || h<20) return;
+    int y0=0;
+    if (plotImage!=null)
+      if (plotImage.getWidth(null)!=w ||
+              plotImage.getHeight(null)!=h) {
+        plotImage=null;
+        plotImageValid=false;
+      }
+    if (plotImage==null && w>0 && h>0) {
+      plotImage=createImage(w,h);
+      plotImageValid=false;
+    }
+  }
+
+
   @Override
   public String getToolTipText(MouseEvent me) {
     Point p = new Point(me.getX(),me.getY());
@@ -67,7 +96,14 @@ public class InfoCanvas extends JPanel {
 
   public void paintComponent (Graphics g) {
     super.paintComponent(g);
+    prepareImage();
+    if (plotImageValid) {
+      g.drawImage(plotImage,0, 0,null);
+      return;
+    }
     Graphics2D g2 = (Graphics2D) g;
+    if (plotImage!=null)
+      g2=(Graphics2D)plotImage.getGraphics();
     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     FontRenderContext frc = g2.getFontRenderContext();
     String str="1439";
@@ -90,7 +126,7 @@ public class InfoCanvas extends JPanel {
     g2.setColor(Color.GRAY);
     g2.drawRect(x0,y0,w*nX, h*nY);
     //draw values
-    g.setColor(Color.darkGray);
+    g2.setColor(Color.darkGray);
     int counts[][]=dk.getCounts("CountFlights"),
         counts_max=dk.getMax(counts);
     Integer cap=dk.capacities.get(sector);
@@ -102,8 +138,8 @@ public class InfoCanvas extends JPanel {
       for (int j=0; j<counts[i].length; j++)
         if (counts[i][j]>0) {
           int hh=(h-2)*counts[i][j]/counts_max;
-          //g.setColor(Color.gray);
-          //g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
+          //g2.setColor(Color.gray);
+          //g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
           int n[]=new int[6];
           n[0]=dk.getCount("CountFlights-noDelay",i,j);
           n[1]=n[0]+dk.getCount("CountFlights-Delay1to4",i,j);
@@ -113,19 +149,26 @@ public class InfoCanvas extends JPanel {
           n[5]=n[4]+dk.getCount("CountFlights-DelayOver60",i,j);
           for (int k=5; k>=0; k--) {
             int rgb=255-32*k;
-            g.setColor(new Color(rgb,rgb,rgb));
+            g2.setColor(new Color(rgb,rgb,rgb));
             hh=(h-2)*n[k]/counts_max;
-            g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
+            g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
 
           }
-          //g.setColor(Color.darkGray);
-          //g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
-          //g.drawLine(x0+j, y0+(i+1)*h, x0+j, y0+(i+1)*h);
+          //g2.setColor(Color.darkGray);
+          //g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
+          //g2.drawLine(x0+j, y0+(i+1)*h, x0+j, y0+(i+1)*h);
           if (capacity<counts[i][j]) {
             hh = (h - 2) * capacity / counts_max;
-            g.setColor(Color.red);
-            g.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
+            g2.setColor(Color.red);
+            g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
           }
         }
+    if (plotImage!=null) {
+      //everything has been drawn to the image
+      plotImageValid=true;
+      // copy the image to the screen
+      g.drawImage(plotImage,0, 0,null);
+    }
   }
+
 }
