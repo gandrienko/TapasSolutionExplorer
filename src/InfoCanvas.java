@@ -148,7 +148,7 @@ public class InfoCanvas extends JPanel {
           n[4]=n[3]+dk.getCount("CountFlights-Delay30to59",i,j);
           n[5]=n[4]+dk.getCount("CountFlights-DelayOver60",i,j);
           for (int k=5; k>=0; k--) {
-            int rgb=255-32*k;
+            int rgb=255-64-32*k;
             g2.setColor(new Color(rgb,rgb,rgb));
             hh=(h-2)*n[k]/counts_max;
             g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
