@@ -10,6 +10,8 @@ public class DataKeeper {
 
   public Hashtable<String,Integer> capacities=new Hashtable(100);
 
+  public int maxStep=0, Nsteps=0;
+
   protected void readData(String fname) {
     try {
       BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fname+".csv")))) ;
@@ -26,6 +28,9 @@ public class DataKeeper {
           flights.add(flight);
           sectors.add(sector);
           String key=sector+"_"+tokens[1];
+          int step=Integer.valueOf(tokens[1]).intValue();
+          if (step>maxStep)
+            maxStep=step;
           Vector<Record> vr=records.get(key);
 
           Record record=new Record();
@@ -48,6 +53,7 @@ public class DataKeeper {
             System.out.println("lines processed: "+n+", sectors: "+sectors.size()+", flights: "+flights.size()+", records="+records.size());
         }
         br.close();
+        Nsteps=maxStep+1;
       } catch (IOException io) {}
       System.out.println("lines processed: "+n+", sectors: "+sectors.size()+", flights: "+flights.size()+", records="+records.size());
     } catch (FileNotFoundException ex) {System.out.println("fee");}
@@ -72,8 +78,9 @@ public class DataKeeper {
     } catch (FileNotFoundException ex) {System.out.println("fee");}
   }
 
-  int Nintervals=70, Nsteps=1440, Ishift=20, Iduration=60;
+  int Nintervals=70, Ishift=20, Iduration=60;
   protected Vector<Record> recsInCells[][]=null;
+  public boolean[] hasHotspots=null;
 
   public void aggregate (String sector) {
     recsInCells=new Vector[Nintervals][];
@@ -95,9 +102,16 @@ public class DataKeeper {
         }
       }
     }
+    hasHotspots=new boolean[Nintervals];
+    int capacity=capacities.get(sector).intValue();
+    for (int k=0; k<Nintervals; k++) {
+      hasHotspots[k]=false;
+      for (int i=0; i<Nsteps && !hasHotspots[k]; i++)
+        hasHotspots[k]=recsInCells[k][i].size()>capacity;
+    }
   }
 
-  public Vector<int[]> checkEqual () {
+  public Vector<int[]> checkEqual () { // for the currently selelted sector
     Vector<int[]> list=new Vector(10,10);
     boolean blist[]=new boolean[Nsteps];
     for (int step=1; step<this.Nsteps; step++) {
@@ -106,7 +120,8 @@ public class DataKeeper {
         equal = recsInCells[i][step].size()==recsInCells[i][step - 1].size();
         if (equal)
           for (int k=0; k<recsInCells[i][step].size() && equal; k++)
-            equal=recsInCells[i][step].elementAt(k).flight.equals(recsInCells[i][step-1].elementAt(k).flight);
+            equal=recsInCells[i][step].elementAt(k).flight.equals(recsInCells[i][step-1].elementAt(k).flight) &&
+                  recsInCells[i][step].elementAt(k).delay==recsInCells[i][step-1].elementAt(k).delay;
       }
       blist[step]=equal;
       //if (step==1000)
