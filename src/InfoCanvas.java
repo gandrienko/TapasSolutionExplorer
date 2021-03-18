@@ -13,10 +13,12 @@ public class InfoCanvas extends JPanel {
 
   public void setbDoubleSpaceForHotspots (boolean bDoubleSpaceForHotspots) {
     this.bDoubleSpaceForHotspots = bDoubleSpaceForHotspots;
+    plotImageValid=false;
+    //System.out.println("* call repaint for: "+bDoubleSpaceForHotspots);
     repaint();
   }
 
-  int x0=0, y0=0, h=10, w=1;
+  int x0=0, y0=0, h=10, w=1, yy[]=null;
 
   public InfoCanvas (DataKeeper dk) {
     this.dk=dk;
@@ -101,6 +103,7 @@ public class InfoCanvas extends JPanel {
   int nY=0;
 
   public void paintComponent (Graphics g) {
+    //System.out.println("* paint...");
     super.paintComponent(g);
     nY=dk.Nintervals;
     prepareImage();
@@ -112,26 +115,42 @@ public class InfoCanvas extends JPanel {
     if (plotImage!=null)
       g2=(Graphics2D)plotImage.getGraphics();
     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2.setColor(Color.white);
+    g2.fillRect(0,0,getWidth(),getHeight());
+
     FontRenderContext frc = g2.getFontRenderContext();
     String str="1439";
     GlyphVector gv = g2.getFont().createGlyphVector(frc, str);
     Rectangle bounds = gv.getPixelBounds(null,0,0);
     x0=5+bounds.width;
     y0=2+bounds.height;
-    h=Math.max(10,(getHeight()-y0)/nY);
+    if (bDoubleSpaceForHotspots)
+      h=Math.max(10,(getHeight()-y0)/(dk.Nintervals+dk.NintevalsWithHotspots));
+    else
+      h=Math.max(10,(getHeight()-y0)/dk.Nintervals);
+    if (yy==null)
+      yy=new int[dk.Nintervals+1];
     w=Math.max(1,(getWidth()-x0)/dk.Nsteps);
+    yy[0]=y0;
+    for (int i=0; i<yy.length-1; i++)
+      if (bDoubleSpaceForHotspots && dk.hasHotspots[i])
+        yy[i+1]=yy[i]+2*h;
+      else
+        yy[i+1]=yy[i]+h;
+    g2.setColor(Color.GRAY.brighter());
+    for (int i=1; i<dk.Nintervals; i++)
+      g2.drawLine(x0-3,yy[i], x0+w*dk.Nsteps+3, yy[i]);
+    for (int i=1; i<dk.Nsteps; i+=60)
+      g2.drawLine(x0+i*w, yy[0]-3, x0+i*w, yy[yy.length-1]+3);
     g2.setColor(Color.GRAY);
-    for (int i=0; i<nY; i++)
-      g2.drawString(String.format("%02d",i/3)+":"+String.format("%02d",(i%3)*20), 1, y0+i*h+g2.getFontMetrics().getAscent());
+    for (int i=0; i<dk.Nintervals; i++)
+      g2.drawString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20), 1, yy[i] + g2.getFontMetrics().getAscent());
     for (int i=0; i<dk.Nsteps; i+=60)
       g2.drawString(""+i,x0+i*w, g2.getFontMetrics().getAscent()-1);
-    g2.setColor(Color.GRAY.brighter());
-    for (int i=1; i<nY; i++)
-      g2.drawLine(x0-3,y0+i*h, x0+w*dk.Nsteps+3, y0+i*h);
-    for (int i=1; i<dk.Nsteps; i+=60)
-      g2.drawLine(x0+i*w, y0-3, x0+i*w, y0+nY*h+3);
+    g2.setColor(new Color(0f,1f,1f,0.1f));
+    g2.fillRect(x0,yy[0],w*dk.Nsteps, yy[yy.length-1]-yy[0]);
     g2.setColor(Color.GRAY);
-    g2.drawRect(x0,y0,w*dk.Nsteps, h*nY);
+    g2.drawRect(x0,yy[0],w*dk.Nsteps, yy[yy.length-1]-yy[0]);
     //draw values
     g2.setColor(Color.darkGray);
     int counts[][]=dk.getCounts("CountFlights"),
@@ -141,10 +160,11 @@ public class InfoCanvas extends JPanel {
     if (cap!=null)
       capacity=cap.intValue();
 
+
     for (int i=0; i<counts.length; i++)
       for (int j=0; j<counts[i].length; j++)
         if (counts[i][j]>0) {
-          int hh=(h-2)*counts[i][j]/counts_max;
+          int hh=(yy[i+1]-yy[i]-2)*counts[i][j]/counts_max;
           //g2.setColor(Color.gray);
           //g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
           int n[]=new int[6];
@@ -157,25 +177,39 @@ public class InfoCanvas extends JPanel {
           for (int k=5; k>=0; k--) {
             int rgb=255-64-32*k;
             g2.setColor(new Color(rgb,rgb,rgb));
-            hh=(h-2)*n[k]/counts_max;
-            g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
+            hh=(yy[i+1]-yy[i]-2)*n[k]/counts_max;
+            g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
 
           }
           //g2.setColor(Color.darkGray);
           //g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
           //g2.drawLine(x0+j, y0+(i+1)*h, x0+j, y0+(i+1)*h);
           if (capacity<counts[i][j]) {
-            hh = (h - 2) * capacity / counts_max;
+            hh = (yy[i+1]-yy[i] - 2) * capacity / counts_max;
             g2.setColor(Color.red);
-            g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
+            g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]-hh);
           }
         }
+
     if (plotImage!=null) {
       //everything has been drawn to the image
       plotImageValid=true;
       // copy the image to the screen
       g.drawImage(plotImage,0, 0,null);
     }
+    //System.out.println("* paint...done");
+  }
+
+  /**
+   * If the specified Component  is included in a Frame (directly or
+   * indirectly) or is a Frame itself, returns this Frame. Otherwise
+   * returns a reference to an invisible "dummy" frame (may be needed for
+   * creation of dialogs and popup windows)
+   */
+  public static JFrame getFrame (Component c){
+    while (c!=null && !(c instanceof JFrame))
+      c=c.getParent();
+    return (JFrame)c;
   }
 
 }
