@@ -78,7 +78,7 @@ public class DataKeeper {
     } catch (FileNotFoundException ex) {System.out.println("fee");}
   }
 
-  int Nintervals=70, Ishift=20, Iduration=60;
+  int Nintervals=70, NintevalsWithHotspots=0, Ishift=20, Iduration=60;
   protected Vector<Record> recsInCells[][]=null;
   public boolean[] hasHotspots=null;
 
@@ -109,6 +109,10 @@ public class DataKeeper {
       for (int i=0; i<Nsteps && !hasHotspots[k]; i++)
         hasHotspots[k]=recsInCells[k][i].size()>capacity;
     }
+    NintevalsWithHotspots=0;
+    for (int k=0; k<hasHotspots.length; k++)
+      if (hasHotspots[k])
+        NintevalsWithHotspots++;
   }
 
   public Vector<int[]> checkEqual () { // for the currently selelted sector

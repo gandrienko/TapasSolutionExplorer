@@ -2,13 +2,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
-public class ControlPanel extends JPanel implements ActionListener {
+public class ControlPanel extends JPanel implements ActionListener, ItemListener {
 
   protected DataKeeper dk=null;
   protected InfoCanvas ic=null;
 
   protected JComboBox JCsectors=null;
+  protected JCheckBox JCBemthHotspots=null;
 
   public ControlPanel (DataKeeper dk, InfoCanvas ic) {
     this.dk=dk;
@@ -25,6 +28,9 @@ public class ControlPanel extends JPanel implements ActionListener {
       ic.setSector(sector);
     }
     add(JCsectors,BorderLayout.WEST);
+    JCBemthHotspots=new JCheckBox("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots", false);
+    JCBemthHotspots.addItemListener(this);
+    add(JCBemthHotspots,BorderLayout.EAST);
   }
 
   public void actionPerformed (ActionEvent ae) {
@@ -34,8 +40,15 @@ public class ControlPanel extends JPanel implements ActionListener {
       dk.aggregate(sector);
       //dk.checkEqual();
       dk.getCounts("CountFlights");
+      JCBemthHotspots.setText("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots");
       ic.setSector(sector);
       ic.repaint();
+    }
+  }
+
+  public void itemStateChanged (ItemEvent ie) {
+    if (ie.getSource().equals(JCBemthHotspots)) {
+
     }
   }
 
