@@ -30,7 +30,9 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
     add(JCsectors,BorderLayout.WEST);
     JCBemthHotspots=new JCheckBox("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots", false);
     JCBemthHotspots.addItemListener(this);
+    JCBemthHotspots.setToolTipText("time intervals that have hotspots will be given double screen space (height)");
     add(JCBemthHotspots,BorderLayout.EAST);
+    ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
   }
 
   public void actionPerformed (ActionEvent ae) {
@@ -48,7 +50,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 
   public void itemStateChanged (ItemEvent ie) {
     if (ie.getSource().equals(JCBemthHotspots)) {
-
+      //
     }
   }
 
