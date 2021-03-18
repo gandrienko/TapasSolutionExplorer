@@ -39,8 +39,7 @@ public class InfoCanvas extends JPanel {
     if (w<20 || h<20) return;
     int y0=0;
     if (plotImage!=null)
-      if (plotImage.getWidth(null)!=w ||
-              plotImage.getHeight(null)!=h) {
+      if (plotImage.getWidth(null)!=w || plotImage.getHeight(null)!=h) {
         plotImage=null;
         plotImageValid=false;
       }
@@ -92,10 +91,11 @@ public class InfoCanvas extends JPanel {
       return super.getToolTipText();
   }
 
-  int nX=1440, nY=70;
+  int nX=0, nY=0;
 
   public void paintComponent (Graphics g) {
     super.paintComponent(g);
+    nX=dk.Nsteps; nY=dk.Nintervals;
     prepareImage();
     if (plotImageValid) {
       g.drawImage(plotImage,0, 0,null);
