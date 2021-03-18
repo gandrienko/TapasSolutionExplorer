@@ -62,12 +62,17 @@ public class InfoCanvas extends JPanel {
   @Override
   public String getToolTipText(MouseEvent me) {
     Point p = new Point(me.getX(),me.getY());
-    if (p.x>=x0 && p.x<x0+dk.Nsteps*w && p.y>=y0 && p.y<y0+h*nY) {
+    if (p.x>=x0 && p.x<x0+dk.Nsteps*w && p.y>=yy[0] && p.y<yy[yy.length-1]) {
       Integer cap=dk.capacities.get(sector);
       int capacity=0;
       if (cap!=null)
         capacity=cap.intValue();
-      int x1=(p.x-x0)/w, y1=(p.y-y0)/h;
+      int x1=(p.x-x0)/w, y1=-1;
+      for (int i=0; i<yy.length-1; i++)
+        if (p.y>=yy[i] && p.y<=yy[i+1])
+          y1=i;
+      if (y1==-1)
+        return "error";
       String out="<html><body>sector=<b>"+sector+"</b>, capacity="+capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
                     String.format("%02d",y1/3)+":"+String.format("%02d",(y1%3)*20)+".."+
                     String.format("%02d",y1/3+1)+":"+String.format("%02d",(y1%3)*20)+
