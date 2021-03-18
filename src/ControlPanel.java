@@ -50,7 +50,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 
   public void itemStateChanged (ItemEvent ie) {
     if (ie.getSource().equals(JCBemthHotspots)) {
-      //
+      ic.setbDoubleSpaceForHotspots(JCBemthHotspots.isSelected());
     }
   }
 

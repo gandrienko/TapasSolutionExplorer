@@ -9,6 +9,13 @@ public class InfoCanvas extends JPanel {
   DataKeeper dk=null;
   String sector="";
 
+  boolean bDoubleSpaceForHotspots=false;
+
+  public void setbDoubleSpaceForHotspots (boolean bDoubleSpaceForHotspots) {
+    this.bDoubleSpaceForHotspots = bDoubleSpaceForHotspots;
+    repaint();
+  }
+
   int x0=0, y0=0, h=10, w=1;
 
   public InfoCanvas (DataKeeper dk) {
@@ -53,7 +60,7 @@ public class InfoCanvas extends JPanel {
   @Override
   public String getToolTipText(MouseEvent me) {
     Point p = new Point(me.getX(),me.getY());
-    if (p.x>=x0 && p.x<x0+nX*w && p.y>=y0 && p.y<y0+h*nY) {
+    if (p.x>=x0 && p.x<x0+dk.Nsteps*w && p.y>=y0 && p.y<y0+h*nY) {
       Integer cap=dk.capacities.get(sector);
       int capacity=0;
       if (cap!=null)
@@ -91,11 +98,11 @@ public class InfoCanvas extends JPanel {
       return super.getToolTipText();
   }
 
-  int nX=0, nY=0;
+  int nY=0;
 
   public void paintComponent (Graphics g) {
     super.paintComponent(g);
-    nX=dk.Nsteps; nY=dk.Nintervals;
+    nY=dk.Nintervals;
     prepareImage();
     if (plotImageValid) {
       g.drawImage(plotImage,0, 0,null);
@@ -112,19 +119,19 @@ public class InfoCanvas extends JPanel {
     x0=5+bounds.width;
     y0=2+bounds.height;
     h=Math.max(10,(getHeight()-y0)/nY);
-    w=Math.max(1,(getWidth()-x0)/nX);
+    w=Math.max(1,(getWidth()-x0)/dk.Nsteps);
     g2.setColor(Color.GRAY);
     for (int i=0; i<nY; i++)
       g2.drawString(String.format("%02d",i/3)+":"+String.format("%02d",(i%3)*20), 1, y0+i*h+g2.getFontMetrics().getAscent());
-    for (int i=0; i<nX; i+=60)
+    for (int i=0; i<dk.Nsteps; i+=60)
       g2.drawString(""+i,x0+i*w, g2.getFontMetrics().getAscent()-1);
     g2.setColor(Color.GRAY.brighter());
     for (int i=1; i<nY; i++)
-      g2.drawLine(x0-3,y0+i*h, x0+w*nX+3, y0+i*h);
-    for (int i=1; i<nX; i+=60)
+      g2.drawLine(x0-3,y0+i*h, x0+w*dk.Nsteps+3, y0+i*h);
+    for (int i=1; i<dk.Nsteps; i+=60)
       g2.drawLine(x0+i*w, y0-3, x0+i*w, y0+nY*h+3);
     g2.setColor(Color.GRAY);
-    g2.drawRect(x0,y0,w*nX, h*nY);
+    g2.drawRect(x0,y0,w*dk.Nsteps, h*nY);
     //draw values
     g2.setColor(Color.darkGray);
     int counts[][]=dk.getCounts("CountFlights"),
