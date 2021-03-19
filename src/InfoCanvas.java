@@ -7,6 +7,9 @@ import java.util.Vector;
 
 public class InfoCanvas extends JPanel {
 
+  static public String RenderingModes[]={"none","delays","sectors (from)","sectors (to)"};
+  int iRenderingMode=1;
+
   DataKeeper dk=null;
   String sector="";
   Vector<String> labelsSectors=null;
@@ -33,6 +36,18 @@ public class InfoCanvas extends JPanel {
     plotImageValid=false;
     labelsSectors=null;
     repaint();
+  }
+
+  public void setRenderingModes (String renderingMode) {
+    int k=-1;
+    for (int i=0; i<RenderingModes.length && k==-1; i++)
+      if (RenderingModes[i].equals(renderingMode))
+        k=i;
+    if (k!=-1 && iRenderingMode!=k) {
+      iRenderingMode=k;
+      plotImageValid=false;
+      repaint();
+    }
   }
 
   /**
@@ -81,7 +96,7 @@ public class InfoCanvas extends JPanel {
           y1=i;
       if (y1==-1)
         return "error";
-      String lDelays[]={"0","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
+      String lDelays[]={"no delay","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
       int iDelays[]={dk.getCount("CountFlights-noDelay",y1,x1),
                      dk.getCount("CountFlights-Delay1to4",y1,x1),
                      dk.getCount("CountFlights-Delay5to9",y1,x1),

@@ -12,7 +12,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
   protected DataKeeper dk=null;
   protected InfoCanvas ic=null;
 
-  protected JComboBox JCsectors=null;
+  protected JComboBox JCsectors=null, JCrenderingMode=null;
   protected JCheckBox JCBemthHotspots=null;
 
   public ControlPanel (DataKeeper dk, InfoCanvas ic) {
@@ -30,7 +30,17 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       dk.getCounts("CountFlights");
       ic.setSector(sector);
     }
-    add(JCsectors,BorderLayout.WEST);
+    JPanel p=new JPanel(new FlowLayout(FlowLayout.LEFT,10,0));
+    p.add(new JLabel("Sector:"));
+    p.add(JCsectors);
+    add(p,BorderLayout.WEST);
+    JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
+    JCrenderingMode.setSelectedIndex(1);
+    JCrenderingMode.addActionListener(this);
+    p=new JPanel(new FlowLayout(FlowLayout.CENTER,0,0));
+    p.add(new JLabel("colors for: "));
+    p.add(JCrenderingMode);
+    add(p,BorderLayout.CENTER);
     JCBemthHotspots=new JCheckBox("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots", false);
     JCBemthHotspots.addItemListener(this);
     JCBemthHotspots.setToolTipText("time intervals that have hotspots will be given double screen space (height)");
@@ -48,6 +58,8 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       JCBemthHotspots.setText("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots");
       ic.setSector(sector);
     }
+    if (ae.getSource().equals(JCrenderingMode))
+      ic.setRenderingModes((String)JCrenderingMode.getSelectedItem());
   }
 
   public void itemStateChanged (ItemEvent ie) {
