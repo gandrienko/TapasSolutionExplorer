@@ -1,7 +1,5 @@
 import java.io.*;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 public class DataKeeper {
 
@@ -57,7 +55,6 @@ public class DataKeeper {
       } catch (IOException io) {}
       System.out.println("lines processed: "+n+", sectors: "+sectors.size()+", flights: "+flights.size()+", records="+records.size());
     } catch (FileNotFoundException ex) {System.out.println("fee");}
-
   }
 
   protected void readCapacities(String fname) {
@@ -151,7 +148,7 @@ public class DataKeeper {
     return list;
   }
 
-  public int getCount (String operation, int i,int j) {
+  public int getCount (String operation, int i, int j) {
     int N=-1;
     if ("CountFlights".equals(operation))
       N=recsInCells[i][j].size();
@@ -220,6 +217,59 @@ public class DataKeeper {
         if (counts[i][j]>counts_max)
           counts_max=counts[i][j];
     return counts_max;
+  }
+
+  public Vector<String> getConnectedSectors () {
+    Vector<String> labels=new Vector(15,5);
+    for (int i=0; i<Nintervals; i++)
+      for (int j=0; j<recsInCells[0].length; j++)
+        for (int k=0; k<recsInCells[i][j].size(); k++) {
+          Record r=recsInCells[i][j].elementAt(k);
+          String s=r.FromS;
+          if (s.length()==0)
+            s="NULL";
+          if (!labels.contains(s))
+            labels.add(s);
+          s=r.ToS;
+          if (s.length()==0)
+            s="NULL";
+          if (!labels.contains(s))
+            labels.add(s);
+        }
+    Collections.sort(labels);
+    return labels;
+  }
+  /**
+   * Counts distinct values of FromSector/ToSector for a single cell <row,col> or the whole column, if col==-1
+   * @param operation
+   * @param labels
+   * @param row
+   * @param col
+   * @return
+   */
+  public int[] getCountsForNominals (String operation, Vector<String> labels, int row, int col) {
+    int out[]=new int[labels.size()];
+    for (int i=0; i<out.length; i++)
+      out[i]=0;
+    if (row==-1)
+      for (int i=0; i<Nintervals; i++)
+        for (int k=0; k<recsInCells[i][col].size(); k++) {
+          Record r=recsInCells[i][col].elementAt(k);
+          String s=operation.equals("From")?r.FromS:r.ToS;
+          if (s.length()==0)
+            s="NULL";
+          out[labels.indexOf(s)]++;
+        }
+    else {
+      for (int k=0; k<recsInCells[row][col].size(); k++) {
+        Record r=recsInCells[row][col].elementAt(k);
+        String s=operation.equals("From")?r.FromS:r.ToS;
+        if (s.length()==0)
+          s="NULL";
+        out[labels.indexOf(s)]++;
+      }
+    }
+    return out;
   }
 
   public DataKeeper (String filename_data, String filename_capacities) {

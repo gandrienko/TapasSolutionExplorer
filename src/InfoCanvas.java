@@ -3,11 +3,13 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.util.Vector;
 
 public class InfoCanvas extends JPanel {
 
   DataKeeper dk=null;
   String sector="";
+  Vector<String> labelsSectors=null;
 
   boolean bDoubleSpaceForHotspots=false;
 
@@ -29,6 +31,7 @@ public class InfoCanvas extends JPanel {
   public void setSector (String sector) {
     this.sector=sector;
     plotImageValid=false;
+    labelsSectors=null;
     repaint();
   }
 
@@ -64,6 +67,10 @@ public class InfoCanvas extends JPanel {
   public String getToolTipText(MouseEvent me) {
     Point p = new Point(me.getX(),me.getY());
     if (p.x>=x0 && p.x<x0+dk.Nsteps*w && p.y>=yy[0] && p.y<yy[yy.length-1]) {
+      if (labelsSectors==null) {
+        labelsSectors = dk.getConnectedSectors();
+        System.out.println("From "+labelsSectors);
+      }
       Integer cap=dk.capacities.get(sector);
       int capacity=0;
       if (cap!=null)
@@ -74,6 +81,15 @@ public class InfoCanvas extends JPanel {
           y1=i;
       if (y1==-1)
         return "error";
+      String lDelays[]={"0","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
+      int iDelays[]={dk.getCount("CountFlights-noDelay",y1,x1),
+              dk.getCount("CountFlights-Delay1to4",y1,x1),
+              dk.getCount("CountFlights-Delay5to9",y1,x1),
+              dk.getCount("CountFlights-Delay10to29",y1,x1),
+              dk.getCount("CountFlights-Delay30to59",y1,x1),
+              dk.getCount("CountFlights-DelayOver60",y1,x1)};
+      int iCountsForm[]=dk.getCountsForNominals("From",labelsSectors,y1,x1),
+              iCountsTo[]=dk.getCountsForNominals("To",labelsSectors,y1,x1);
       String out="<html><body>sector=<b>"+sector+"</b>, capacity="+capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
                     String.format("%02d",y1/3)+":"+String.format("%02d",(y1%3)*20)+".."+
                     String.format("%02d",y1/3+1)+":"+String.format("%02d",(y1%3)*20)+
@@ -85,7 +101,19 @@ public class InfoCanvas extends JPanel {
       else
         out+=demand;
       out+="</b>";
-      out+="<table border=0.5>";
+      out+="<table border=1><tr align=center><td>Delays</td><td></td><td>Sectors</td><td>From</td><td>To</td></tr>";
+      for (int i=0; i<Math.max(iDelays.length,iCountsForm.length); i++) {
+        out+="<tr align=right><td>";
+        if (i<lDelays.length)
+          out+=lDelays[i]+"</td><td>"+iDelays[i];
+        else
+          out+="</td><td>";
+        out+="</td><td>";
+        if (i<iCountsForm.length)
+          out+=labelsSectors.elementAt(i)+"</td><td>"+iCountsForm[i]+"</td><td>"+iCountsTo[i]+"</td>";
+        out+="</tr>";
+      }
+      /*
       int n=dk.getCount("CountFlights-noDelay",y1,x1);
       out+="<tr align=right><td>Flights w/out delays</td><td>"+n+"</td></tr>";
       n=dk.getCount("CountFlights-Delay1to4",y1,x1);
@@ -98,6 +126,7 @@ public class InfoCanvas extends JPanel {
       out+="<tr align=right><td>delays 30..59 min</td><td>"+n+"</td></tr>";
       n=dk.getCount("CountFlights-DelayOver60",y1,x1);
       out+="<tr align=right><td>delays over 60 min</td><td>"+n+"</td></tr>";
+      */
       out+="</table>";
       out+="</body></html>";
       return out;
@@ -145,12 +174,13 @@ public class InfoCanvas extends JPanel {
         yy[i+1]=yy[i]+h;
     g2.setColor(Color.GRAY.brighter());
     for (int i=1; i<dk.Nintervals; i++)
-      g2.drawLine(x0-3,yy[i], x0+w*dk.Nsteps+3, yy[i]);
+      g2.drawLine(1,yy[i], x0+w*dk.Nsteps+3, yy[i]);
     for (int i=1; i<dk.Nsteps; i+=60)
       g2.drawLine(x0+i*w, yy[0]-3, x0+i*w, yy[yy.length-1]+3);
     g2.setColor(Color.GRAY);
     for (int i=0; i<dk.Nintervals; i++)
-      g2.drawString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20), 1, yy[i] + g2.getFontMetrics().getAscent());
+      drawCenteredString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20),1,yy[i],x0,yy[i+1]-yy[i],g2);
+      //g2.drawString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20), 1, yy[i] + g2.getFontMetrics().getAscent());
     for (int i=0; i<dk.Nsteps; i+=60)
       g2.drawString(""+i,x0+i*w, g2.getFontMetrics().getAscent()-1);
     g2.setColor(new Color(0f,1f,1f,0.1f));
@@ -171,8 +201,6 @@ public class InfoCanvas extends JPanel {
       for (int j=0; j<counts[i].length; j++)
         if (counts[i][j]>0) {
           int hh=(yy[i+1]-yy[i]-2)*counts[i][j]/counts_max;
-          //g2.setColor(Color.gray);
-          //g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h);
           int n[]=new int[6];
           n[0]=dk.getCount("CountFlights-noDelay",i,j);
           n[1]=n[0]+dk.getCount("CountFlights-Delay1to4",i,j);
@@ -187,9 +215,6 @@ public class InfoCanvas extends JPanel {
             g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
 
           }
-          //g2.setColor(Color.darkGray);
-          //g2.drawLine(x0+j, y0+(i+1)*h-hh, x0+j, y0+(i+1)*h-hh);
-          //g2.drawLine(x0+j, y0+(i+1)*h, x0+j, y0+(i+1)*h);
           if (capacity<counts[i][j]) {
             hh = (yy[i+1]-yy[i] - 2) * capacity / counts_max;
             g2.setColor(Color.red);
@@ -203,19 +228,13 @@ public class InfoCanvas extends JPanel {
       // copy the image to the screen
       g.drawImage(plotImage,0, 0,null);
     }
-    //System.out.println("* paint...done");
   }
 
-  /**
-   * If the specified Component  is included in a Frame (directly or
-   * indirectly) or is a Frame itself, returns this Frame. Otherwise
-   * returns a reference to an invisible "dummy" frame (may be needed for
-   * creation of dialogs and popup windows)
-   */
-  public static JFrame getFrame (Component c){
-    while (c!=null && !(c instanceof JFrame))
-      c=c.getParent();
-    return (JFrame)c;
+  public void drawCenteredString(String s, int x0, int y0, int w, int h, Graphics g) {
+    FontMetrics fm = g.getFontMetrics();
+    int x = (w - fm.stringWidth(s)) / 2;
+    int y = (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
+    g.drawString(s, x0+x, y0+y);
   }
 
 }

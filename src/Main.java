@@ -22,7 +22,7 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    String fname="FlightsInSectors_LECMTLL"; //"FlightsInSectors";  //"FlightsInSectors_LECSASV"; //
+    String fname="FlightsInSectors_LECMTLL"; //"FlightsInSectors_4"; //"FlightsInSectors_LECSASV"; //"FlightsInSectors";  //
     DataKeeper dk=new DataKeeper(fname,"capacities");
     if (!dk.sectors.isEmpty())
       createAndShowGUI(dk);

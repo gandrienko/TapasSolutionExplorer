@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.TreeSet;
 
 public class ControlPanel extends JPanel implements ActionListener, ItemListener {
 
@@ -17,7 +19,8 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
     this.dk=dk;
     this.ic=ic;
     setLayout(new BorderLayout());
-    JCsectors=new JComboBox(dk.sectors.toArray());
+    TreeSet<String> treeSet = new TreeSet<String>(dk.sectors);
+    JCsectors=new JComboBox(treeSet.toArray());
     JCsectors.addActionListener(this);
     if (JCsectors.getItemCount()>0) {
       String sector=(String)JCsectors.getSelectedItem();
