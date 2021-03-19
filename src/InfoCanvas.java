@@ -83,51 +83,31 @@ public class InfoCanvas extends JPanel {
         return "error";
       String lDelays[]={"0","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
       int iDelays[]={dk.getCount("CountFlights-noDelay",y1,x1),
-              dk.getCount("CountFlights-Delay1to4",y1,x1),
-              dk.getCount("CountFlights-Delay5to9",y1,x1),
-              dk.getCount("CountFlights-Delay10to29",y1,x1),
-              dk.getCount("CountFlights-Delay30to59",y1,x1),
-              dk.getCount("CountFlights-DelayOver60",y1,x1)};
-      int iCountsForm[]=dk.getCountsForNominals("From",labelsSectors,y1,x1),
-              iCountsTo[]=dk.getCountsForNominals("To",labelsSectors,y1,x1);
+                     dk.getCount("CountFlights-Delay1to4",y1,x1),
+                     dk.getCount("CountFlights-Delay5to9",y1,x1),
+                     dk.getCount("CountFlights-Delay10to29",y1,x1),
+                     dk.getCount("CountFlights-Delay30to59",y1,x1),
+                     dk.getCount("CountFlights-DelayOver60",y1,x1)};
+      int iCountsFrom[]=dk.getCountsForNominals("From",labelsSectors,y1,x1),
+          iCountsTo[]=dk.getCountsForNominals("To",labelsSectors,y1,x1);
       String out="<html><body>sector=<b>"+sector+"</b>, capacity="+capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
                     String.format("%02d",y1/3)+":"+String.format("%02d",(y1%3)*20)+".."+
                     String.format("%02d",y1/3+1)+":"+String.format("%02d",(y1%3)*20)+
                     ")</b>, Nflights=<b>";
       int demand=dk.getCount("CountFlights",y1,x1);
-      if (demand>capacity) {
+      if (demand>capacity)
         out+="<font color=red>"+demand+"</font> (+"+Math.round(demand*100f/capacity-100)+"%)";
-      }
       else
         out+=demand;
       out+="</b>";
-      out+="<table border=1><tr align=center><td>Delays</td><td></td><td>Sectors</td><td>From</td><td>To</td></tr>";
-      for (int i=0; i<Math.max(iDelays.length,iCountsForm.length); i++) {
-        out+="<tr align=right><td>";
-        if (i<lDelays.length)
-          out+=lDelays[i]+"</td><td>"+iDelays[i];
-        else
-          out+="</td><td>";
-        out+="</td><td>";
-        if (i<iCountsForm.length)
-          out+=labelsSectors.elementAt(i)+"</td><td>"+iCountsForm[i]+"</td><td>"+iCountsTo[i]+"</td>";
-        out+="</tr>";
-      }
-      /*
-      int n=dk.getCount("CountFlights-noDelay",y1,x1);
-      out+="<tr align=right><td>Flights w/out delays</td><td>"+n+"</td></tr>";
-      n=dk.getCount("CountFlights-Delay1to4",y1,x1);
-      out+="<tr align=right><td>delays 1..4 min</td><td>"+n+"</td></tr>";
-      n=dk.getCount("CountFlights-Delay5to9",y1,x1);
-      out+="<tr align=right><td>delays 5..9 min</td><td>"+n+"</td></tr>";
-      n=dk.getCount("CountFlights-Delay10to29",y1,x1);
-      out+="<tr align=right><td>delays 10..29 min</td><td>"+n+"</td></tr>";
-      n=dk.getCount("CountFlights-Delay30to59",y1,x1);
-      out+="<tr align=right><td>delays 30..59 min</td><td>"+n+"</td></tr>";
-      n=dk.getCount("CountFlights-DelayOver60",y1,x1);
-      out+="<tr align=right><td>delays over 60 min</td><td>"+n+"</td></tr>";
-      */
-      out+="</table>";
+      out+="<table border=1><tr align=center><td>Delays</td><td>Connected sectors</td></tr"; // ><td>From</td><td>To</td></tr>
+      out+="<tr><td><table border=1>";
+      for (int i=0; i<iDelays.length; i++)
+        out+="<tr align=right><td>"+lDelays[i]+"</td><td>"+iDelays[i];
+      out+="</table></td><td><table border=1><tr><td></td><td>From</td><td>To</td></tr>";
+      for (int i=0; i<iCountsFrom.length; i++)
+        out+="<tr align=right><td>"+labelsSectors.elementAt(i)+"</td><td>"+iCountsFrom[i]+"</td><td>"+iCountsTo[i]+"</td></tr>";
+      out+="</table></td></tr></table>";
       out+="</body></html>";
       return out;
     }
@@ -138,7 +118,6 @@ public class InfoCanvas extends JPanel {
   int nY=0;
 
   public void paintComponent (Graphics g) {
-    //System.out.println("* paint...");
     super.paintComponent(g);
     nY=dk.Nintervals;
     prepareImage();
@@ -196,7 +175,6 @@ public class InfoCanvas extends JPanel {
     if (cap!=null)
       capacity=cap.intValue();
 
-
     for (int i=0; i<counts.length; i++)
       for (int j=0; j<counts[i].length; j++)
         if (counts[i][j]>0) {
@@ -213,7 +191,6 @@ public class InfoCanvas extends JPanel {
             g2.setColor(new Color(rgb,rgb,rgb));
             hh=(yy[i+1]-yy[i]-2)*n[k]/counts_max;
             g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
-
           }
           if (capacity<counts[i][j]) {
             hh = (yy[i+1]-yy[i] - 2) * capacity / counts_max;
