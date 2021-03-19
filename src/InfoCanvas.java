@@ -84,7 +84,7 @@ public class InfoCanvas extends JPanel {
     if (p.x>=x0 && p.x<x0+dk.Nsteps*w && p.y>=yy[0] && p.y<yy[yy.length-1]) {
       if (labelsSectors==null) {
         labelsSectors = dk.getConnectedSectors();
-        System.out.println("From "+labelsSectors);
+        //System.out.println("From "+labelsSectors);
       }
       Integer cap=dk.capacities.get(sector);
       int capacity=0;
@@ -190,22 +190,44 @@ public class InfoCanvas extends JPanel {
     if (cap!=null)
       capacity=cap.intValue();
 
+    if (iRenderingMode>1 && labelsSectors==null)
+      labelsSectors = dk.getConnectedSectors();
+
     for (int i=0; i<counts.length; i++)
       for (int j=0; j<counts[i].length; j++)
         if (counts[i][j]>0) {
           int hh=(yy[i+1]-yy[i]-2)*counts[i][j]/counts_max;
-          int n[]=new int[6];
-          n[0]=dk.getCount("CountFlights-noDelay",i,j);
-          n[1]=n[0]+dk.getCount("CountFlights-Delay1to4",i,j);
-          n[2]=n[1]+dk.getCount("CountFlights-Delay5to9",i,j);
-          n[3]=n[2]+dk.getCount("CountFlights-Delay10to29",i,j);
-          n[4]=n[3]+dk.getCount("CountFlights-Delay30to59",i,j);
-          n[5]=n[4]+dk.getCount("CountFlights-DelayOver60",i,j);
-          for (int k=5; k>=0; k--) {
-            int rgb=255-64-32*k;
-            g2.setColor(new Color(rgb,rgb,rgb));
-            hh=(yy[i+1]-yy[i]-2)*n[k]/counts_max;
-            g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
+          switch (iRenderingMode) {
+            case 0:
+              g2.setColor(Color.gray);
+              g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
+              break;
+            case 1:
+              int n[]=new int[6];
+              n[0]=dk.getCount("CountFlights-noDelay",i,j);
+              n[1]=n[0]+dk.getCount("CountFlights-Delay1to4",i,j);
+              n[2]=n[1]+dk.getCount("CountFlights-Delay5to9",i,j);
+              n[3]=n[2]+dk.getCount("CountFlights-Delay10to29",i,j);
+              n[4]=n[3]+dk.getCount("CountFlights-Delay30to59",i,j);
+              n[5]=n[4]+dk.getCount("CountFlights-DelayOver60",i,j);
+              for (int k=n.length-1; k>=0; k--) {
+                int rgb=255-64-32*k;
+                g2.setColor(new Color(rgb,rgb,rgb));
+                hh=(yy[i+1]-yy[i]-2)*n[k]/counts_max;
+                g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
+              }
+              break;
+            case 2: case 3:
+              n=dk.getCountsForNominals((iRenderingMode==2)?"From":"To",labelsSectors,i,j);
+              for (int k=1; k<n.length; k++)
+                n[k]+=n[k-1];
+              for (int k=n.length-1; k>=0; k--) {
+                //int rgb=255-64-32*k;
+                g2.setColor(ColorScales.getKellyColor(k));
+                hh=(yy[i+1]-yy[i]-2)*n[k]/counts_max;
+                g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
+              }
+              break;
           }
           if (capacity<counts[i][j]) {
             hh = (yy[i+1]-yy[i] - 2) * capacity / counts_max;

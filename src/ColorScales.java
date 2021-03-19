@@ -5,7 +5,7 @@ public class ColorScales {
   /**
    * source: https://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
    */
-  private static final Color[] KELLY_COLORS = {
+  public static final Color[] KELLY_COLORS = {
           Color.web("0xFFB300"),    // Vivid Yellow
           Color.web("0x803E75"),    // Strong Purple
           Color.web("0xFF6800"),    // Vivid Orange
@@ -28,4 +28,10 @@ public class ColorScales {
           Color.web("0xF13A13"),    // Vivid Reddish Orange
           Color.web("0x232C16"),    // Dark Olive Green
   };
+
+  public static java.awt.Color getKellyColor(int idx) {
+    javafx.scene.paint.Color fx = KELLY_COLORS[idx];
+    java.awt.Color awtColor=new java.awt.Color((float) fx.getRed(), (float) fx.getGreen(), (float) fx.getBlue(), (float) fx.getOpacity());
+    return awtColor;
+  }
 }
