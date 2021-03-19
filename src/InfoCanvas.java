@@ -114,16 +114,20 @@ public class InfoCanvas extends JPanel {
         out+="<font color=red>"+demand+"</font> (+"+Math.round(demand*100f/capacity-100)+"%)";
       else
         out+=demand;
-      out+="</b>";
-      out+="<table border=1><tr align=center><td>Delays</td><td>Connected sectors</td></tr"; // ><td>From</td><td>To</td></tr>
+      out+="</b>\n";
+      out+="<table border=1><tr align=center><td>Delays</td><td>Connected sectors</td></tr>"; // ><td>From</td><td>To</td></tr>
       out+="<tr><td><table border=1>";
       for (int i=0; i<iDelays.length; i++)
-        out+="<tr align=right><td>"+lDelays[i]+"</td><td>"+iDelays[i];
-      out+="</table></td><td><table border=1><tr><td></td><td>From</td><td>To</td></tr>";
-      for (int i=0; i<iCountsFrom.length; i++)
-        out+="<tr align=right><td>"+labelsSectors.elementAt(i)+"</td><td>"+iCountsFrom[i]+"</td><td>"+iCountsTo[i]+"</td></tr>";
+        out+="<tr align=right><td>"+lDelays[i]+"</td><td>"+iDelays[i]+"</td></tr>\n";
+      out+="</table></td>\n<td><table border=0><tr><td></td><td></td><td>From</td><td>To</td></tr>";
+      for (int i=0; i<iCountsFrom.length; i++) {
+        int rgb[]=ColorScales.getKellyColorAsRGB(i);
+        out += "<tr align=right><td style=background-color:rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")>" +
+                " </td><td>"+labelsSectors.elementAt(i) + "</td><td>" + iCountsFrom[i] + "</td><td>" + iCountsTo[i] + "</td></tr>\n";
+      }
       out+="</table></td></tr></table>";
       out+="</body></html>";
+      //System.out.println(out);
       return out;
     }
     else
