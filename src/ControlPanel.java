@@ -44,7 +44,6 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       dk.getCounts("CountFlights");
       JCBemthHotspots.setText("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots");
       ic.setSector(sector);
-      ic.repaint();
     }
   }
 

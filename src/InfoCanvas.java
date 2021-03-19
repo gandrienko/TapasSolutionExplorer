@@ -14,7 +14,6 @@ public class InfoCanvas extends JPanel {
   public void setbDoubleSpaceForHotspots (boolean bDoubleSpaceForHotspots) {
     this.bDoubleSpaceForHotspots = bDoubleSpaceForHotspots;
     plotImageValid=false;
-    //System.out.println("* call repaint for: "+bDoubleSpaceForHotspots);
     repaint();
   }
 
@@ -29,6 +28,8 @@ public class InfoCanvas extends JPanel {
 
   public void setSector (String sector) {
     this.sector=sector;
+    plotImageValid=false;
+    repaint();
   }
 
   /**
