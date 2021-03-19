@@ -105,7 +105,7 @@ public class InfoCanvas extends JPanel {
                      dk.getCount("CountFlights-DelayOver60",y1,x1)};
       int iCountsFrom[]=dk.getCountsForNominals("From",labelsSectors,y1,x1),
           iCountsTo[]=dk.getCountsForNominals("To",labelsSectors,y1,x1);
-      String out="<html><body>sector=<b>"+sector+"</b>, capacity="+capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
+      String out="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+sector+"</b>, capacity="+capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
                     String.format("%02d",y1/3)+":"+String.format("%02d",(y1%3)*20)+".."+
                     String.format("%02d",y1/3+1)+":"+String.format("%02d",(y1%3)*20)+
                     ")</b>, Nflights=<b>";
@@ -114,16 +114,18 @@ public class InfoCanvas extends JPanel {
         out+="<font color=red>"+demand+"</font> (+"+Math.round(demand*100f/capacity-100)+"%)";
       else
         out+=demand;
-      out+="</b>\n";
-      out+="<table border=1><tr align=center><td>Delays</td><td>Connected sectors</td></tr>"; // ><td>From</td><td>To</td></tr>
-      out+="<tr><td><table border=1>";
-      for (int i=0; i<iDelays.length; i++)
-        out+="<tr align=right><td>"+lDelays[i]+"</td><td>"+iDelays[i]+"</td></tr>\n";
+      out+="</b></p>\n";
+      out+="<table border=0><tr align=center><td>Delays</td><td>Connected sectors</td></tr>"; // ><td>From</td><td>To</td></tr>
+      out+="<tr><td><table border=0>";
+      for (int i=0; i<iDelays.length; i++) {
+        int rgb=255-64-32*i;
+        out += "<tr align=right><td>" + lDelays[i] + "</td><td style=background-color:rgb("+rgb+","+rgb+","+rgb+")>.</td><td>" + iDelays[i] + "</td></tr>\n";
+      }
       out+="</table></td>\n<td><table border=0><tr><td></td><td></td><td>From</td><td>To</td></tr>";
       for (int i=0; i<iCountsFrom.length; i++) {
         int rgb[]=ColorScales.getKellyColorAsRGB(i);
-        out += "<tr align=right><td style=background-color:rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")>" +
-                " </td><td>"+labelsSectors.elementAt(i) + "</td><td>" + iCountsFrom[i] + "</td><td>" + iCountsTo[i] + "</td></tr>\n";
+        out += "<tr align=right><td>"+labelsSectors.elementAt(i)+"</td><td style=background-color:rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")>" +
+                ".</td><td>" + iCountsFrom[i] + "</td><td>" + iCountsTo[i] + "</td></tr>\n";
       }
       out+="</table></td></tr></table>";
       out+="</body></html>";
