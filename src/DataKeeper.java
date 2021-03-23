@@ -76,26 +76,43 @@ public class DataKeeper {
   }
 
   int Nintervals=70, NintevalsWithHotspots=0, Ishift=20, Iduration=60;
+  protected Hashtable<String,Vector<Record>[][]> recsInCellsAll=null;
   protected Vector<Record> recsInCells[][]=null;
   public boolean[] hasHotspots=null;
 
-  public void aggregate (String sector) {
-    recsInCells=new Vector[Nintervals][];
-    for (int i=0; i<recsInCells.length; i++) {
-      recsInCells[i] = new Vector[Nsteps];
-      for (int j=0; j<recsInCells[i].length; j++)
-        recsInCells[i][j]=new Vector<Record>(10,10);
+  public void aggregateAll() {
+    recsInCellsAll=new Hashtable<>();
+    for (String sector:sectors) {
+      aggregate(sector,false);
+      recsInCellsAll.put(sector,recsInCells);
     }
-    for (int i=0; i<Nsteps; i++) {
-      String key=sector+"_"+i;
-      Vector<Record> vr=records.get(key);
-      for (int j=0; j<vr.size(); j++) {
-        Record r=vr.get(j);
-        for (int k=0; k<Nintervals; k++) {
-          int k1=k*Ishift, k2=k1+Iduration-1;
-          boolean intersect=Math.max(k1,r.FromN)<=Math.min(k2,r.ToN);
-          if (intersect)
-            recsInCells[k][i].add(r);
+  }
+
+  public void aggregate (String sector) {
+    aggregate(sector,true);
+  }
+
+  public void aggregate (String sector, boolean toComputeHostops) {
+    if (recsInCellsAll!=null)
+      recsInCells=recsInCellsAll.get(sector);
+    if (recsInCells==null) {
+      recsInCells = new Vector[Nintervals][];
+      for (int i = 0; i < recsInCells.length; i++) {
+        recsInCells[i] = new Vector[Nsteps];
+        for (int j = 0; j < recsInCells[i].length; j++)
+          recsInCells[i][j] = new Vector<Record>(10, 10);
+      }
+      for (int i = 0; i < Nsteps; i++) {
+        String key = sector + "_" + i;
+        Vector<Record> vr = records.get(key);
+        for (int j = 0; j < vr.size(); j++) {
+          Record r = vr.get(j);
+          for (int k = 0; k < Nintervals; k++) {
+            int k1 = k * Ishift, k2 = k1 + Iduration - 1;
+            boolean intersect = Math.max(k1, r.FromN) <= Math.min(k2, r.ToN);
+            if (intersect)
+              recsInCells[k][i].add(r);
+          }
         }
       }
     }
@@ -275,6 +292,7 @@ public class DataKeeper {
   public DataKeeper (String filename_data, String filename_capacities) {
     readCapacities(filename_capacities);
     readData(filename_data);
+    aggregateAll();
   }
 
 }
