@@ -24,8 +24,8 @@ public class Main {
     frame = new JFrame("TAPAS Solution Explorer: all sectors");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     InfoCanvasAll icAll=new InfoCanvasAll(dk);
-    //ControlPanel cp=new ControlPanel(dk,ic);
-    //frame.getContentPane().add(cp, BorderLayout.SOUTH);
+    cp=new ControlPanel(dk,icAll);
+    frame.getContentPane().add(cp, BorderLayout.SOUTH);
     frame.getContentPane().add(icAll, BorderLayout.CENTER);
 
     //Display the window.
