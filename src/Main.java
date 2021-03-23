@@ -9,7 +9,7 @@ public class Main {
 
   private static void createAndShowGUI (DataKeeper dk) {
     //Create and set up the window for a single sector.
-    JFrame frame = new JFrame("TAPAS Solution Explorer: simgle sector");
+    JFrame frame = new JFrame("TAPAS Solution Explorer: single sector");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     InfoCanvas ic=new InfoCanvas(dk);
     ControlPanel cp=new ControlPanel(dk,ic);
