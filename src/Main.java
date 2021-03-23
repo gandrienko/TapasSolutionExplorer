@@ -8,13 +8,25 @@ import java.util.Vector;
 public class Main {
 
   private static void createAndShowGUI (DataKeeper dk) {
-    //Create and set up the window.
-    JFrame frame = new JFrame("TAPAS Solution Explorer");
+    //Create and set up the window for a single sector.
+    JFrame frame = new JFrame("TAPAS Solution Explorer: simgle sector");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     InfoCanvas ic=new InfoCanvas(dk);
     ControlPanel cp=new ControlPanel(dk,ic);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
     frame.getContentPane().add(ic, BorderLayout.CENTER);
+
+    //Display the window.
+    frame.pack();
+    frame.setVisible(true);
+
+    //Create and set up the window for a single sector.
+    frame = new JFrame("TAPAS Solution Explorer: all sectors");
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    InfoCanvasAll icAll=new InfoCanvasAll(dk);
+    //ControlPanel cp=new ControlPanel(dk,ic);
+    //frame.getContentPane().add(cp, BorderLayout.SOUTH);
+    frame.getContentPane().add(icAll, BorderLayout.CENTER);
 
     //Display the window.
     frame.pack();
