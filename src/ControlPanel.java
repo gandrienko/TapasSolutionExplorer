@@ -36,6 +36,10 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       p.add(JCsectors);
       add(p,BorderLayout.WEST);
     }
+    if (ic instanceof InfoCanvasAll) {
+      int sts[]=new int[]{0,dk.Nsteps-1};
+      ((InfoCanvasAll)ic).setSTS(sts);
+    }
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
     JCrenderingMode.setSelectedIndex(1);
     JCrenderingMode.addActionListener(this);
