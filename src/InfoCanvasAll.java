@@ -84,6 +84,7 @@ public class InfoCanvasAll extends InfoCanvasBasics {
       g2.setColor(Color.BLACK);
       g2.drawRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
       for (String sector : new TreeSet<String>(dk.sectors)) {
+        g2.setColor(Color.GRAY);
         for (int i = 0; i < sector.length(); i++)
           drawCenteredString(sector.substring(i, i + 1), xx, 2+(i+1) * strh, strw, strh, g2);
         Integer cap=dk.capacities.get(sector);
@@ -91,8 +92,31 @@ public class InfoCanvasAll extends InfoCanvasBasics {
         if (cap!=null)
           capacity=cap.intValue();
         for (int i=0; i<dk.Nintervals; i++) {
-          int n=dk.getCount(sector,"CountFlights",i,comp);
-          int ww=(strw-1)*n/dk.iGlobalMax;
+          int n=dk.getCount(sector,"CountFlights",i,sts[comp]);
+          //System.out.println("sector="+sector+", interval="+String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20)+
+          //        ", step="+sts[comp]+", value="+n);
+          int ww=0; //(strw-1)*n/dk.iGlobalMax;
+          switch (iRenderingMode) {
+            case 0:
+              //n=dk.getCount(sector,"CountFlights",i,sts[comp]);
+              ww=(strw-1)*n/dk.iGlobalMax;
+              g2.setColor(Color.gray);
+              g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
+            case 1:
+              int nn[]=new int[6];
+              nn[0]=dk.getCount(sector,"CountFlights-noDelay",i,sts[comp]);
+              nn[1]=nn[0]+dk.getCount(sector,"CountFlights-Delay1to4",i,sts[comp]);
+              nn[2]=nn[1]+dk.getCount(sector,"CountFlights-Delay5to9",i,sts[comp]);
+              nn[3]=nn[2]+dk.getCount(sector,"CountFlights-Delay10to29",i,sts[comp]);
+              nn[4]=nn[3]+dk.getCount(sector,"CountFlights-Delay30to59",i,sts[comp]);
+              nn[5]=nn[4]+dk.getCount(sector,"CountFlights-DelayOver60",i,sts[comp]);
+              for (int k=nn.length-1; k>=0; k--) {
+                int rgb=255-64-32*k;
+                g2.setColor(new Color(rgb,rgb,rgb));
+                ww=(strw-1)*nn[k]/dk.iGlobalMax;
+                g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
+              }
+          }
           g2.setColor(Color.gray);
           g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
           if (n>capacity) {
