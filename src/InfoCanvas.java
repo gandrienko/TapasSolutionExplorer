@@ -99,7 +99,7 @@ public class InfoCanvas extends InfoCanvasBasics {
     g2.fillRect(0,0,getWidth(),getHeight());
 
     FontRenderContext frc = g2.getFontRenderContext();
-    String str="1439";
+    String str="00:00";
     GlyphVector gv = g2.getFont().createGlyphVector(frc, str);
     Rectangle bounds = gv.getPixelBounds(null,0,0);
     x0=5+bounds.width;

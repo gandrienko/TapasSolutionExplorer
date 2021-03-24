@@ -18,7 +18,7 @@ public class InfoCanvasBasics extends JPanel {
 
   public InfoCanvasBasics (DataKeeper dk) {
     this.dk=dk;
-    setPreferredSize(new Dimension(1500, 1200));
+    setPreferredSize(new Dimension(1500, 900));
     setBorder(BorderFactory.createLineBorder(Color.BLUE,1));
     ToolTipManager.sharedInstance().registerComponent(this);
   }
