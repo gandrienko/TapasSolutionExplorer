@@ -28,7 +28,7 @@ public class InfoCanvas extends InfoCanvasBasics {
     Point p = new Point(me.getX(),me.getY());
     if (p.x>=x0 && p.x<x0+dk.Nsteps*w && p.y>=yy[0] && p.y<yy[yy.length-1]) {
       if (labelsSectors==null) {
-        labelsSectors = dk.getConnectedSectors();
+        labelsSectors = dk.getConnectedSectors(sector);
         //System.out.println("From "+labelsSectors);
       }
       Integer cap=dk.capacities.get(sector);
@@ -42,19 +42,19 @@ public class InfoCanvas extends InfoCanvasBasics {
       if (y1==-1)
         return "error";
       String lDelays[]={"no delay","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
-      int iDelays[]={dk.getCount("CountFlights-noDelay",y1,x1),
-                     dk.getCount("CountFlights-Delay1to4",y1,x1),
-                     dk.getCount("CountFlights-Delay5to9",y1,x1),
-                     dk.getCount("CountFlights-Delay10to29",y1,x1),
-                     dk.getCount("CountFlights-Delay30to59",y1,x1),
-                     dk.getCount("CountFlights-DelayOver60",y1,x1)};
-      int iCountsFrom[]=dk.getCountsForNominals("From",labelsSectors,y1,x1),
-          iCountsTo[]=dk.getCountsForNominals("To",labelsSectors,y1,x1);
+      int iDelays[]={dk.getCount(sector,"CountFlights-noDelay",y1,x1),
+                     dk.getCount(sector,"CountFlights-Delay1to4",y1,x1),
+                     dk.getCount(sector,"CountFlights-Delay5to9",y1,x1),
+                     dk.getCount(sector,"CountFlights-Delay10to29",y1,x1),
+                     dk.getCount(sector,"CountFlights-Delay30to59",y1,x1),
+                     dk.getCount(sector,"CountFlights-DelayOver60",y1,x1)};
+      int iCountsFrom[]=dk.getCountsForNominals(sector,"From",labelsSectors,y1,x1),
+          iCountsTo[]=dk.getCountsForNominals(sector,"To",labelsSectors,y1,x1);
       String out="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+sector+"</b>, capacity="+capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
                     String.format("%02d",y1/3)+":"+String.format("%02d",(y1%3)*20)+".."+
                     String.format("%02d",y1/3+1)+":"+String.format("%02d",(y1%3)*20)+
                     ")</b>, Nflights=<b>";
-      int demand=dk.getCount("CountFlights",y1,x1);
+      int demand=dk.getCount(sector,"CountFlights",y1,x1);
       if (demand>capacity)
         out+="<font color=red>"+demand+"</font> (+"+Math.round(demand*100f/capacity-100)+"%)";
       else
@@ -134,7 +134,7 @@ public class InfoCanvas extends InfoCanvasBasics {
     g2.drawRect(x0,yy[0],w*dk.Nsteps, yy[yy.length-1]-yy[0]);
     //draw values
     g2.setColor(Color.darkGray);
-    int counts[][]=dk.getCounts("CountFlights"),
+    int counts[][]=dk.getCounts(sector,"CountFlights"),
         counts_max=dk.getMax(counts);
     Integer cap=dk.capacities.get(sector);
     int capacity=0;
@@ -142,7 +142,7 @@ public class InfoCanvas extends InfoCanvasBasics {
       capacity=cap.intValue();
 
     if (iRenderingMode>1 && labelsSectors==null)
-      labelsSectors = dk.getConnectedSectors();
+      labelsSectors = dk.getConnectedSectors(sector);
 
     for (int i=0; i<counts.length; i++)
       for (int j=0; j<counts[i].length; j++)
@@ -156,12 +156,12 @@ public class InfoCanvas extends InfoCanvasBasics {
               break;
             case 1:
               int n[]=new int[6];
-              n[0]=dk.getCount("CountFlights-noDelay",i,j);
-              n[1]=n[0]+dk.getCount("CountFlights-Delay1to4",i,j);
-              n[2]=n[1]+dk.getCount("CountFlights-Delay5to9",i,j);
-              n[3]=n[2]+dk.getCount("CountFlights-Delay10to29",i,j);
-              n[4]=n[3]+dk.getCount("CountFlights-Delay30to59",i,j);
-              n[5]=n[4]+dk.getCount("CountFlights-DelayOver60",i,j);
+              n[0]=dk.getCount(sector,"CountFlights-noDelay",i,j);
+              n[1]=n[0]+dk.getCount(sector,"CountFlights-Delay1to4",i,j);
+              n[2]=n[1]+dk.getCount(sector,"CountFlights-Delay5to9",i,j);
+              n[3]=n[2]+dk.getCount(sector,"CountFlights-Delay10to29",i,j);
+              n[4]=n[3]+dk.getCount(sector,"CountFlights-Delay30to59",i,j);
+              n[5]=n[4]+dk.getCount(sector,"CountFlights-DelayOver60",i,j);
               for (int k=n.length-1; k>=0; k--) {
                 int rgb=255-64-32*k;
                 g2.setColor(new Color(rgb,rgb,rgb));
@@ -171,7 +171,7 @@ public class InfoCanvas extends InfoCanvasBasics {
               }
               break;
             case 2: case 3:
-              n=dk.getCountsForNominals((iRenderingMode==2)?"From":"To",labelsSectors,i,j);
+              n=dk.getCountsForNominals(sector,(iRenderingMode==2)?"From":"To",labelsSectors,i,j);
               for (int k=1; k<n.length; k++)
                 n[k]+=n[k-1];
               for (int k=n.length-1; k>=0; k--) {

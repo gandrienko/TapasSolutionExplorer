@@ -77,7 +77,7 @@ public class DataKeeper {
 
   int Nintervals=70, NintevalsWithHotspots=0, Ishift=20, Iduration=60;
   protected Hashtable<String,Vector<Record>[][]> recsInCellsAll=null;
-  protected Vector<Record> recsInCells[][]=null;
+  //protected Vector<Record> recsInCells[][]=null;
   public boolean[] hasHotspots=null;
   public int iGlobalMax=0;
 
@@ -86,8 +86,8 @@ public class DataKeeper {
     iGlobalMax=0;
     for (String sector:sectors) {
       aggregate(sector,false);
-      recsInCellsAll.put(sector,recsInCells);
-      int n=getMax(getCounts("CountFlights"));
+      //recsInCellsAll.put(sector,recsInCells);
+      int n=getMax(getCounts(sector,"CountFlights"));
       if (n>iGlobalMax)
         iGlobalMax=n;
       System.out.println("Sector="+sector+", max_count="+n);
@@ -100,10 +100,12 @@ public class DataKeeper {
   }
 
   public void aggregate (String sector, boolean toComputeHostops) {
-    if (recsInCellsAll!=null)
-      recsInCells=recsInCellsAll.get(sector);
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
+    //if (recsInCellsAll!=null)
+      //recsInCells=recsInCellsAll.get(sector);
     if (recsInCells==null) {
       recsInCells = new Vector[Nintervals][];
+      recsInCellsAll.put(sector,recsInCells);
       for (int i = 0; i < recsInCells.length; i++) {
         recsInCells[i] = new Vector[Nsteps];
         for (int j = 0; j < recsInCells[i].length; j++)
@@ -136,6 +138,7 @@ public class DataKeeper {
         NintevalsWithHotspots++;
   }
 
+/*
   public Vector<int[]> checkEqual () { // for the currently selelted sector
     Vector<int[]> list=new Vector(10,10);
     boolean blist[]=new boolean[Nsteps];
@@ -171,8 +174,10 @@ public class DataKeeper {
       }
     return list;
   }
+*/
 
-  public int getCount (String operation, int i, int j) {
+  public int getCount (String sector, String operation, int i, int j) {
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
     int N=-1;
     if ("CountFlights".equals(operation))
       N=recsInCells[i][j].size();
@@ -223,7 +228,8 @@ public class DataKeeper {
     }
     return counts;
   }
-  public int[][] getCounts (String operation) {
+  public int[][] getCounts (String sector, String operation) {
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
     int counts[][]=createCounts();
     for (int i=0; i<recsInCells.length; i++)
       for (int j=0; j<recsInCells[i].length; j++) {
@@ -243,7 +249,8 @@ public class DataKeeper {
     return counts_max;
   }
 
-  public Vector<String> getConnectedSectors () {
+  public Vector<String> getConnectedSectors (String sector) {
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
     Vector<String> labels=new Vector(15,5);
     for (int i=0; i<Nintervals; i++)
       for (int j=0; j<recsInCells[0].length; j++)
@@ -271,7 +278,8 @@ public class DataKeeper {
    * @param col
    * @return
    */
-  public int[] getCountsForNominals (String operation, Vector<String> labels, int row, int col) {
+  public int[] getCountsForNominals (String sector, String operation, Vector<String> labels, int row, int col) {
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
     int out[]=new int[labels.size()];
     for (int i=0; i<out.length; i++)
       out[i]=0;

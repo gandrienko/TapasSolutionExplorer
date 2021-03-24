@@ -28,7 +28,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
         System.out.println("* aggregating for " + sector);
         dk.aggregate(sector);
         //dk.checkEqual();
-        dk.getCounts("CountFlights");
+        dk.getCounts(sector,"CountFlights");
         ((InfoCanvas)ic).setSector(sector);
       }
       JPanel p=new JPanel(new FlowLayout(FlowLayout.LEFT,10,0));
@@ -60,7 +60,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       System.out.println("* aggregating for "+sector);
       dk.aggregate(sector);
       //dk.checkEqual();
-      dk.getCounts("CountFlights");
+      dk.getCounts(sector,"CountFlights");
       JCBemthHotspots.setText("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots");
       ((InfoCanvas)ic).setSector(sector);
     }
