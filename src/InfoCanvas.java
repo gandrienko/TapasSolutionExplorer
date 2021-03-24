@@ -120,13 +120,13 @@ public class InfoCanvas extends InfoCanvasBasics {
     g2.setColor(Color.GRAY.brighter());
     for (int i=1; i<dk.Nintervals; i++)
       g2.drawLine(1,yy[i], x0+w*dk.Nsteps+3, yy[i]);
-    for (int i=1; i<dk.Nsteps; i+=60)
+    for (int i=1; i<dk.Nsteps; i+=(dk.Nsteps>100)?60:1)
       g2.drawLine(x0+i*w, yy[0]-3, x0+i*w, yy[yy.length-1]+3);
     g2.setColor(Color.GRAY);
     for (int i=0; i<dk.Nintervals; i++)
       drawCenteredString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20),1,yy[i],x0,yy[i+1]-yy[i],g2);
       //g2.drawString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20), 1, yy[i] + g2.getFontMetrics().getAscent());
-    for (int i=0; i<dk.Nsteps; i+=60)
+    for (int i=0; i<dk.Nsteps; i+=(dk.Nsteps>100)?60:1)
       g2.drawString(""+i,x0+i*w, g2.getFontMetrics().getAscent()-1);
     g2.setColor(new Color(0f,1f,1f,0.1f));
     g2.fillRect(x0,yy[0],w*dk.Nsteps, yy[yy.length-1]-yy[0]);
@@ -151,7 +151,8 @@ public class InfoCanvas extends InfoCanvasBasics {
           switch (iRenderingMode) {
             case 0:
               g2.setColor(Color.gray);
-              g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
+              g2.fillRect(x0+j*w,yy[i+1]-hh,w,hh);
+              //g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
               break;
             case 1:
               int n[]=new int[6];
@@ -165,7 +166,8 @@ public class InfoCanvas extends InfoCanvasBasics {
                 int rgb=255-64-32*k;
                 g2.setColor(new Color(rgb,rgb,rgb));
                 hh=(yy[i+1]-yy[i]-2)*n[k]/counts_max;
-                g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
+                g2.fillRect(x0+j*w,yy[i+1]-hh,w,hh);
+                //g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
               }
               break;
             case 2: case 3:
@@ -176,14 +178,15 @@ public class InfoCanvas extends InfoCanvasBasics {
                 //int rgb=255-64-32*k;
                 g2.setColor(ColorScales.getKellyColor(k));
                 hh=(yy[i+1]-yy[i]-2)*n[k]/counts_max;
-                g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
+                g2.fillRect(x0+j*w,yy[i+1]-hh,w,hh);
+                //g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]);
               }
               break;
           }
           if (capacity<counts[i][j]) {
             hh = (yy[i+1]-yy[i] - 2) * capacity / counts_max;
             g2.setColor(Color.red);
-            g2.drawLine(x0+j, yy[i+1]-hh, x0+j, yy[i+1]-hh);
+            g2.drawLine(x0+j*w, yy[i+1]-hh, x0+(j+1)*w, yy[i+1]-hh);
           }
         }
 
