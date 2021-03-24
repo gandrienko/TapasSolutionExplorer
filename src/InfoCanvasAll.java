@@ -86,6 +86,21 @@ public class InfoCanvasAll extends InfoCanvasBasics {
       for (String sector : new TreeSet<String>(dk.sectors)) {
         for (int i = 0; i < sector.length(); i++)
           drawCenteredString(sector.substring(i, i + 1), xx, 2+(i+1) * strh, strw, strh, g2);
+        Integer cap=dk.capacities.get(sector);
+        int capacity=0;
+        if (cap!=null)
+          capacity=cap.intValue();
+        for (int i=0; i<dk.Nintervals; i++) {
+          int n=dk.getCount(sector,"CountFlights",i,comp);
+          int ww=(strw-1)*n/dk.iGlobalMax;
+          g2.setColor(Color.gray);
+          g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
+          if (n>capacity) {
+            g2.setColor(Color.red);
+            ww=(strw-1)*capacity/dk.iGlobalMax;
+            g2.drawLine(xx+ww,yy[i],xx+ww,yy[i+1]);
+          }
+        }
         xx += strw;
       }
     }

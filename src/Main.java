@@ -34,7 +34,7 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    String fname="FlightsInSectors_4"; //"FlightsInSectors_LECMTLL"; //"v20210304-all-25steps"; // "FlightsInSectors_LECSASV"; //"FlightsInSectors";  //
+    String fname="v20210304-all-25steps"; //"FlightsInSectors_4"; //"FlightsInSectors_LECMTLL"; // "FlightsInSectors_LECSASV"; //"FlightsInSectors";  //
     String fname_c="capacities";
     if (args.length==2) {
       fname_c=args[0];
