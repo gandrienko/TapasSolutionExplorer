@@ -90,9 +90,9 @@ public class DataKeeper {
       int n=getMax(getCounts(sector,"CountFlights"));
       if (n>iGlobalMax)
         iGlobalMax=n;
-      System.out.println("Sector="+sector+", max_count="+n);
+      //System.out.println("Sector="+sector+", max_count="+n);
     }
-    System.out.println("* global max="+iGlobalMax);
+    //System.out.println("* global max="+iGlobalMax);
   }
 
   public void aggregate (String sector) {

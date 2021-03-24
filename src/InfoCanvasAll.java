@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
 import java.util.TreeSet;
 
 public class InfoCanvasAll extends InfoCanvasBasics {
@@ -23,7 +22,6 @@ public class InfoCanvasAll extends InfoCanvasBasics {
 
   public void paintComponent (Graphics g) {
     super.paintComponent(g);
-    //nY=dk.Nintervals;
 
     prepareImage();
     if (plotImageValid) {

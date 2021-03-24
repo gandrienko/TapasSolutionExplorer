@@ -37,20 +37,22 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       add(p,BorderLayout.WEST);
     }
     if (ic instanceof InfoCanvasAll) {
-      int sts[]=new int[]{0,dk.Nsteps-1};
+      int sts[]=new int[]{0,2,dk.Nsteps-1};
       ((InfoCanvasAll)ic).setSTS(sts);
     }
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
     JCrenderingMode.setSelectedIndex(1);
     JCrenderingMode.addActionListener(this);
-    JPanel p=new JPanel(new FlowLayout(FlowLayout.CENTER,0,0));
+    JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
     p.add(new JLabel("colors for: "));
     p.add(JCrenderingMode);
-    add(p,BorderLayout.CENTER);
-    JCBemthHotspots=new JCheckBox("more space for "+dk.NintevalsWithHotspots+" intevals with hotspots", false);
-    JCBemthHotspots.addItemListener(this);
-    JCBemthHotspots.setToolTipText("time intervals that have hotspots will be given double screen space (height)");
-    add(JCBemthHotspots,BorderLayout.EAST);
+    add(p, BorderLayout.CENTER);
+    if (ic instanceof InfoCanvas) {
+      JCBemthHotspots = new JCheckBox("more space for " + dk.NintevalsWithHotspots + " intevals with hotspots", false);
+      JCBemthHotspots.addItemListener(this);
+      JCBemthHotspots.setToolTipText("time intervals that have hotspots will be given double screen space (height)");
+      add(JCBemthHotspots, BorderLayout.EAST);
+    }
     ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
   }
 
