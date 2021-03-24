@@ -79,13 +79,20 @@ public class DataKeeper {
   protected Hashtable<String,Vector<Record>[][]> recsInCellsAll=null;
   protected Vector<Record> recsInCells[][]=null;
   public boolean[] hasHotspots=null;
+  public int iGlobalMax=0;
 
   public void aggregateAll() {
     recsInCellsAll=new Hashtable<>();
+    iGlobalMax=0;
     for (String sector:sectors) {
       aggregate(sector,false);
       recsInCellsAll.put(sector,recsInCells);
+      int n=getMax(getCounts("CountFlights"));
+      if (n>iGlobalMax)
+        iGlobalMax=n;
+      System.out.println("Sector="+sector+", max_count="+n);
     }
+    System.out.println("* global max="+iGlobalMax);
   }
 
   public void aggregate (String sector) {

@@ -51,11 +51,11 @@ public class InfoCanvasAll extends InfoCanvasBasics {
         maxL=sector.length();
 
     int compW=2+lblw+dk.sectors.size()*strw, compWextra=5; // width of a single component
-    if (compW*sts.length+compWextra*(sts.length-1)>getWidth()) {
-      int W=(getWidth()+compWextra)/sts.length;
+    //if (compW*sts.length+compWextra*(sts.length-1)>getWidth()) {
+      int W=(getWidth()-5*compWextra)/sts.length;
       strw=(W-(lblw-1))/dk.sectors.size();
       compW=2+lblw+dk.sectors.size()*strw;
-    }
+    //}
 
     y0=3+(maxL+1)*strh;
     int h=(getHeight()-(y0+1))/dk.Nintervals;
