@@ -4,6 +4,7 @@ import java.util.*;
 public class DataKeeper {
 
   protected HashSet<String> flights=new HashSet(1000), sectors=new HashSet(50);
+  public HashSet<SectorData> sectorsWithData=new HashSet(50);
   protected Hashtable<String,Vector<Record>> records=new Hashtable(100000);
 
   public Hashtable<String,Integer> capacities=new Hashtable(100);
@@ -83,10 +84,31 @@ public class DataKeeper {
 
   public void aggregateAll() {
     recsInCellsAll=new Hashtable<>();
+    sectorsWithData=new HashSet<>(sectors.size());
     iGlobalMax=0;
     for (String sector:sectors) {
       aggregate(sector,false);
-      //recsInCellsAll.put(sector,recsInCells);
+      int capacity=capacities.get(sector);
+      SectorData sd=new SectorData();
+      sd.sector=sector;
+      //sd.Nhotspots_all=0;
+      HashSet<String> flights=new HashSet<>(100);
+      Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
+      for (int i=0; i<recsInCells.length; i++)
+        for (int j=0; j<recsInCells[i].length; j++) {
+          if (recsInCells[i][j].size()>capacity)
+            sd.Nhotspots_all++;
+          if (j==0 && recsInCells[i][j].size()>capacity)
+            sd.Nhotspots_step0++;
+          if (j==recsInCells[i].length-1 && recsInCells[i][j].size()>capacity)
+            sd.Nhotspots_stepLast++;
+          for (int k = 0; k < recsInCells[i][j].size(); k++) {
+            Record rec = recsInCells[i][j].elementAt(k);
+            flights.add(rec.flight);
+          }
+        }
+      sd.Nflights=flights.size();
+      sectorsWithData.add(sd);
       int n=getMax(getCounts(sector,"CountFlights"));
       if (n>iGlobalMax)
         iGlobalMax=n;
@@ -100,7 +122,7 @@ public class DataKeeper {
   }
 
   public void aggregate (String sector, boolean toComputeHostops) {
-    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
     //if (recsInCellsAll!=null)
       //recsInCells=recsInCellsAll.get(sector);
     if (recsInCells==null) {

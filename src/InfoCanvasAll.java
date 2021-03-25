@@ -44,6 +44,10 @@ public class InfoCanvasAll extends InfoCanvasBasics {
         plotImageValid=false;
         repaint();
         s+=si.sector;
+        for (SectorData sd:dk.sectorsWithData)
+          if (sd.sector.equals(si.sector)) {
+            s+=", nfl = "+sd.Nflights+", Nhotspots = "+sd.Nhotspots_all+" (all), "+sd.Nhotspots_step0+" (step 0), "+sd.Nhotspots_stepLast+" (last step)";
+          }
         return s;
       }
     for (CellInfo ci:cells)
@@ -134,7 +138,7 @@ public class InfoCanvasAll extends InfoCanvasBasics {
       g2.drawRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
       for (String sector : new TreeSet<String>(dk.sectors)) {
         if (sector.equals(highlightedSector))
-          g2.setColor(Color.red);
+          g2.setColor(Color.black);
         else
           g2.setColor(Color.GRAY);
         for (int i = 0; i < sector.length(); i++)
@@ -154,7 +158,7 @@ public class InfoCanvasAll extends InfoCanvasBasics {
           //        ", step="+sts[comp]+", value="+n);
           int ww=0; //(strw-1)*n/dk.iGlobalMax;
           if (sector.equals(highlightedSector)) {
-            g2.setColor(new Color(0f,1f,1f,0.1f).darker());
+            g2.setColor(new Color(0f,1f,1f,0.5f));
             g2.fillRect(xx,yy[i],strw-1,yy[i+1]-yy[i]);
           }
           switch (iRenderingMode) {
