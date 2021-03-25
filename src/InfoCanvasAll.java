@@ -1,7 +1,21 @@
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.util.TreeSet;
+import java.util.Vector;
+
+class CellInfo {
+  Rectangle r;
+  String sector;
+  int step, interval;
+}
+
+class SectorInfo {
+  Rectangle r;
+  String sector;
+  int step;
+}
 
 public class InfoCanvasAll extends InfoCanvasBasics {
 
@@ -18,6 +32,25 @@ public class InfoCanvasAll extends InfoCanvasBasics {
     repaint();
   }
 
+  Vector<CellInfo> cells=null;
+  Vector<SectorInfo> sectors=null;
+
+  public String getToolTipText(MouseEvent me) {
+    Point p = new Point(me.getX(), me.getY());
+    String s="";
+    for (SectorInfo sector:sectors)
+      if (sector.r.contains(p)) {
+        s+=sector.sector;
+        return s;
+      }
+    for (CellInfo cell:cells)
+      if (cell.r.contains(p)) {
+        s+=cell.sector+", "+cell.interval;
+        return s;
+      }
+    return s;
+  }
+
   int yy[]=null, y0=0;
 
   public void paintComponent (Graphics g) {
@@ -31,6 +64,15 @@ public class InfoCanvasAll extends InfoCanvasBasics {
     Graphics2D g2 = (Graphics2D) g;
     if (plotImage != null)
       g2 = (Graphics2D) plotImage.getGraphics();
+
+    if (sectors==null)
+      sectors=new Vector<>(dk.sectors.size());
+    else
+      sectors.clear();
+    if (cells==null)
+      cells=new Vector<>(dk.sectors.size()*dk.Nintervals);
+    else
+      cells.clear();
 
     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g2.setColor(Color.white);
@@ -85,6 +127,11 @@ public class InfoCanvasAll extends InfoCanvasBasics {
         g2.setColor(Color.GRAY);
         for (int i = 0; i < sector.length(); i++)
           drawCenteredString(sector.substring(i, i + 1), xx, 2+(i+1) * strh, strw, strh, g2);
+        SectorInfo si=new SectorInfo();
+        si.sector=sector;
+        si.step=sts[comp];
+        si.r=new Rectangle(xx,0,strw,yy[0]);
+        sectors.add(si);
         Integer cap=dk.capacities.get(sector);
         int capacity=0;
         if (cap!=null)
@@ -100,6 +147,7 @@ public class InfoCanvasAll extends InfoCanvasBasics {
               ww=(strw-1)*n/dk.iGlobalMax;
               g2.setColor(Color.gray);
               g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
+              break;
             case 1:
               int nn[]=new int[6];
               nn[0]=dk.getCount(sector,"CountFlights-noDelay",i,sts[comp]);
@@ -114,6 +162,7 @@ public class InfoCanvasAll extends InfoCanvasBasics {
                 ww=(strw-1)*nn[k]/dk.iGlobalMax;
                 g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
               }
+              break;
           }
           g2.setColor(Color.gray);
           g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
@@ -122,6 +171,12 @@ public class InfoCanvasAll extends InfoCanvasBasics {
             ww=(strw-1)*capacity/dk.iGlobalMax;
             g2.drawLine(xx+ww,yy[i],xx+ww,yy[i+1]);
           }
+          CellInfo ci=new CellInfo();
+          ci.sector=sector;
+          ci.step=sts[comp];
+          ci.interval=i;
+          ci.r=new Rectangle(xx,yy[i],strw,yy[i+1]-yy[i]);
+          cells.add(ci);
         }
         xx += strw;
       }
