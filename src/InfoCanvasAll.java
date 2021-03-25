@@ -102,15 +102,15 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     bounds = gv.getPixelBounds(null,0,0);
     int strw=bounds.width+1, strh=bounds.height+1;
     int maxL=0;
-    for (String sector:dk.sectors)
+    for (String sector:dk.sectorsSorted)
       if (sector.length()>maxL)
         maxL=sector.length();
 
-    int compW=2+lblw+dk.sectors.size()*strw, compWextra=5; // width of a single component
+    int compW=2+lblw+dk.sectorsSorted.size()*strw, compWextra=5; // width of a single component
     //if (compW*sts.length+compWextra*(sts.length-1)>getWidth()) {
       int W=(getWidth()-5*compWextra)/sts.length;
-      strw=(W-(lblw-1))/dk.sectors.size();
-      compW=2+lblw+dk.sectors.size()*strw;
+      strw=(W-(lblw-1))/dk.sectorsSorted.size();
+      compW=2+lblw+dk.sectorsSorted.size()*strw;
     //}
 
     y0=3+(maxL+1)*strh;
@@ -129,7 +129,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2.setColor(Color.GRAY.brighter());
       for (int i=1; i<dk.Nintervals; i++)
         g2.drawLine(xx,yy[i], xx+compW, yy[i]);
-      for (int i=1; i<dk.sectors.size(); i++)
+      for (int i=1; i<dk.sectorsSorted.size(); i++)
         g2.drawLine(xx+lblw+1+i*strw, strh+1, xx+lblw+1+i*strw, yy[yy.length-1]+3);
       g2.setColor(Color.GRAY);
       for (int i=0; i<dk.Nintervals; i++)
