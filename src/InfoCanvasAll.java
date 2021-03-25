@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.util.HashSet;
 import java.util.Vector;
 
 class CellInfo {
@@ -21,7 +22,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
 
   int sts[]=null; // Steps to Show
   protected String highlightedSector=null;
-  Vector<String> selectedSectors=new Vector(dk.sectors.size());
+  HashSet<String> selectedSectors=new HashSet<>(dk.sectors.size());
 
   public InfoCanvasAll (DataKeeper dk) {
     super(dk);
@@ -160,6 +161,10 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           //System.out.println("sector="+sector+", interval="+String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20)+
           //        ", step="+sts[comp]+", value="+n);
           int ww=0; //(strw-1)*n/dk.iGlobalMax;
+          if (selectedSectors.contains(sector)) {
+            g2.setColor(new Color(0f,1f,1f,0.3f));
+            g2.fillRect(xx,yy[i],strw-1,yy[i+1]-yy[i]);
+          }
           if (sector.equals(highlightedSector)) {
             g2.setColor(new Color(0f,1f,1f,0.5f));
             g2.fillRect(xx,yy[i],strw-1,yy[i+1]-yy[i]);
@@ -266,6 +271,33 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       }
     });
     menu.add(item);
+    if (selectedSectors.size()>0) {
+      menu.add(new JPopupMenu.Separator());
+      item=new JMenuItem("clear selection");
+      item.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          selectedSectors.clear();
+          dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
+          plotImageValid=false;
+          repaint();
+        }
+      });
+      menu.add(item);
+      JCheckBoxMenuItem cbitem=new JCheckBoxMenuItem("show only selected",dk.sectorsSorted.size()<dk.sectors.size());
+      cbitem.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          if (cbitem.getState())
+            dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
+          else
+            dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode);
+          plotImageValid=false;
+          repaint();
+        }
+      });
+      menu.add(cbitem);
+    }
     menu.show(this,me.getX(),me.getY());
   }
   public void mouseEntered (MouseEvent me) {
@@ -282,8 +314,27 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   public void mouseDragged (MouseEvent me) {
   }
   public void mouseClicked (MouseEvent me) {
-    if (me.getButton() == MouseEvent.BUTTON3) {
+    if (me.getButton() == MouseEvent.BUTTON3)
       doPopup(me);
+    if (me.getButton() == MouseEvent.BUTTON1) {
+      for (SectorInfo si : sectorInfos)
+        if (si.r.contains(me.getPoint())) {
+          if (selectedSectors.contains(si.sector))
+            selectedSectors.remove(si.sector);
+          else
+            selectedSectors.add(si.sector);
+          plotImageValid = false;
+          repaint();
+        }
+      for (CellInfo ci : cellInfos)
+        if (ci.r.contains(me.getPoint())) {
+          if (selectedSectors.contains(ci.sector))
+            selectedSectors.remove(ci.sector);
+          else
+            selectedSectors.add(ci.sector);
+          plotImageValid = false;
+          repaint();
+        }
     }
   }
   public void mousePressed (MouseEvent me) {

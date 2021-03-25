@@ -8,17 +8,23 @@ public class DataKeeper {
   Vector<String> sectorsSorted=null;
 
   public void sortSectors (String mode) {
+    sortSectors(mode,null);
+  }
+  public void sortSectors (String mode, HashSet<String> selection) {
     for (SectorData sd:sectorsWithData)
       sd.compMode=mode;
     Collections.sort(sectorsWithData);
     sectorsSorted=new Vector<String>(sectors.size());
     for (SectorData sd:sectorsWithData)
-      if (mode.equals(SectorData.comparisonMode[0]))
-        sectorsSorted.add(sd.sector);
-      else
-        sectorsSorted.add(0,sd.sector);
+      if (selection==null || selection.size()==0 || selection.contains(sd.sector)) {
+        if (mode.equals(SectorData.comparisonMode[0]))
+          sectorsSorted.add(sd.sector);
+        else
+          sectorsSorted.add(0, sd.sector);
+      }
     //System.out.println("Sorted sectors: "+sectorsSorted);
   }
+
 
   protected Hashtable<String,Vector<Record>> records=new Hashtable(100000);
 
