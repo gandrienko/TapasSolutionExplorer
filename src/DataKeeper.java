@@ -5,6 +5,17 @@ public class DataKeeper {
 
   protected HashSet<String> flights=new HashSet(1000), sectors=new HashSet(50);
   public HashSet<SectorData> sectorsWithData=new HashSet(50);
+  Vector<String> sectorsSorted=null;
+
+  public void sortSectors (String mode) {
+    for (SectorData sd:sectorsWithData)
+      sd.compMode=mode;
+    TreeSet<SectorData> treeSet = new TreeSet<SectorData>(sectorsWithData);
+    sectorsSorted=new Vector<String>(sectors.size());
+    for (SectorData sd:treeSet)
+      sectorsSorted.add(sd.sector);
+  }
+
   protected Hashtable<String,Vector<Record>> records=new Hashtable(100000);
 
   public Hashtable<String,Integer> capacities=new Hashtable(100);
@@ -115,6 +126,7 @@ public class DataKeeper {
       //System.out.println("Sector="+sector+", max_count="+n);
     }
     //System.out.println("* global max="+iGlobalMax);
+    sortSectors(SectorData.comparisonMode[0]);
   }
 
   public void aggregate (String sector) {
