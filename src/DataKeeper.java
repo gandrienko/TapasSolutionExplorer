@@ -4,16 +4,21 @@ import java.util.*;
 public class DataKeeper {
 
   protected HashSet<String> flights=new HashSet(1000), sectors=new HashSet(50);
-  public HashSet<SectorData> sectorsWithData=new HashSet(50);
+  public Vector<SectorData> sectorsWithData=new Vector<>(50);
   Vector<String> sectorsSorted=null;
 
   public void sortSectors (String mode) {
     for (SectorData sd:sectorsWithData)
       sd.compMode=mode;
-    TreeSet<SectorData> treeSet = new TreeSet<SectorData>(sectorsWithData);
+    Collections.sort(sectorsWithData);
+    //TreeSet<SectorData> treeSet = new TreeSet<SectorData>(sectorsWithData);
     sectorsSorted=new Vector<String>(sectors.size());
-    for (SectorData sd:treeSet)
-      sectorsSorted.add(sd.sector);
+    for (SectorData sd:sectorsWithData)
+      if (mode.equals(SectorData.comparisonMode[0]))
+        sectorsSorted.add(sd.sector);
+      else
+        sectorsSorted.add(0,sd.sector);
+    System.out.println("Sorted sectors: "+sectorsSorted);
   }
 
   protected Hashtable<String,Vector<Record>> records=new Hashtable(100000);
@@ -95,7 +100,7 @@ public class DataKeeper {
 
   public void aggregateAll() {
     recsInCellsAll=new Hashtable<>();
-    sectorsWithData=new HashSet<>(sectors.size());
+    sectorsWithData=new Vector<>(sectors.size());
     iGlobalMax=0;
     for (String sector:sectors) {
       aggregate(sector,false);

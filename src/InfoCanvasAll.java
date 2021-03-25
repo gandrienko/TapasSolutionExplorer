@@ -1,7 +1,6 @@
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.util.TreeSet;
@@ -140,7 +139,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2.fillRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
       g2.setColor(Color.BLACK);
       g2.drawRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
-      for (String sector : new TreeSet<String>(dk.sectors)) {
+      for (String sector : dk.sectorsSorted) { // new TreeSet<String>(dk.sectors)
         if (sector.equals(highlightedSector))
           g2.setColor(Color.black);
         else
@@ -215,7 +214,59 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   }
 
   protected void doPopup (MouseEvent me) {
-    System.out.println("* popup "+me);
+    //System.out.println("* popup "+me);
+    JPopupMenu menu=new JPopupMenu();
+    JMenuItem item=new JMenuItem("Sort sectors by name");
+    item.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        dk.sortSectors(SectorData.comparisonMode[0]);
+        plotImageValid=false;
+        repaint();
+      }
+    });
+    menu.add(item);
+    item=new JMenuItem("Sort sectors by N flights");
+    item.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        dk.sortSectors(SectorData.comparisonMode[1]);
+        plotImageValid=false;
+        repaint();
+      }
+    });
+    menu.add(item);
+    item=new JMenuItem("Sort sectors by N hotspots (overall)");
+    item.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        dk.sortSectors(SectorData.comparisonMode[2]);
+        plotImageValid=false;
+        repaint();
+      }
+    });
+    menu.add(item);
+    item=new JMenuItem("Sort sectors by N hotspots @ step 0");
+    item.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        dk.sortSectors(SectorData.comparisonMode[3]);
+        plotImageValid=false;
+        repaint();
+      }
+    });
+    menu.add(item);
+    item=new JMenuItem("Sort sectors by N hotspots @ last step");
+    item.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        dk.sortSectors(SectorData.comparisonMode[4]);
+        plotImageValid=false;
+        repaint();
+      }
+    });
+    menu.add(item);
+    menu.show(this,me.getX(),me.getY());
   }
   public void mouseEntered (MouseEvent me) {
   }
