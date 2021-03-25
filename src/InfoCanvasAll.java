@@ -20,7 +20,7 @@ class SectorInfo {
 public class InfoCanvasAll extends InfoCanvasBasics {
 
   int sts[]=null; // Steps to Show
-
+  protected String highlightedSector=null;
 
   public InfoCanvasAll (DataKeeper dk) {
     super(dk);
@@ -38,16 +38,25 @@ public class InfoCanvasAll extends InfoCanvasBasics {
   public String getToolTipText(MouseEvent me) {
     Point p = new Point(me.getX(), me.getY());
     String s="";
-    for (SectorInfo sector:sectors)
-      if (sector.r.contains(p)) {
-        s+=sector.sector;
+    for (SectorInfo si:sectors)
+      if (si.r.contains(p)) {
+        highlightedSector=si.sector;
+        plotImageValid=false;
+        repaint();
+        s+=si.sector;
         return s;
       }
-    for (CellInfo cell:cells)
-      if (cell.r.contains(p)) {
-        s+=cell.sector+", "+cell.interval;
+    for (CellInfo ci:cells)
+      if (ci.r.contains(p)) {
+        highlightedSector=ci.sector;
+        plotImageValid=false;
+        repaint();
+        s+=ci.sector+", "+ci.interval;
         return s;
       }
+    highlightedSector=null;
+    plotImageValid=false;
+    repaint();
     return s;
   }
 
@@ -124,7 +133,10 @@ public class InfoCanvasAll extends InfoCanvasBasics {
       g2.setColor(Color.BLACK);
       g2.drawRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
       for (String sector : new TreeSet<String>(dk.sectors)) {
-        g2.setColor(Color.GRAY);
+        if (sector.equals(highlightedSector))
+          g2.setColor(Color.red);
+        else
+          g2.setColor(Color.GRAY);
         for (int i = 0; i < sector.length(); i++)
           drawCenteredString(sector.substring(i, i + 1), xx, 2+(i+1) * strh, strw, strh, g2);
         SectorInfo si=new SectorInfo();
@@ -141,6 +153,10 @@ public class InfoCanvasAll extends InfoCanvasBasics {
           //System.out.println("sector="+sector+", interval="+String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20)+
           //        ", step="+sts[comp]+", value="+n);
           int ww=0; //(strw-1)*n/dk.iGlobalMax;
+          if (sector.equals(highlightedSector)) {
+            g2.setColor(new Color(0f,1f,1f,0.1f).darker());
+            g2.fillRect(xx,yy[i],strw-1,yy[i+1]-yy[i]);
+          }
           switch (iRenderingMode) {
             case 0:
               //n=dk.getCount(sector,"CountFlights",i,sts[comp]);
