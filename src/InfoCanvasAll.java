@@ -56,10 +56,50 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       }
     for (CellInfo ci: cellInfos)
       if (ci.r.contains(p)) {
+        String lDelays[]={"no delay","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
+        int iDelays[][]=new int[sts.length][];
+        for (int i=0; i<iDelays.length; i++)
+          iDelays[i]=new int[]{dk.getCount(ci.sector,"CountFlights-noDelay",ci.interval,sts[i]),
+                               dk.getCount(ci.sector,"CountFlights-Delay1to4",ci.interval,sts[i]),
+                               dk.getCount(ci.sector,"CountFlights-Delay5to9",ci.interval,sts[i]),
+                               dk.getCount(ci.sector,"CountFlights-Delay10to29",ci.interval,sts[i]),
+                               dk.getCount(ci.sector,"CountFlights-Delay30to59",ci.interval,sts[i]),
+                               dk.getCount(ci.sector,"CountFlights-DelayOver60",ci.interval,sts[i])};
+        s="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+ci.sector+"</b>, capacity=<b>"+dk.capacities.get(ci.sector)+
+                "</b>, interval=<b>[" +
+                String.format("%02d",ci.interval/3)+":"+String.format("%02d",(ci.interval%3)*20)+".."+
+                String.format("%02d",ci.interval/3+1)+":"+String.format("%02d",(ci.interval%3)*20)+
+                ")</b>\n";
+        s+="<table border=0 width=100%><tr align=center><td></td><td></td>";;
+        for (int i=0; i<sts.length; i++)
+          s+="<td>Step "+sts[i]+"</td>";
+        s+="</tr>";
+        s+="<tr align=center><td>Flights:</td><td></td>";
+        for (int i=0; i<sts.length; i++) {
+          s+="<td>";
+          int demand=dk.getCount(ci.sector,"CountFlights",ci.interval,sts[i]);
+          if (demand>dk.capacities.get(ci.sector))
+            s+="<font color=red>"+demand+"</font> (+"+Math.round(demand*100f/dk.capacities.get(ci.sector)-100)+"%)";
+          else
+            s+=demand;
+          s+="</td>";
+        }
+        s+="</tr><tr align=center><td>Delays:</td><td></td></tr>";
+        for (int i=0; i<lDelays.length; i++) {
+          s+="<tr align=right><td>"+lDelays[i]+"</td>";
+          int rgb=255-64-32*i;
+          s+="<td style=background-color:rgb("+rgb+","+rgb+","+rgb+")>.</td>\n";
+          for (int j=0; j<iDelays.length; j++)
+            s+="<td>"+iDelays[j][i]+"</td>";
+          s+="</tr>";
+        }
+        s+="</table>\n";
+        s+="</body></html>";
+
         highlightedSector=ci.sector;
         plotImageValid=false;
         repaint();
-        s+=ci.sector+", "+ci.interval;
+        //s+=ci.sector+", "+ci.interval;
         return s;
       }
     highlightedSector=null;
