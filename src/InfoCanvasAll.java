@@ -232,8 +232,6 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
               }
               break;
           }
-          g2.setColor(Color.gray);
-          g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
           if (n>capacity) {
             g2.setColor(Color.red);
             ww=(strw-1)*capacity/dk.iGlobalMax;
