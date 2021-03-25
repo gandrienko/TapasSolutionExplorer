@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.util.TreeSet;
 import java.util.Vector;
 
 class CellInfo {
@@ -22,6 +21,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
 
   int sts[]=null; // Steps to Show
   protected String highlightedSector=null;
+  Vector<String> selectedSectors=new Vector(dk.sectors.size());
 
   public InfoCanvasAll (DataKeeper dk) {
     super(dk);
@@ -35,13 +35,13 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     repaint();
   }
 
-  Vector<CellInfo> cells=null;
-  Vector<SectorInfo> sectors=null;
+  Vector<CellInfo> cellInfos =null;
+  Vector<SectorInfo> sectorInfos=null;
 
   public String getToolTipText(MouseEvent me) {
     Point p = new Point(me.getX(), me.getY());
     String s="";
-    for (SectorInfo si:sectors)
+    for (SectorInfo si:sectorInfos)
       if (si.r.contains(p)) {
         highlightedSector=si.sector;
         plotImageValid=false;
@@ -53,7 +53,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           }
         return s;
       }
-    for (CellInfo ci:cells)
+    for (CellInfo ci: cellInfos)
       if (ci.r.contains(p)) {
         highlightedSector=ci.sector;
         plotImageValid=false;
@@ -81,14 +81,14 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     if (plotImage != null)
       g2 = (Graphics2D) plotImage.getGraphics();
 
-    if (sectors==null)
-      sectors=new Vector<>(dk.sectors.size());
+    if (sectorInfos==null)
+      sectorInfos=new Vector<>(dk.sectors.size());
     else
-      sectors.clear();
-    if (cells==null)
-      cells=new Vector<>(dk.sectors.size()*dk.Nintervals);
+      sectorInfos.clear();
+    if (cellInfos ==null)
+      cellInfos =new Vector<>(dk.sectors.size()*dk.Nintervals);
     else
-      cells.clear();
+      cellInfos.clear();
 
     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g2.setColor(Color.white);
@@ -150,7 +150,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         si.sector=sector;
         si.step=sts[comp];
         si.r=new Rectangle(xx,0,strw,yy[0]);
-        sectors.add(si);
+        sectorInfos.add(si);
         Integer cap=dk.capacities.get(sector);
         int capacity=0;
         if (cap!=null)
@@ -199,7 +199,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           ci.step=sts[comp];
           ci.interval=i;
           ci.r=new Rectangle(xx,yy[i],strw,yy[i+1]-yy[i]);
-          cells.add(ci);
+          cellInfos.add(ci);
         }
         xx += strw;
       }

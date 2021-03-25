@@ -11,14 +11,13 @@ public class DataKeeper {
     for (SectorData sd:sectorsWithData)
       sd.compMode=mode;
     Collections.sort(sectorsWithData);
-    //TreeSet<SectorData> treeSet = new TreeSet<SectorData>(sectorsWithData);
     sectorsSorted=new Vector<String>(sectors.size());
     for (SectorData sd:sectorsWithData)
       if (mode.equals(SectorData.comparisonMode[0]))
         sectorsSorted.add(sd.sector);
       else
         sectorsSorted.add(0,sd.sector);
-    System.out.println("Sorted sectors: "+sectorsSorted);
+    //System.out.println("Sorted sectors: "+sectorsSorted);
   }
 
   protected Hashtable<String,Vector<Record>> records=new Hashtable(100000);
