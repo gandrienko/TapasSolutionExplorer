@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.util.TreeSet;
@@ -17,13 +19,15 @@ class SectorInfo {
   int step;
 }
 
-public class InfoCanvasAll extends InfoCanvasBasics {
+public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, MouseMotionListener {
 
   int sts[]=null; // Steps to Show
   protected String highlightedSector=null;
 
   public InfoCanvasAll (DataKeeper dk) {
     super(dk);
+    addMouseListener(this);
+    addMouseMotionListener(this);
   }
 
   public void setSTS (int sts[]) {
@@ -208,6 +212,32 @@ public class InfoCanvasAll extends InfoCanvasBasics {
       // copy the image to the screen
       g.drawImage(plotImage,0, 0,null);
     }
+  }
+
+  protected void doPopup (MouseEvent me) {
+    System.out.println("* popup "+me);
+  }
+  public void mouseEntered (MouseEvent me) {
+  }
+  public void mouseExited (MouseEvent me) {
+    if (highlightedSector!=null) {
+      highlightedSector=null;
+      plotImageValid=false;
+      repaint();
+    }
+  }
+  public void mouseMoved (MouseEvent me) {
+  }
+  public void mouseDragged (MouseEvent me) {
+  }
+  public void mouseClicked (MouseEvent me) {
+    if (me.getButton() == MouseEvent.BUTTON3) {
+      doPopup(me);
+    }
+  }
+  public void mousePressed (MouseEvent me) {
+  }
+  public void mouseReleased (MouseEvent me) {
   }
 
 }
