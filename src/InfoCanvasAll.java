@@ -22,6 +22,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
 
   int sts[]=null; // Steps to Show
   protected String highlightedSector=null;
+  protected int highlightedInterval=-1;
   HashSet<String> selectedSectors=new HashSet<>(dk.sectors.size());
 
   public InfoCanvasAll (DataKeeper dk) {
@@ -45,6 +46,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     for (SectorInfo si:sectorInfos)
       if (si.r.contains(p)) {
         highlightedSector=si.sector;
+        highlightedInterval=-1;
         plotImageValid=false;
         repaint();
         s+=si.sector;
@@ -97,12 +99,14 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         s+="</body></html>";
 
         highlightedSector=ci.sector;
+        highlightedInterval=ci.interval;
         plotImageValid=false;
         repaint();
         //s+=ci.sector+", "+ci.interval;
         return s;
       }
     highlightedSector=null;
+    highlightedInterval=-1;
     plotImageValid=false;
     repaint();
     return s;
@@ -173,8 +177,14 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       for (int i=1; i<dk.sectorsSorted.size(); i++)
         g2.drawLine(xx+lblw+1+i*strw, strh+1, xx+lblw+1+i*strw, yy[yy.length-1]+3);
       g2.setColor(Color.GRAY);
-      for (int i=0; i<dk.Nintervals; i++)
-        drawCenteredString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20),xx+1,yy[i],lblw,yy[i+1]-yy[i],g2);
+      for (int i=0; i<dk.Nintervals; i++) {
+        if (i==highlightedInterval) {
+          g2.setColor(new Color(0f,1f,1f,0.5f));
+          g2.fillRect(xx,yy[i],lblw,yy[i+1]-yy[i]);
+        }
+        g2.setColor(Color.GRAY);
+        drawCenteredString(String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20), xx + 1, yy[i], lblw, yy[i + 1] - yy[i], g2);
+      }
       xx+=lblw+1;
       g2.setColor(new Color(0f,1f,1f,0.1f));
       g2.fillRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
@@ -205,7 +215,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
             g2.setColor(new Color(0f,1f,1f,0.3f));
             g2.fillRect(xx,yy[i],strw-1,yy[i+1]-yy[i]);
           }
-          if (sector.equals(highlightedSector)) {
+          if (i==highlightedInterval || sector.equals(highlightedSector)) {
             g2.setColor(new Color(0f,1f,1f,0.5f));
             g2.fillRect(xx,yy[i],strw-1,yy[i+1]-yy[i]);
           }
@@ -343,6 +353,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   public void mouseExited (MouseEvent me) {
     if (highlightedSector!=null) {
       highlightedSector=null;
+      highlightedInterval=-1;
       plotImageValid=false;
       repaint();
     }
