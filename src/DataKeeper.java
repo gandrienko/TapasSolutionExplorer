@@ -220,6 +220,16 @@ public class DataKeeper {
   }
 */
 
+  public int getCountHotspots (String sector, int step) {
+    int N=0;
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
+    int capacity=capacities.get(sector);
+    for (int interval=0; interval<Nintervals; interval++)
+      if (recsInCells[interval][step].size()>capacity)
+        N++;
+    return N;
+  }
+
   public int getCount (String sector, String operation, int step) {
     int N=0;
     Hashtable<String,Integer> flights=new Hashtable<>(100);

@@ -52,14 +52,40 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         s+=si.sector;
         for (SectorData sd:dk.sectorsWithData)
           if (sd.sector.equals(si.sector)) {
-            s+=", nfl = "+sd.Nflights+",also "+dk.getCount(si.sector,"CountFlights",si.step)+
-                    ", no_delay:"+dk.getCount(si.sector,"CountFlights-noDelay",si.step)+
-                    ", delays: "+dk.getCount(si.sector,"CountFlights-Delay1to4",si.step)+
-                    ", "+dk.getCount(si.sector,"CountFlights-Delay5to9",si.step)+
-                    ", "+dk.getCount(si.sector,"CountFlights-Delay10to29",si.step)+
-                    ", "+dk.getCount(si.sector,"CountFlights-Delay30to59",si.step)+
-                    ", "+dk.getCount(si.sector,"CountFlights-DelayOver60",si.step)+
-                    ",\n Nhotspots = "+sd.Nhotspots_all+" (all), "+sd.Nhotspots_step0+" (step 0), "+sd.Nhotspots_stepLast+" (last step)";
+            String lDelays[]={"no delay","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
+            int iDelays[][]=new int[sts.length][];
+            for (int i=0; i<iDelays.length; i++)
+              iDelays[i]=new int[]{dk.getCount(si.sector,"CountFlights-noDelay",sts[i]),
+                      dk.getCount(si.sector,"CountFlights-Delay1to4",sts[i]),
+                      dk.getCount(si.sector,"CountFlights-Delay5to9",sts[i]),
+                      dk.getCount(si.sector,"CountFlights-Delay10to29",sts[i]),
+                      dk.getCount(si.sector,"CountFlights-Delay30to59",sts[i]),
+                      dk.getCount(si.sector,"CountFlights-DelayOver60",sts[i])};
+            s="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+si.sector+"</b>, capacity=<b>"+dk.capacities.get(si.sector)+
+                    "</b>\n";
+            s+="<table border=0 width=100%><tr align=center><td></td><td></td>";
+            for (int i=0; i<sts.length; i++)
+              s+="<td>Step "+sts[i]+"</td>";
+            s+="</tr>";
+            s+="<tr align=center><td>Hotspots:</td><td></td>";
+            for (int i=0; i<sts.length; i++)
+              s+="<td>"+dk.getCountHotspots(si.sector,sts[i])+"</td>";
+            s+="</tr>";
+            s+="<tr align=center><td>Flights:</td><td></td>";
+            for (int i=0; i<sts.length; i++)
+              s+="<td>"+dk.getCount(si.sector,"CountFlights",sts[i])+"</td>";
+            s+="</tr>";
+            s+="</tr><tr align=center><td>Delays:</td><td></td></tr>";
+            for (int i=0; i<lDelays.length; i++) {
+              s+="<tr align=right><td>"+lDelays[i]+"</td>";
+              int rgb=255-64-32*i;
+              s+="<td style=background-color:rgb("+rgb+","+rgb+","+rgb+")>.</td>\n";
+              for (int j=0; j<iDelays.length; j++)
+                s+="<td>"+iDelays[j][i]+"</td>";
+              s+="</tr>";
+            }
+            s+="</table>\n";
+            s+="</body></html>";
           }
         return s;
       }
@@ -79,7 +105,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
                 String.format("%02d",ci.interval/3)+":"+String.format("%02d",(ci.interval%3)*20)+".."+
                 String.format("%02d",ci.interval/3+1)+":"+String.format("%02d",(ci.interval%3)*20)+
                 ")</b>\n";
-        s+="<table border=0 width=100%><tr align=center><td></td><td></td>";;
+        s+="<table border=0 width=100%><tr align=center><td></td><td></td>";
         for (int i=0; i<sts.length; i++)
           s+="<td>Step "+sts[i]+"</td>";
         s+="</tr>";
