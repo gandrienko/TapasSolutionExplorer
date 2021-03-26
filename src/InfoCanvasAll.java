@@ -52,7 +52,14 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         s+=si.sector;
         for (SectorData sd:dk.sectorsWithData)
           if (sd.sector.equals(si.sector)) {
-            s+=", nfl = "+sd.Nflights+", Nhotspots = "+sd.Nhotspots_all+" (all), "+sd.Nhotspots_step0+" (step 0), "+sd.Nhotspots_stepLast+" (last step)";
+            s+=", nfl = "+sd.Nflights+",also "+dk.getCount(si.sector,"CountFlights",si.step)+
+                    ", no_delay:"+dk.getCount(si.sector,"CountFlights-noDelay",si.step)+
+                    ", delays: "+dk.getCount(si.sector,"CountFlights-Delay1to4",si.step)+
+                    ", "+dk.getCount(si.sector,"CountFlights-Delay5to9",si.step)+
+                    ", "+dk.getCount(si.sector,"CountFlights-Delay10to29",si.step)+
+                    ", "+dk.getCount(si.sector,"CountFlights-Delay30to59",si.step)+
+                    ", "+dk.getCount(si.sector,"CountFlights-DelayOver60",si.step)+
+                    ",\n Nhotspots = "+sd.Nhotspots_all+" (all), "+sd.Nhotspots_step0+" (step 0), "+sd.Nhotspots_stepLast+" (last step)";
           }
         return s;
       }

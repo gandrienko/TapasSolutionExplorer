@@ -220,45 +220,83 @@ public class DataKeeper {
   }
 */
 
-  public int getCount (String sector, String operation, int i, int j) {
-    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
+  public int getCount (String sector, String operation, int step) {
+    int N=0;
+    Hashtable<String,Integer> flights=new Hashtable<>(100);
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
+    for (int interval=0; interval<Nintervals; interval++)
+      for (Record r:recsInCells[interval][step])
+        if (!flights.containsKey(r.flight))
+          flights.put(r.flight,new Integer(r.delay));
+    if ("CountFlights".equals(operation))
+      N=flights.size();
+    if ("CountFlights-noDelay".equals(operation))
+      for (String flight:flights.keySet())
+        if (flights.get(flight).intValue()==0)
+          N++;
+    if ("CountFlights-Delay1to4".equals(operation))
+      for (String flight:flights.keySet())
+        if (flights.get(flight).intValue()>0 && flights.get(flight).intValue()<5)
+          N++;
+    if ("CountFlights-Delay5to9".equals(operation))
+      for (String flight:flights.keySet())
+        if (flights.get(flight).intValue()>=5 && flights.get(flight).intValue()<=9)
+          N++;
+    if ("CountFlights-Delay10to29".equals(operation))
+      for (String flight:flights.keySet())
+        if (flights.get(flight).intValue()>=10 && flights.get(flight).intValue()<=29)
+          N++;
+    if ("CountFlights-Delay30to59".equals(operation))
+      for (String flight:flights.keySet())
+        if (flights.get(flight).intValue()>=30 && flights.get(flight).intValue()<=59)
+          N++;
+    if ("CountFlights-DelayOver60".equals(operation))
+      for (String flight:flights.keySet())
+        if (flights.get(flight).intValue()>=60)
+          N++;
+
+    return N;
+  }
+
+  public int getCount (String sector, String operation, int interval, int step) {
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
     int N=-1;
     if ("CountFlights".equals(operation))
-      N=recsInCells[i][j].size();
+      N=recsInCells[interval][step].size();
     if ("CountFlights-noDelay".equals(operation)) {
       N=0;
-      for (int k=0; k<recsInCells[i][j].size(); k++)
-        if (recsInCells[i][j].elementAt(k).delay==0)
+      for (int k=0; k<recsInCells[interval][step].size(); k++)
+        if (recsInCells[interval][step].elementAt(k).delay==0)
           N++;
     }
     if ("CountFlights-Delay1to4".equals(operation)) {
       N=0;
-      for (int k=0; k<recsInCells[i][j].size(); k++)
-        if (recsInCells[i][j].elementAt(k).delay>0 && recsInCells[i][j].elementAt(k).delay<5)
+      for (int k=0; k<recsInCells[interval][step].size(); k++)
+        if (recsInCells[interval][step].elementAt(k).delay>0 && recsInCells[interval][step].elementAt(k).delay<5)
           N++;
     }
     if ("CountFlights-Delay5to9".equals(operation)) {
       N=0;
-      for (int k=0; k<recsInCells[i][j].size(); k++)
-        if (recsInCells[i][j].elementAt(k).delay>=5 && recsInCells[i][j].elementAt(k).delay<=9)
+      for (int k=0; k<recsInCells[interval][step].size(); k++)
+        if (recsInCells[interval][step].elementAt(k).delay>=5 && recsInCells[interval][step].elementAt(k).delay<=9)
           N++;
     }
     if ("CountFlights-Delay10to29".equals(operation)) {
       N=0;
-      for (int k=0; k<recsInCells[i][j].size(); k++)
-        if (recsInCells[i][j].elementAt(k).delay>=10 && recsInCells[i][j].elementAt(k).delay<=29)
+      for (int k=0; k<recsInCells[interval][step].size(); k++)
+        if (recsInCells[interval][step].elementAt(k).delay>=10 && recsInCells[interval][step].elementAt(k).delay<=29)
           N++;
     }
     if ("CountFlights-Delay30to59".equals(operation)) {
       N=0;
-      for (int k=0; k<recsInCells[i][j].size(); k++)
-        if (recsInCells[i][j].elementAt(k).delay>=30 && recsInCells[i][j].elementAt(k).delay<=59)
+      for (int k=0; k<recsInCells[interval][step].size(); k++)
+        if (recsInCells[interval][step].elementAt(k).delay>=30 && recsInCells[interval][step].elementAt(k).delay<=59)
           N++;
     }
     if ("CountFlights-DelayOver60".equals(operation)) {
       N=0;
-      for (int k=0; k<recsInCells[i][j].size(); k++)
-        if (recsInCells[i][j].elementAt(k).delay>=60)
+      for (int k=0; k<recsInCells[interval][step].size(); k++)
+        if (recsInCells[interval][step].elementAt(k).delay>=60)
           N++;
     }
     return N;
