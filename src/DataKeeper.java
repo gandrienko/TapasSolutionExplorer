@@ -149,8 +149,9 @@ public class DataKeeper {
       Hashtable<String,Integer> allFlightsAtStep=new Hashtable<>(500);
       for (String sector:sectors) {
         Vector<Record> vr=records.get(sector+"_"+step);
-        if (vr.size()>capacities.get(sector))
-          stepsInfo[step][0]+=1; // ToDo: this is rong; to be re-calculated in a different way!!!
+        for (int interval=0; interval<Nintervals; interval++)
+        if (getCount(sector,"CountFlights",interval,step)>capacities.get(sector))
+          stepsInfo[step][0]+=1;
         for (Record r:vr)
           if (!allFlightsAtStep.containsKey(r.flight))
             allFlightsAtStep.put(r.flight,new Integer(r.delay));
@@ -176,8 +177,8 @@ public class DataKeeper {
           stepsInfo[step][7]++;
       }
     }
-    //for (int i=0; i<Nsteps; i++)
-    //System.out.println("step="+i+stepsInfo[i]);
+    for (int i=0; i<Nsteps; i++)
+      System.out.println("step="+i+stepsInfo[i]);
 
   }
 
