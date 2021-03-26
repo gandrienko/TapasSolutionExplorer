@@ -139,6 +139,48 @@ public class DataKeeper {
     sortSectors(SectorData.comparisonMode[0]);
   }
 
+  public int stepsInfo[][]=null; // 0: nHotspots; 1: nFlights; 2..7: nFlightsDelay0,1_4,5_9,10-29,30_59,over60;
+  public void calcFeaturesOfSteps() {
+    stepsInfo=new int[Nsteps][];
+    for (int step=0; step<Nsteps; step++) {
+      stepsInfo[step] = new int[8];
+      for (int i=0; i<stepsInfo[step].length; i++)
+        stepsInfo[step][i]=0;
+      Hashtable<String,Integer> allFlightsAtStep=new Hashtable<>(500);
+      for (String sector:sectors) {
+        Vector<Record> vr=records.get(sector+"_"+step);
+        if (vr.size()>capacities.get(sector))
+          stepsInfo[step][0]+=1; // ToDo: this is rong; to be re-calculated in a different way!!!
+        for (Record r:vr)
+          if (!allFlightsAtStep.containsKey(r.flight))
+            allFlightsAtStep.put(r.flight,new Integer(r.delay));
+      }
+      stepsInfo[step][1]=allFlightsAtStep.size();
+      for (String flight:allFlightsAtStep.keySet()) {
+        int delay=allFlightsAtStep.get(flight);
+        if (delay==0)
+          stepsInfo[step][2]++;
+        else
+        if (delay>=1 && delay <=4)
+          stepsInfo[step][3]++;
+        else
+        if (delay>=5 && delay<=9)
+          stepsInfo[step][4]++;
+        else
+        if (delay>=10 && delay<=29)
+          stepsInfo[step][5]++;
+        else
+        if (delay>=30 && delay<=59)
+          stepsInfo[step][6]++;
+        else
+          stepsInfo[step][7]++;
+      }
+    }
+    //for (int i=0; i<Nsteps; i++)
+    //System.out.println("step="+i+stepsInfo[i]);
+
+  }
+
   public void aggregate (String sector) {
     aggregate(sector,true);
   }
@@ -400,6 +442,7 @@ public class DataKeeper {
     readCapacities(filename_capacities);
     readData(filename_data);
     aggregateAll();
+    calcFeaturesOfSteps();
   }
 
 }
