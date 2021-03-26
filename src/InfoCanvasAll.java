@@ -299,6 +299,13 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     }
   }
 
+  protected String findSectorByPoint (Point p) {
+    for (SectorInfo si:sectorInfos)
+      if (si.r.contains(p))
+        return si.sector;
+    return null;
+  }
+
   protected void doPopup (MouseEvent me) {
     //System.out.println("* popup "+me);
     JPopupMenu menu=new JPopupMenu();
@@ -378,6 +385,23 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         }
       });
       menu.add(cbitem);
+    }
+    String sector=findSectorByPoint(me.getPoint());
+    if (sector!=null) {
+      item=new JMenuItem("Select sectors connected with "+sector);
+      item.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          Vector<String> connectedSectors=dk.getConnectedSectors(sector);
+          for (String cs:connectedSectors)
+            selectedSectors.add(cs);
+          dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
+          plotImageValid=false;
+          repaint();
+        }
+      });
+      menu.add(item);
+
     }
     menu.show(this,me.getX(),me.getY());
   }
