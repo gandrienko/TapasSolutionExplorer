@@ -51,22 +51,25 @@ public class InfoSteps extends JPanel {
 
     int min[]=new int[2], max[]=new int[2];
     for (int i=0; i<2; i++) {
-      min[i]=0; max[i]=0;
+      min[i]=-1; max[i]=-1;
     }
     for (int step=0; step<dk.stepsInfo.length; step++)
       for (int i=0; i<2; i++) {
-        if (dk.stepsInfo[step][i]<min[i])
+        if (min[i]==-1 || dk.stepsInfo[step][i]<min[i])
           min[i]=dk.stepsInfo[step][i];
-        if (dk.stepsInfo[step][i]>max[i])
+        if (max[i]==-1 || dk.stepsInfo[step][i]>max[i])
           max[i]=dk.stepsInfo[step][i];
       }
 
     for (int step=0; step<dk.stepsInfo.length; step++) {
       for (int i=0; i<2; i++) {
         float f=(dk.stepsInfo[step][i]-min[i])*1f/(max[i]-min[i]);
-        g2.setColor(new Color(f,0,0,0.5f+f/2));
+        g2.setColor(new Color((float)(0.2f+0.8*f),0f,0f,0.5f+f/2));
         g2.fillRect(x0+step*w,yy[i],w,h);
       }
+      float sum=dk.stepsInfo[step][2];
+      for (int i=3; i<dk.stepsInfo[step].length; i++)
+        sum+=dk.stepsInfo[step][i];
     }
   }
 }
