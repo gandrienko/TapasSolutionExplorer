@@ -139,7 +139,7 @@ public class DataKeeper {
     sortSectors(SectorData.comparisonMode[0]);
   }
 
-  public int stepsInfo[][]=null; // 0: nHotspots; 1: nFlights; 2..7: nFlightsDelay0,1_4,5_9,10-29,30_59,over60;
+  public int stepsInfo[][]=null; // 0: nHotspots; 1: n sectors with hotspots ; 2..7: nFlightsDelay0,1_4,5_9,10-29,30_59,over60;
   public void calcFeaturesOfSteps() {
     stepsInfo=new int[Nsteps][];
     for (int step=0; step<Nsteps; step++) {
@@ -149,14 +149,18 @@ public class DataKeeper {
       Hashtable<String,Integer> allFlightsAtStep=new Hashtable<>(500);
       for (String sector:sectors) {
         Vector<Record> vr=records.get(sector+"_"+step);
+        boolean bSectorHasHotspot=false;
         for (int interval=0; interval<Nintervals; interval++)
-        if (getCount(sector,"CountFlights",interval,step)>capacities.get(sector))
-          stepsInfo[step][0]+=1;
+          if (getCount(sector,"CountFlights",interval,step)>capacities.get(sector)) {
+            stepsInfo[step][0]+=1;
+            bSectorHasHotspot=true;
+          }
+        if (bSectorHasHotspot)
+          stepsInfo[step][1]+=1;
         for (Record r:vr)
           if (!allFlightsAtStep.containsKey(r.flight))
             allFlightsAtStep.put(r.flight,new Integer(r.delay));
       }
-      stepsInfo[step][1]=allFlightsAtStep.size();
       for (String flight:allFlightsAtStep.keySet()) {
         int delay=allFlightsAtStep.get(flight);
         if (delay==0)

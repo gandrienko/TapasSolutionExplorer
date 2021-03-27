@@ -392,6 +392,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       item.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+          selectedSectors.add(sector);
           Vector<String> connectedSectors=dk.getConnectedSectors(sector);
           for (String cs:connectedSectors)
             selectedSectors.add(cs);
