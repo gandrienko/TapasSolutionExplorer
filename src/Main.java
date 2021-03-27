@@ -1,3 +1,5 @@
+import javafx.scene.control.SplitPane;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
@@ -24,9 +26,16 @@ public class Main {
     frame = new JFrame("TAPAS Solution Explorer: all sectors");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     InfoCanvasAll icAll=new InfoCanvasAll(dk);
+    InfoSteps is=new InfoSteps(dk);
     cp=new ControlPanel(dk,icAll);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
-    frame.getContentPane().add(icAll, BorderLayout.CENTER);
+    JSplitPane splitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,icAll,is);
+    splitPane.setOneTouchExpandable(true);
+    splitPane.setDividerLocation(1000);
+    icAll.setMinimumSize(new Dimension(1000,750));
+    is.setMinimumSize(new Dimension(1000,0));
+    frame.getContentPane().add(splitPane, BorderLayout.CENTER);
+
 
     //Display the window.
     frame.pack();
