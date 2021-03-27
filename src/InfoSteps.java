@@ -26,7 +26,9 @@ public class InfoSteps extends JPanel {
       s+="step: "+step;
       for (int i = 0; i < 2; i++)
         s+=", "+i+"="+dk.stepsInfo[step][i];
-
+      s+="; counts:";
+      for (int i=2; i<dk.stepsInfo[step].length; i++)
+        s+=dk.stepsInfo[step][i]+",";
     }
     return s;
   }
@@ -70,6 +72,16 @@ public class InfoSteps extends JPanel {
       float sum=dk.stepsInfo[step][2];
       for (int i=3; i<dk.stepsInfo[step].length; i++)
         sum+=dk.stepsInfo[step][i];
+      float ff[]=new float[dk.stepsInfo[step].length-2];
+      ff[0]=dk.stepsInfo[step][2];
+      for (int i=1; i<ff.length; i++)
+        ff[i]=ff[i-1]+dk.stepsInfo[step][2+i];
+      for (int i=ff.length-1; i>=0; i--) {
+        int hh=Math.round(h*4*ff[i]/sum);
+        int rgb=255-64-32*i;
+        g2.setColor(new Color(rgb,rgb,rgb));
+        g2.fillRect(x0+step*w,yy[2],w,hh);
+      }
     }
   }
 }
