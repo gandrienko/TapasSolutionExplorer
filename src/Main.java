@@ -31,7 +31,7 @@ public class Main {
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
     JSplitPane splitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,icAll,is);
     splitPane.setOneTouchExpandable(true);
-    splitPane.setDividerLocation(900);
+    splitPane.setDividerLocation(0.1);
     icAll.setMinimumSize(new Dimension(1000,750));
     is.setMinimumSize(new Dimension(1000,103));
     frame.getContentPane().add(splitPane, BorderLayout.CENTER);
