@@ -51,17 +51,23 @@ public class InfoSteps extends JPanel {
     g2.drawRect(x0,yy[1],W,h);
     g2.drawRect(x0,yy[2],W,h*4);
 
-    int min[]=new int[2], max[]=new int[2];
+    int min[]=new int[2], max[]=new int[2], maxNdelayed=0;
     for (int i=0; i<2; i++) {
       min[i]=-1; max[i]=-1;
     }
-    for (int step=0; step<dk.stepsInfo.length; step++)
-      for (int i=0; i<2; i++) {
-        if (min[i]==-1 || dk.stepsInfo[step][i]<min[i])
-          min[i]=dk.stepsInfo[step][i];
-        if (max[i]==-1 || dk.stepsInfo[step][i]>max[i])
-          max[i]=dk.stepsInfo[step][i];
+    for (int step=0; step<dk.stepsInfo.length; step++) {
+      for (int i = 0; i < 2; i++) {
+        if (min[i] == -1 || dk.stepsInfo[step][i] < min[i])
+          min[i] = dk.stepsInfo[step][i];
+        if (max[i] == -1 || dk.stepsInfo[step][i] > max[i])
+          max[i] = dk.stepsInfo[step][i];
       }
+      int nDelayed=0;
+      for (int i=3; i<dk.stepsInfo[step].length; i++)
+        nDelayed+=dk.stepsInfo[step][i];
+      if (nDelayed>maxNdelayed)
+        maxNdelayed=nDelayed;
+    }
 
     for (int step=0; step<dk.stepsInfo.length; step++) {
       for (int i=0; i<2; i++) {
@@ -69,18 +75,18 @@ public class InfoSteps extends JPanel {
         g2.setColor(new Color((float)(0.2f+0.8*f),0f,0f,0.5f+f/2));
         g2.fillRect(x0+step*w,yy[i],w,h);
       }
-      float sum=dk.stepsInfo[step][2];
-      for (int i=3; i<dk.stepsInfo[step].length; i++)
-        sum+=dk.stepsInfo[step][i];
-      float ff[]=new float[dk.stepsInfo[step].length-2];
-      ff[0]=dk.stepsInfo[step][2];
+      //float sum=dk.stepsInfo[step][2];
+      //for (int i=3; i<dk.stepsInfo[step].length; i++)
+        //sum+=dk.stepsInfo[step][i];
+      float ff[]=new float[dk.stepsInfo[step].length-3];
+      ff[0]=dk.stepsInfo[step][3];
       for (int i=1; i<ff.length; i++)
-        ff[i]=ff[i-1]+dk.stepsInfo[step][2+i];
+        ff[i]=ff[i-1]+dk.stepsInfo[step][3+i];
       for (int i=ff.length-1; i>=0; i--) {
-        int hh=Math.round(h*4*ff[i]/sum);
+        int hh=Math.round(h*4*ff[i]/maxNdelayed);
         int rgb=255-64-32*i;
         g2.setColor(new Color(rgb,rgb,rgb));
-        g2.fillRect(x0+step*w,yy[2],w,hh);
+        g2.fillRect(x0+step*w,yy[2]+4*h-hh,w,hh);
       }
     }
   }
