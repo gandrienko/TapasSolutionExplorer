@@ -34,7 +34,7 @@ public class InfoSteps extends JPanel {
         sum+=dk.stepsInfo[step][i];
       s+="<tr align=right><td>Flights: total</td><td></td><td>"+sum+"</td><td>100 %</td></tr>\n";
       for (int i=3; i<dk.stepsInfo[step].length; i++) {
-        int rgb=255-64-32*(i-3);
+        int rgb=(i==3)? 255: 255-64-32*(i-4);
         s += "<tr align=right><td>" + lDelays[i-3] + "</td><td style=background-color:rgb("+rgb+","+rgb+","+rgb+")>.</td><td>" +
                 dk.stepsInfo[step][i] + "</td><td>" +
                 dk.stepsInfo[step][i] * 100 / sum + " %</td></tr>\n";
