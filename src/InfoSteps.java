@@ -19,16 +19,25 @@ public class InfoSteps extends JPanel {
   public String getToolTipText(MouseEvent me) {
     int x=me.getX(), y=me.getY();
     String s="";
+    String lDelays[]={"no delay","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
     if (x>=x0 && x<=x0+W) {
       int step = (x - x0) / w;
       if (step>dk.Nsteps-1)
         step=dk.Nsteps-1;
-      s+="step: "+step;
-      for (int i = 0; i < 2; i++)
-        s+=", "+i+"="+dk.stepsInfo[step][i];
-      s+="; counts:";
+      s="<html><body style=background-color:rgb(255,255,204)>\n<table border=0 width=100%><tr align=center><td></td><td>count</td><td>%</td></tr>";
+      s+="<tr align=right><td>step</td><td>"+step+"</td></tr>\n";
+      s+="<tr align=right><td>N hotspots</td><td>"+dk.stepsInfo[step][0]+"</td></tr>\n";
+      s+="<tr align=right><td>N sectors with hotspots</td><td>"+dk.stepsInfo[step][1]+"</td></tr>\n";
+      int sum=0;
       for (int i=2; i<dk.stepsInfo[step].length; i++)
-        s+=dk.stepsInfo[step][i]+",";
+        sum+=dk.stepsInfo[step][i];
+      s+="<tr align=right><td>Flights: total</td><td>"+sum+"</td><td>100 %</td></tr>\n";
+      for (int i=2; i<dk.stepsInfo[step].length; i++)
+        s+="<tr align=right><td>"+lDelays[i-2]+"</td><td>"+dk.stepsInfo[step][i]+"</td><td>"+dk.stepsInfo[step][i]*100/sum+" %</td></tr>";
+      s+="</table>\n</body></html>";
+    }
+    else {
+      s="<html><body><b>Point</b> on step to get info<p><b>Click</b> on step to select/deselect its presentation in the panel above</body></html>";
     }
     return s;
   }
