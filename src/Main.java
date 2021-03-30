@@ -28,7 +28,7 @@ public class Main {
     InfoCanvasAll icAll=new InfoCanvasAll(dk);
     int sts[]=new int[]{0,dk.Nsteps-1};
     icAll.setSTS(sts);
-    InfoSteps is=new InfoSteps(dk);
+    InfoSteps is=new InfoSteps(dk,icAll);
     is.setSelectedSteps(icAll.getSTS());
     cp=new ControlPanel(dk,icAll);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);

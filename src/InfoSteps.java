@@ -1,16 +1,20 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.HashSet;
 
-public class InfoSteps extends JPanel {
+public class InfoSteps extends JPanel implements MouseListener {
 
   DataKeeper dk=null;
   HashSet<Integer> selectedSteps=null;
+  InfoCanvasAll icAll=null;
 
-  public InfoSteps (DataKeeper dk) {
+  public InfoSteps (DataKeeper dk, InfoCanvasAll icAll) {
     this.dk=dk;
+    this.icAll=icAll;
     ToolTipManager.sharedInstance().registerComponent(this);
+    addMouseListener(this);
   }
 
   public void setSelectedSteps (HashSet<Integer> selectedSteps) {
@@ -91,6 +95,10 @@ public class InfoSteps extends JPanel {
     }
 
     for (int step=0; step<dk.stepsInfo.length; step++) {
+      if (selectedSteps.contains(new Integer(step))) {
+        g2.setColor(Color.cyan);
+        g2.drawRect(x0+step*w,0,w,getHeight()-1);
+      }
       for (int i=0; i<min.length; i++) {
         float f=(dk.stepsInfo[step][i]-min[i])*1f/(max[i]-min[i]);
         g2.setColor(new Color((float)(0.2f+0.4*f),0f,0f,0.5f+f/2));
@@ -111,4 +119,38 @@ public class InfoSteps extends JPanel {
       }
     }
   }
+
+  public void mouseClicked (MouseEvent me) {
+    int x=me.getX(), y=me.getY();
+    if (x>=x0 && x<=x0+W) {
+      int step = (x - x0) / w;
+      if (step > dk.Nsteps - 1)
+        step = dk.Nsteps - 1;
+      boolean updateNeeded=false;
+      if (selectedSteps.contains(new Integer(step))) { // remove, if not the only one
+        if (selectedSteps.size()>1) {
+          selectedSteps.remove(new Integer(step));
+          updateNeeded=true;
+        }
+      }
+      else { // add
+        selectedSteps.add(new Integer(step));
+        updateNeeded=true;
+      }
+      if (updateNeeded) {
+        repaint();
+        int sts[]=new int[selectedSteps.size()], n=0;
+        for (Integer s:selectedSteps) {
+          sts[n] = s.intValue();
+          n++;
+        }
+        icAll.setSTS(sts);
+      }
+    }
+  }
+  public void mouseEntered (MouseEvent me) {}
+  public void mouseExited (MouseEvent me) {}
+  public void mousePressed (MouseEvent me) {}
+  public void mouseReleased (MouseEvent me) {}
+
 }
