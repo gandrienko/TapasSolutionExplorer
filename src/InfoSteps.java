@@ -98,6 +98,8 @@ public class InfoSteps extends JPanel implements MouseListener {
       if (selectedSteps.contains(new Integer(step))) {
         g2.setColor(Color.cyan);
         g2.drawRect(x0+step*w,0,w,getHeight()-1);
+        g2.drawRect(x0+step*w,yy[2]-3,w,4);
+        g2.drawRect(x0+step*w,yy[3]-3,w,4);
       }
       for (int i=0; i<min.length; i++) {
         float f=(dk.stepsInfo[step][i]-min[i])*1f/(max[i]-min[i]);
