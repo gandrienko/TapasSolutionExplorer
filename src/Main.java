@@ -26,7 +26,10 @@ public class Main {
     frame = new JFrame("TAPAS Solution Explorer: all sectors");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     InfoCanvasAll icAll=new InfoCanvasAll(dk);
+    int sts[]=new int[]{0,dk.Nsteps-1};
+    icAll.setSTS(sts);
     InfoSteps is=new InfoSteps(dk);
+    is.setSelectedSteps(icAll.getSTS());
     cp=new ControlPanel(dk,icAll);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
     JSplitPane splitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,icAll,is);

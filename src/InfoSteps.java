@@ -1,14 +1,20 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
 
 public class InfoSteps extends JPanel {
 
   DataKeeper dk=null;
+  HashSet<Integer> selectedSteps=null;
 
   public InfoSteps (DataKeeper dk) {
     this.dk=dk;
     ToolTipManager.sharedInstance().registerComponent(this);
+  }
+
+  public void setSelectedSteps (HashSet<Integer> selectedSteps) {
+    this.selectedSteps=selectedSteps;
   }
 
   int w,W,x0;

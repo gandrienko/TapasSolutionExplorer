@@ -36,6 +36,12 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     plotImageValid=false;
     repaint();
   }
+  public HashSet<Integer> getSTS() {
+    HashSet<Integer> hSTS=new HashSet<>(sts.length);
+    for (int i=0; i<sts.length; i++)
+      hSTS.add(new Integer(sts[i]));
+    return hSTS;
+  }
 
   Vector<CellInfo> cellInfos =null;
   Vector<SectorInfo> sectorInfos=null;
