@@ -24,8 +24,8 @@ public class InfoSteps extends JPanel {
       int step = (x - x0) / w;
       if (step>dk.Nsteps-1)
         step=dk.Nsteps-1;
-      s="<html><body style=background-color:rgb(255,255,204)>\n<table border=0 width=100%><tr align=center><td></td><td></td><td>count</td><td>%</td></tr>";
-      s+="<tr align=right><td>step</td><td></td><td>"+step+"</td></tr>\n";
+      s="<html><body style=background-color:rgb(255,255,204)>\n<table border=0 width=100%><tr align=center><td>Step = "+step+"</td><td></td><td>count</td><td>%</td></tr>";
+      //s+="<tr align=right><td>step</td><td></td><td>"+step+"</td></tr>\n";
       s+="<tr align=right><td>N hotspots</td><td></td><td>"+dk.stepsInfo[step][0]+"</td></tr>\n";
       s+="<tr align=right><td>N sectors with hotspots</td><td></td><td>"+dk.stepsInfo[step][1]+"</td></tr>\n";
       s+="<tr align=right><td>total delay</td><td></td><td>"+dk.stepsInfo[step][2]+"</td></tr>\n";
@@ -87,7 +87,7 @@ public class InfoSteps extends JPanel {
     for (int step=0; step<dk.stepsInfo.length; step++) {
       for (int i=0; i<min.length; i++) {
         float f=(dk.stepsInfo[step][i]-min[i])*1f/(max[i]-min[i]);
-        g2.setColor(new Color((float)(0.2f+0.8*f),0f,0f,0.5f+f/2));
+        g2.setColor(new Color((float)(0.2f+0.4*f),0f,0f,0.5f+f/2));
         g2.fillRect(x0+step*w,yy[i],w,h);
       }
       //float sum=dk.stepsInfo[step][2];
