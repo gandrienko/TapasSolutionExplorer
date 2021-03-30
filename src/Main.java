@@ -33,7 +33,7 @@ public class Main {
     splitPane.setOneTouchExpandable(true);
     splitPane.setDividerLocation(0.1);
     icAll.setMinimumSize(new Dimension(1000,750));
-    is.setMinimumSize(new Dimension(1000,103));
+    is.setMinimumSize(new Dimension(1000,123));
     frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 
 

@@ -139,13 +139,13 @@ public class DataKeeper {
     sortSectors(SectorData.comparisonMode[0]);
   }
 
-  public int stepsInfo[][]=null; // 0: nHotspots; 1: n sectors with hotspots ; 2..7: nFlightsDelay0,1_4,5_9,10-29,30_59,over60;
+  public int stepsInfo[][]=null; // 0: nHotspots; 1: n sectors with hotspots ; 2: total delay; 3..8: nFlightsDelay0,1_4,5_9,10-29,30_59,over60;
   public void calcFeaturesOfSteps() {
     if (stepsInfo==null)
       stepsInfo=new int[Nsteps][];
     for (int step=0; step<Nsteps; step++) {
       if (stepsInfo[step]==null)
-        stepsInfo[step] = new int[8];
+        stepsInfo[step] = new int[9];
       for (int i=0; i<stepsInfo[step].length; i++)
         stepsInfo[step][i]=0;
       Hashtable<String,Integer> allFlightsAtStep=new Hashtable<>(500);
@@ -165,22 +165,23 @@ public class DataKeeper {
       }
       for (String flight:allFlightsAtStep.keySet()) {
         int delay=allFlightsAtStep.get(flight);
+        stepsInfo[step][2]+=delay;
         if (delay==0)
-          stepsInfo[step][2]++;
-        else
-        if (delay>=1 && delay<=4)
           stepsInfo[step][3]++;
         else
-        if (delay>=5 && delay<=9)
+        if (delay>=1 && delay<=4)
           stepsInfo[step][4]++;
         else
-        if (delay>=10 && delay<=29)
+        if (delay>=5 && delay<=9)
           stepsInfo[step][5]++;
         else
-        if (delay>=30 && delay<=59)
+        if (delay>=10 && delay<=29)
           stepsInfo[step][6]++;
         else
+        if (delay>=30 && delay<=59)
           stepsInfo[step][7]++;
+        else
+          stepsInfo[step][8]++;
       }
     }
     //for (int i=0; i<Nsteps; i++)
