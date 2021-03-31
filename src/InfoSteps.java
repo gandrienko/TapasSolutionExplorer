@@ -2,7 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 public class InfoSteps extends JPanel implements MouseListener {
 
@@ -146,7 +150,8 @@ public class InfoSteps extends JPanel implements MouseListener {
       if (updateNeeded) {
         repaint();
         int sts[]=new int[selectedSteps.size()], n=0;
-        for (Integer s:selectedSteps) {
+        TreeSet<Integer> treeSet = new TreeSet<Integer>(selectedSteps);
+        for (Integer s:treeSet) {
           sts[n] = s.intValue();
           n++;
         }
