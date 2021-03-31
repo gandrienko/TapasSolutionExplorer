@@ -25,6 +25,10 @@ public class InfoSteps extends JPanel implements MouseListener {
   int h=15;
   int yy[]=new int[]{3,20,40};
 
+  public Dimension getPreferredSize() {
+    return new Dimension(1000,123);
+  }
+
   @Override
   public String getToolTipText(MouseEvent me) {
     int x=me.getX(), y=me.getY();

@@ -32,13 +32,18 @@ public class Main {
     is.setSelectedSteps(icAll.getSTS());
     cp=new ControlPanel(dk,icAll);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
-    JSplitPane splitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,icAll,is);
-    splitPane.setOneTouchExpandable(true);
-    splitPane.setDividerLocation(0.1);
-    icAll.setMinimumSize(new Dimension(1000,750));
-    is.setMinimumSize(new Dimension(1000,123));
-    frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 
+    JPanel p=new JPanel(new BorderLayout());
+    p.add(icAll,BorderLayout.CENTER);
+    p.add(is,BorderLayout.SOUTH);
+
+    //JSplitPane splitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,icAll,is);
+    //splitPane.setOneTouchExpandable(true);
+    //splitPane.setDividerLocation(0.1);
+    //icAll.setMinimumSize(new Dimension(1000,750));
+    //is.setMinimumSize(new Dimension(1000,123));
+    //frame.getContentPane().add(splitPane, BorderLayout.CENTER);
+    frame.getContentPane().add(p, BorderLayout.CENTER);
 
     //Display the window.
     frame.pack();
