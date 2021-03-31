@@ -11,6 +11,8 @@ public class InfoSteps extends JPanel implements MouseListener {
   HashSet<Integer> selectedSteps=null;
   InfoCanvasAll icAll=null;
 
+  public int sts_animation=-1;
+
   public InfoSteps (DataKeeper dk, InfoCanvasAll icAll) {
     this.dk=dk;
     this.icAll=icAll;
@@ -125,6 +127,44 @@ public class InfoSteps extends JPanel implements MouseListener {
         g2.fillRect(x0+step*w,yy[min.length]+4*h-hh,w,hh);
       }
     }
+  }
+
+  public void animationNextStep() {
+    HashSet<Integer> sts=icAll.getSTS();
+    if (sts_animation!=-1)
+      sts.remove(new Integer(sts_animation));
+    for (int i=sts_animation+1; sts.contains(new Integer(i)) && i<dk.Nsteps; i++)
+      sts_animation=i;
+    if (sts_animation+1<dk.Nsteps) {
+      sts_animation++;
+      System.out.println("* step="+sts_animation);
+      sts.add(new Integer(sts_animation));
+    }
+    else
+      sts_animation=-1;
+    repaint();
+    //icAll.setSTS(sts);
+    icAll.setSTS(getSortedArrayFromHashSet(sts));
+  }
+  public void animationStop() {
+    if (sts_animation!=-1) {
+      HashSet<Integer> sts=icAll.getSTS();
+      sts.remove(new Integer(sts_animation));
+      sts_animation=-1;
+      repaint();
+      //icAll.setSTS(sts);
+      icAll.setSTS(getSortedArrayFromHashSet(sts));
+    }
+  }
+
+  protected int[] getSortedArrayFromHashSet (HashSet<Integer> hs) {
+    int out[]=new int[hs.size()], n=0;
+    TreeSet<Integer> treeSet = new TreeSet<Integer>(hs);
+    for (Integer s:treeSet) {
+      out[n] = s.intValue();
+      n++;
+    }
+    return out;
   }
 
   public void mouseClicked (MouseEvent me) {

@@ -14,7 +14,7 @@ public class Main {
     JFrame frame = new JFrame("TAPAS Solution Explorer: single sector");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     InfoCanvas ic=new InfoCanvas(dk);
-    ControlPanel cp=new ControlPanel(dk,ic);
+    ControlPanel cp=new ControlPanel(dk,ic,null);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
     frame.getContentPane().add(ic, BorderLayout.CENTER);
 
@@ -30,7 +30,7 @@ public class Main {
     icAll.setSTS(sts);
     InfoSteps is=new InfoSteps(dk,icAll);
     is.setSelectedSteps(icAll.getSTS());
-    cp=new ControlPanel(dk,icAll);
+    cp=new ControlPanel(dk,icAll,is);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
 
     JPanel p=new JPanel(new BorderLayout());
