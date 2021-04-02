@@ -76,7 +76,7 @@ public class DataKeeper {
         Nsteps=maxStep+1;
       } catch (IOException io) {}
       System.out.println("lines processed: "+n+", sectors: "+sectors.size()+", flights: "+flights.size()+", records="+records.size());
-    } catch (FileNotFoundException ex) {System.out.println("fee");}
+    } catch (FileNotFoundException ex) { System.out.println("problem reading file "+fname+" : "+ex); }
   }
 
   protected void readCapacities(String fname) {
@@ -94,7 +94,7 @@ public class DataKeeper {
         }
         br.close();
       } catch  (IOException io) {}
-    } catch (FileNotFoundException ex) {System.out.println("fee");}
+    } catch (FileNotFoundException ex) { System.out.println("problem reading file "+fname+" : "+ex); }
   }
 
   int Nintervals=70, NintevalsWithHotspots=0, Ishift=20, Iduration=60;
