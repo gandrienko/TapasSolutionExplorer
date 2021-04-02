@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
 import java.util.TreeSet;
 
 public class ControlPanel extends JPanel implements ActionListener, ItemListener {
@@ -54,8 +53,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
           bstart.setEnabled(false);
           bstop.setEnabled(true);
           timer=new Timer(animationDelay,al);
-          if (is.sts_animation==-1)
-            is.sts_animation=0;
+          is.animationStart();
           timer.start();
         }
       });
@@ -72,12 +70,6 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       add(p,BorderLayout.WEST);
 
     }
-/*
-    if (ic instanceof InfoCanvasAll) {
-      int sts[]=new int[]{0,dk.Nsteps-1};
-      ((InfoCanvasAll)ic).setSTS(sts);
-    }
-*/
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
     JCrenderingMode.setSelectedIndex(1);
     JCrenderingMode.addActionListener(this);

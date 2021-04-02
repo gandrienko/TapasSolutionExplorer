@@ -113,9 +113,6 @@ public class InfoSteps extends JPanel implements MouseListener {
         g2.setColor(new Color((float)(0.2f+0.4*f),0f,0f,0.5f+f/2));
         g2.fillRect(x0+step*w,yy[i],w,h);
       }
-      //float sum=dk.stepsInfo[step][2];
-      //for (int i=3; i<dk.stepsInfo[step].length; i++)
-        //sum+=dk.stepsInfo[step][i];
       float ff[]=new float[dk.stepsInfo[step].length-4];
       ff[0]=dk.stepsInfo[step][min.length+1];
       for (int i=1; i<ff.length; i++)
@@ -129,10 +126,13 @@ public class InfoSteps extends JPanel implements MouseListener {
     }
   }
 
+  protected HashSet<Integer> selectedStepsBeforeAnimation=null;
+  public void animationStart() {
+    selectedStepsBeforeAnimation=(HashSet<Integer>)selectedSteps.clone();
+    sts_animation=0;
+  }
   public void animationNextStep() {
-    HashSet<Integer> sts=icAll.getSTS();
-    if (sts_animation!=-1)
-      sts.remove(new Integer(sts_animation));
+    HashSet<Integer> sts=(HashSet<Integer>)selectedStepsBeforeAnimation.clone();
     for (int i=sts_animation+1; sts.contains(new Integer(i)) && i<dk.Nsteps; i++)
       sts_animation=i;
     if (sts_animation+1<dk.Nsteps) {
@@ -143,18 +143,16 @@ public class InfoSteps extends JPanel implements MouseListener {
     else
       sts_animation=-1;
     repaint();
-    //icAll.setSTS(sts);
     icAll.setSTS(getSortedArrayFromHashSet(sts));
   }
   public void animationStop() {
     if (sts_animation!=-1) {
-      HashSet<Integer> sts=icAll.getSTS();
-      sts.remove(new Integer(sts_animation));
+      HashSet<Integer> sts=(HashSet<Integer>)selectedStepsBeforeAnimation.clone();
       sts_animation=-1;
       repaint();
-      //icAll.setSTS(sts);
       icAll.setSTS(getSortedArrayFromHashSet(sts));
     }
+    selectedStepsBeforeAnimation=null;
   }
 
   protected int[] getSortedArrayFromHashSet (HashSet<Integer> hs) {
@@ -186,13 +184,7 @@ public class InfoSteps extends JPanel implements MouseListener {
       }
       if (updateNeeded) {
         repaint();
-        int sts[]=new int[selectedSteps.size()], n=0;
-        TreeSet<Integer> treeSet = new TreeSet<Integer>(selectedSteps);
-        for (Integer s:treeSet) {
-          sts[n] = s.intValue();
-          n++;
-        }
-        icAll.setSTS(sts);
+        icAll.setSTS(getSortedArrayFromHashSet(selectedSteps));
       }
     }
   }
