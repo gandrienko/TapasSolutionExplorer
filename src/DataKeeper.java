@@ -212,7 +212,7 @@ public class DataKeeper {
           Record r = vr.get(j);
           for (int k = 0; k < Nintervals; k++) {
             int k1 = k * Ishift, k2 = k1 + Iduration - 1;
-            boolean intersect = Math.max(k1, r.FromN) <= Math.min(k2, r.ToN);
+            boolean intersect = r.FromN>=k1 && r.FromN<=k2; //   Math.max(k1, r.FromN) <= Math.min(k2, r.ToN); // todo
             if (intersect)
               recsInCells[k][i].add(r);
           }
