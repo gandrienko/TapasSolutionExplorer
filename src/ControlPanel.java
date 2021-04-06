@@ -12,12 +12,14 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
   protected InfoCanvasBasics ic=null;
   protected InfoSteps is=null;
 
-  protected JComboBox JCsectors=null, JCrenderingMode=null;
+  protected JComboBox JCsectors=null, JCrenderingMode=null, JChotspotsMode=null, JChotspotsRatio=null;
   protected JCheckBox JCBemthHotspots=null;
 
   protected Timer timer=null;
   protected JButton bstart=null, bstop=null;
   private final int animationDelay = 1000; // 2sec
+
+  public static String[] hotspotModes={"by entries","by presence"}, hotspotRatios={"demand > 1.1 x capacity","demand > 1 x capacity"};
 
   public ControlPanel (DataKeeper dk, InfoCanvasBasics ic, InfoSteps is) {
     this.dk=dk;
@@ -68,7 +70,15 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       });
       p.add(bstart); p.add(bstop);
       add(p,BorderLayout.WEST);
-
+      p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+      p.add(new JLabel("hotspots:"));
+      JChotspotsMode=new JComboBox(hotspotModes);
+      JChotspotsMode.addActionListener(this);
+      p.add(JChotspotsMode);
+      JChotspotsRatio=new JComboBox(hotspotRatios);
+      JChotspotsRatio.addActionListener(this);
+      p.add(JChotspotsRatio);
+      add(p,BorderLayout.EAST);
     }
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
     JCrenderingMode.setSelectedIndex(1);
@@ -81,7 +91,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       JCBemthHotspots = new JCheckBox("more space for " + dk.NintevalsWithHotspots + " intevals with hotspots", false);
       JCBemthHotspots.addItemListener(this);
       JCBemthHotspots.setToolTipText("time intervals that have hotspots will be given double screen space (height)");
-      add(JCBemthHotspots, BorderLayout.EAST);
+      add(JCBemthHotspots, BorderLayout.CENTER);
     }
     ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
   }
@@ -98,6 +108,14 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
     }
     if (ae.getSource().equals(JCrenderingMode))
       ic.setRenderingModes((String)JCrenderingMode.getSelectedItem());
+    if (ae.getSource().equals(JChotspotsMode)) {
+      dk.setHotspotMode(JChotspotsMode.getSelectedIndex());
+      ((InfoCanvasAll)ic).setHotspotMode(JChotspotsMode.getSelectedIndex());
+    }
+    if (ae.getSource().equals(JChotspotsRatio)) {
+      dk.setHotspotRatio(JChotspotsRatio.getSelectedIndex());
+      ((InfoCanvasAll)ic).setHotspotRatio(JChotspotsRatio.getSelectedIndex());
+    }
     if (ae.getSource() instanceof Timer && is!=null) {
       is.animationNextStep();
       if (is.sts_animation==-1) {

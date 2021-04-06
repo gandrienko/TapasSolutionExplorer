@@ -25,11 +25,27 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   protected int highlightedInterval=-1;
   HashSet<String> selectedSectors=new HashSet<>(dk.sectors.size());
 
+  protected int hotspotMode=0,  // 0: by entries, 1: by presence
+                hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
+
   public InfoCanvasAll (DataKeeper dk) {
     super(dk);
     addMouseListener(this);
     addMouseMotionListener(this);
   }
+
+  public void setHotspotMode (int hotspotMode) {
+    this.hotspotMode=hotspotMode;
+    plotImageValid=false;
+    repaint();
+  }
+
+  public void setHotspotRatio (int hotspotRatio) {
+    this.hotspotRatio=hotspotRatio;
+    plotImageValid=false;
+    repaint();
+  }
+
 
   public void setSTS (int sts[]) {
     this.sts=sts;
@@ -118,8 +134,11 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         s+="<tr align=center><td>Flights:</td><td></td>";
         for (int i=0; i<sts.length; i++) {
           s+="<td>";
-          int demand=dk.getCount(ci.sector,"CountFlights",ci.interval,sts[i]);
-          if (demand>dk.capacities.get(ci.sector))
+          int demand=dk.getCount(ci.sector,"CountFlights",ci.interval,sts[i]),
+              capacity=dk.capacities.get(ci.sector);
+          if (hotspotRatio==0)
+            capacity=(int)Math.ceil(1.1f*capacity);
+          if (demand>capacity)
             s+="<font color=red>"+demand+"</font> (+"+Math.round(demand*100f/dk.capacities.get(ci.sector)-100)+"%)";
           else
             s+=demand;
@@ -241,10 +260,9 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         si.step=sts[comp];
         si.r=new Rectangle(xx,0,strw,yy[0]);
         sectorInfos.add(si);
-        Integer cap=dk.capacities.get(sector);
-        int capacity=0;
-        if (cap!=null)
-          capacity=cap.intValue();
+        int capacity=dk.capacities.get(sector);;
+        if (hotspotRatio==0)
+          capacity=(int)Math.ceil(1.1f*capacity);
         for (int i=0; i<dk.Nintervals; i++) {
           int n=dk.getCount(sector,"CountFlights",i,sts[comp]);
           //System.out.println("sector="+sector+", interval="+String.format("%02d", i / 3) + ":" + String.format("%02d", (i % 3) * 20)+

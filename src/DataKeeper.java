@@ -11,6 +11,9 @@ public class DataKeeper {
   public Vector<SectorData> sectorsWithData=new Vector<>(50);
   Vector<String> sectorsSorted=null;
 
+  protected int hotspotMode=0,  // 0: by entries, 1: by presence
+                hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
+
   public void sortSectors (String mode) {
     sortSectors(mode,null);
   }
@@ -114,6 +117,8 @@ public class DataKeeper {
     for (String sector:sectors) {
       aggregate(sector,false);
       int capacity=capacities.get(sector);
+      if (hotspotRatio==0)
+        capacity=(int)Math.ceil(1.1f*capacity);
       SectorData sd=new SectorData();
       sd.sector=sector;
       //sd.Nhotspots_all=0;
@@ -156,11 +161,15 @@ public class DataKeeper {
       for (String sector:sectors) {
         Vector<Record> vr=records.get(sector+"_"+step);
         boolean bSectorHasHotspot=false;
-        for (int interval=0; interval<Nintervals; interval++)
-          if (getCount(sector,"CountFlights",interval,step)>capacities.get(sector)) {
-            stepsInfo[step][0]+=1;
-            bSectorHasHotspot=true;
+        for (int interval=0; interval<Nintervals; interval++) {
+          int capacity=capacities.get(sector);
+          if (hotspotRatio==0)
+            capacity=(int)Math.ceil(1.1f*capacity);
+          if (getCount(sector, "CountFlights", interval, step) > capacity) {
+            stepsInfo[step][0] += 1;
+            bSectorHasHotspot = true;
           }
+        }
         if (bSectorHasHotspot)
           stepsInfo[step][1]+=1;
         for (Record r:vr)
@@ -218,7 +227,7 @@ public class DataKeeper {
           Record r = vr.get(j);
           for (int k = 0; k < Nintervals; k++) {
             int k1 = k * Ishift, k2 = k1 + Iduration - 1;
-            boolean intersect = r.FromN>=k1 && r.FromN<=k2; //   Math.max(k1, r.FromN) <= Math.min(k2, r.ToN); // todo: interactive switch
+            boolean intersect = (hotspotMode==0) ? r.FromN>=k1 && r.FromN<=k2 : Math.max(k1, r.FromN) <= Math.min(k2, r.ToN);
             if (intersect)
               recsInCells[k][i].add(r);
           }
@@ -227,6 +236,8 @@ public class DataKeeper {
     }
     hasHotspots=new boolean[Nintervals];
     int capacity=capacities.get(sector).intValue();
+    if (hotspotRatio==0)
+      capacity=(int)Math.ceil(1.1f*capacity);
     for (int k=0; k<Nintervals; k++) {
       hasHotspots[k]=false;
       for (int i=0; i<Nsteps && !hasHotspots[k]; i++)
@@ -280,6 +291,8 @@ public class DataKeeper {
     int N=0;
     Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
     int capacity=capacities.get(sector);
+    if (hotspotRatio==0)
+      capacity=(int)Math.ceil(1.1f*capacity);
     for (int interval=0; interval<Nintervals; interval++)
       if (recsInCells[interval][step].size()>capacity)
         N++;
@@ -450,6 +463,18 @@ public class DataKeeper {
       }
     }
     return out;
+  }
+
+  public void setHotspotMode (int hotspotMode) {
+    this.hotspotMode=hotspotMode;
+    aggregateAll();
+    calcFeaturesOfSteps();
+  }
+
+  public void setHotspotRatio (int hotspotRatio) {
+    this.hotspotRatio=hotspotRatio;
+    aggregateAll();
+    calcFeaturesOfSteps();
   }
 
   public DataKeeper (String filename_capacities, String filename_data) {
