@@ -1,3 +1,7 @@
+
+import TapasDataReader.Flight;
+import TapasDataReader.Record;
+
 import java.io.*;
 import java.util.*;
 
@@ -208,11 +212,13 @@ public class DataKeeper {
       for (int i = 0; i < Nsteps; i++) {
         String key = sector + "_" + i;
         Vector<Record> vr = records.get(key);
+        if (vr==null)
+          System.out.println("* panic: key="+key);
         for (int j = 0; j < vr.size(); j++) {
           Record r = vr.get(j);
           for (int k = 0; k < Nintervals; k++) {
             int k1 = k * Ishift, k2 = k1 + Iduration - 1;
-            boolean intersect = r.FromN>=k1 && r.FromN<=k2; //   Math.max(k1, r.FromN) <= Math.min(k2, r.ToN); // todo
+            boolean intersect = r.FromN>=k1 && r.FromN<=k2; //   Math.max(k1, r.FromN) <= Math.min(k2, r.ToN); // todo: interactive switch
             if (intersect)
               recsInCells[k][i].add(r);
           }
@@ -447,8 +453,19 @@ public class DataKeeper {
   }
 
   public DataKeeper (String filename_data, String filename_capacities) {
-    readCapacities(filename_capacities);
-    readData(filename_data);
+    //readCapacities(filename_capacities);
+    capacities=TapasDataReader.Readers.readCapacities(filename_capacities);
+    //readData(filename_data);
+    String fnCapacities="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_capacities",
+           fnDecisions="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_decisions",
+           fnFlightPlans="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_baseline_flight_plans";
+    TreeSet<Integer> steps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
+    Nsteps=steps.size();
+    Hashtable<String, Flight> flights=TapasDataReader.Readers.readFlightDelaysFromDecisions(fnDecisions,steps);
+    records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,flights);
+    for (String s:records.keySet())
+      sectors.add(s.substring(0,s.indexOf("_")));
+
     aggregateAll();
     calcFeaturesOfSteps();
   }

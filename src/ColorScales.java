@@ -30,12 +30,12 @@ public class ColorScales {
   };
 
   public static java.awt.Color getKellyColor(int idx) {
-    javafx.scene.paint.Color fx = KELLY_COLORS[idx];
+    javafx.scene.paint.Color fx = KELLY_COLORS[idx%KELLY_COLORS.length];
     java.awt.Color awtColor=new java.awt.Color((float) fx.getRed(), (float) fx.getGreen(), (float) fx.getBlue(), (float) fx.getOpacity());
     return awtColor;
   }
   public static int[] getKellyColorAsRGB(int idx) {
-    javafx.scene.paint.Color fx = KELLY_COLORS[idx];
+    javafx.scene.paint.Color fx = KELLY_COLORS[idx%KELLY_COLORS.length];
     int rgb[]=new int[3];
     rgb[0]=(int)Math.round(255*fx.getRed());
     rgb[1]=(int)Math.round(255*fx.getGreen());

@@ -53,6 +53,8 @@ public class Main {
   public static void main(String[] args) {
     String fname="v20210304-all-25steps"; //"FlightsInSectors_4"; //"FlightsInSectors_LECMTLL"; // "FlightsInSectors_LECSASV"; //"FlightsInSectors";  //
     String fname_c="capacities";
+    fname_c="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_capacities";
+    fname="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\output";
     if (args.length==2) {
       fname_c=args[0];
       fname=args[1];
