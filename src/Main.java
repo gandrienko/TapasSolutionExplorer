@@ -51,16 +51,19 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    String fname="v20210304-all-25steps"; //"FlightsInSectors_4"; //"FlightsInSectors_LECMTLL"; // "FlightsInSectors_LECSASV"; //"FlightsInSectors";  //
-    String fname_c="capacities";
-    fname_c="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_capacities";
-    fname="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\output";
-    if (args.length==2) {
-      fname_c=args[0];
-      fname=args[1];
-    }
-    DataKeeper dk=new DataKeeper(fname,fname_c);
-    if (!dk.sectors.isEmpty())
+    DataKeeper dk=null;
+    if (args.length==2)
+      dk=new DataKeeper(args[0],args[1]);
+    else
+      if (args.length==3)
+        dk=new DataKeeper(args[0],args[1],args[2]);
+      else {
+        String fnCapacities="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_capacities",
+               fnDecisions="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_decisions",
+               fnFlightPlans="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_baseline_flight_plans";
+        dk=new DataKeeper(fnCapacities,fnDecisions,fnFlightPlans);
+      }
+    if (dk!=null && !dk.sectors.isEmpty())
       createAndShowGUI(dk);
   }
 

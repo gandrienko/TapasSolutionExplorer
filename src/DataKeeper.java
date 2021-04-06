@@ -452,20 +452,21 @@ public class DataKeeper {
     return out;
   }
 
-  public DataKeeper (String filename_data, String filename_capacities) {
-    //readCapacities(filename_capacities);
-    capacities=TapasDataReader.Readers.readCapacities(filename_capacities);
-    //readData(filename_data);
-    String fnCapacities="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_capacities",
-           fnDecisions="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_decisions",
-           fnFlightPlans="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_baseline_flight_plans";
+  public DataKeeper (String filename_capacities, String filename_data) {
+    readCapacities(filename_capacities);
+    readData(filename_data);
+    aggregateAll();
+    calcFeaturesOfSteps();
+  }
+
+  public DataKeeper (String fnCapacities, String fnDecisions, String fnFlightPlans) {
+    capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
     TreeSet<Integer> steps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
     Nsteps=steps.size();
     Hashtable<String, Flight> flights=TapasDataReader.Readers.readFlightDelaysFromDecisions(fnDecisions,steps);
     records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,flights);
     for (String s:records.keySet())
       sectors.add(s.substring(0,s.indexOf("_")));
-
     aggregateAll();
     calcFeaturesOfSteps();
   }
