@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
@@ -161,6 +163,8 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         plotImageValid=false;
         repaint();
         //s+=ci.sector+", "+ci.interval;
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(new StringSelection("Sector="+ci.sector+" step="+ci.step+" interval="+ci.interval+"\n"+dk.getListOfFlightsAsText(ci.sector,ci.step,ci.interval)), null);
         return s;
       }
     highlightedSector=null;

@@ -299,6 +299,15 @@ public class DataKeeper {
     return N;
   }
 
+  public String getListOfFlightsAsText (String sector, int step, int interval) {
+    String s="";
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
+    Vector<Record> vr=recsInCells[interval][step];
+    for (Record r:vr)
+      s+=r.sector+","+r.step+","+r.flight+","+r.delay+","+r.FromS+","+r.FromT+","+r.FromN+","+r.ToS+","+r.ToT+","+r.ToN+"\n";
+    return s;
+  }
+
   public int getCount (String sector, String operation, int step) {
     int N=0;
     Hashtable<String,Integer> flights=new Hashtable<>(100);
