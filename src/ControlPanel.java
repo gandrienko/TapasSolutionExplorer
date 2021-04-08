@@ -12,22 +12,28 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
   protected InfoCanvasBasics ic=null;
   protected InfoSteps is=null;
 
-  protected JComboBox JCsectors=null, JCrenderingMode=null, JChotspotsMode=null, JChotspotsRatio=null;
+  public JComboBox JCsectors=null;
+  protected JComboBox JCrenderingMode=null, JChotspotsMode=null, JChotspotsRatio=null;
   protected JCheckBox JCBemthHotspots=null;
 
   protected Timer timer=null;
   protected JButton bstart=null, bstop=null;
   private final int animationDelay = 1000; // 2sec
 
-  public static String[] hotspotModes={"by entries (distinct flights)","by entries (all)","by presence"}, hotspotRatios={"demand > 1.1 x capacity","demand > 1 x capacity"};
+  public static String[] hotspotModes={"by entries (distinct flights)","by entries (all)","by presence (distinct)"}, hotspotRatios={"demand > 1.1 x capacity","demand > 1 x capacity"};
 
-  public ControlPanel (DataKeeper dk, InfoCanvasBasics ic, InfoSteps is) {
+  public ControlPanel (DataKeeper dk, InfoCanvasBasics ic, InfoSteps is, String sector) {
     this.dk=dk;
     this.ic=ic;
     this.is=is;
     setLayout(new BorderLayout());
-    TreeSet<String> treeSet = new TreeSet<String>(dk.sectors);
     if (ic instanceof InfoCanvas){
+      dk.aggregate(sector);
+      //dk.checkEqual();
+      dk.getCounts(sector,"CountFlights");
+      ((InfoCanvas)ic).setSector(sector);
+      /*
+      TreeSet<String> treeSet = new TreeSet<String>(dk.sectors);
       JCsectors = new JComboBox(treeSet.toArray());
       JCsectors.addActionListener(this);
       if (JCsectors.getItemCount() > 0) {
@@ -42,6 +48,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       p.add(new JLabel("Sector:"));
       p.add(JCsectors);
       add(p,BorderLayout.WEST);
+      */
     }
     else { // InfoCanvasAll
       JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));

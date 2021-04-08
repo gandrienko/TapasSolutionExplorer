@@ -431,7 +431,23 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         }
       });
       menu.add(item);
-
+      menu.add(new JPopupMenu.Separator());
+      item=new JMenuItem("Show full history for "+sector);
+      item.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          JFrame frame = new JFrame("TAPAS Solution Explorer: sector "+sector);
+          frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+          InfoCanvas ic=new InfoCanvas(dk);
+          ic.setSector(sector);
+          ControlPanel cp=new ControlPanel(dk,ic,null,sector);
+          frame.getContentPane().add(cp, BorderLayout.SOUTH);
+          frame.getContentPane().add(ic, BorderLayout.CENTER);
+          frame.pack();
+          frame.setVisible(true);
+        }
+      });
+      menu.add(item);
     }
     menu.show(this,me.getX(),me.getY());
   }

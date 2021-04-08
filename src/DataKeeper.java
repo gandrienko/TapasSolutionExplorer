@@ -229,15 +229,15 @@ public class DataKeeper {
             int k1 = k * Ishift, k2 = k1 + Iduration - 1;
             boolean intersect = (hotspotMode<2) ? r.FromN>=k1 && r.FromN<=k2 : Math.max(k1, r.FromN) <= Math.min(k2, r.ToN);
             if (intersect)
-              if (hotspotMode==0) {
+              if (hotspotMode==1)
+                recsInCells[k][i].add(r);
+              else {
                 boolean found=false;
                 for (int n=0; !found && n<recsInCells[k][i].size(); n++)
                   found=r.flight.equals(recsInCells[k][i].elementAt(n).flight);
                 if (!found)
                   recsInCells[k][i].add(r);
               }
-              else
-                recsInCells[k][i].add(r);
           }
         }
       }

@@ -10,6 +10,7 @@ import java.util.Vector;
 public class Main {
 
   private static void createAndShowGUI (DataKeeper dk) {
+/*
     //Create and set up the window for a single sector.
     JFrame frame = new JFrame("TAPAS Solution Explorer: single sector");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -17,26 +18,23 @@ public class Main {
     ControlPanel cp=new ControlPanel(dk,ic,null);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
     frame.getContentPane().add(ic, BorderLayout.CENTER);
-
-    //Display the window.
     frame.pack();
     frame.setVisible(true);
+*/
 
-    //Create and set up the window for a single sector.
-    frame = new JFrame("TAPAS Solution Explorer: all sectors");
+    //Create and set up the window for all sectors
+    JFrame frame = new JFrame("TAPAS Solution Explorer: all sectors");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     InfoCanvasAll icAll=new InfoCanvasAll(dk);
     int sts[]=new int[]{0,dk.Nsteps-1};
     icAll.setSTS(sts);
     InfoSteps is=new InfoSteps(dk,icAll);
     is.setSelectedSteps(icAll.getSTS());
-    cp=new ControlPanel(dk,icAll,is);
+    ControlPanel cp=new ControlPanel(dk,icAll,is,null);
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
-
     JPanel p=new JPanel(new BorderLayout());
     p.add(icAll,BorderLayout.CENTER);
     p.add(is,BorderLayout.SOUTH);
-
     //JSplitPane splitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,icAll,is);
     //splitPane.setOneTouchExpandable(true);
     //splitPane.setDividerLocation(0.1);
@@ -44,8 +42,6 @@ public class Main {
     //is.setMinimumSize(new Dimension(1000,123));
     //frame.getContentPane().add(splitPane, BorderLayout.CENTER);
     frame.getContentPane().add(p, BorderLayout.CENTER);
-
-    //Display the window.
     frame.pack();
     frame.setVisible(true);
   }
