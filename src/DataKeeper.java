@@ -117,9 +117,9 @@ public class DataKeeper {
     iGlobalMax=0;
     for (String sector:sectors) {
       aggregate(sector,false);
-      int capacity=capacities.get(sector);
+      float capacity=capacities.get(sector);
       if (hotspotRatio==0)
-        capacity=(int)Math.ceil(1.1f*capacity);
+        capacity=1.1f*capacity;
       SectorData sd=new SectorData();
       sd.sector=sector;
       //sd.Nhotspots_all=0;
@@ -163,9 +163,9 @@ public class DataKeeper {
         Vector<Record> vr=records.get(sector+"_"+step);
         boolean bSectorHasHotspot=false;
         for (int interval=0; interval<Nintervals; interval++) {
-          int capacity=capacities.get(sector);
+          float capacity=capacities.get(sector);
           if (hotspotRatio==0)
-            capacity=(int)Math.ceil(1.1f*capacity);
+            capacity=1.1f*capacity;
           if (getCount(sector, "CountFlights", interval, step) > capacity) {
             stepsInfo[step][0] += 1;
             bSectorHasHotspot = true;
@@ -244,9 +244,9 @@ public class DataKeeper {
       }
     }
     hasHotspots=new boolean[Nintervals];
-    int capacity=capacities.get(sector).intValue();
+    float capacity=capacities.get(sector).intValue();
     if (hotspotRatio==0)
-      capacity=(int)Math.ceil(1.1f*capacity);
+      capacity=1.1f*capacity;
     for (int k=0; k<Nintervals; k++) {
       hasHotspots[k]=false;
       for (int i=0; i<Nsteps && !hasHotspots[k]; i++)
@@ -299,9 +299,9 @@ public class DataKeeper {
   public int getCountHotspots (String sector, int step) {
     int N=0;
     Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
-    int capacity=capacities.get(sector);
+    float capacity=capacities.get(sector);
     if (hotspotRatio==0)
-      capacity=(int)Math.ceil(1.1f*capacity);
+      capacity=1.1f*capacity;
     for (int interval=0; interval<Nintervals; interval++)
       if (recsInCells[interval][step].size()>capacity)
         N++;
