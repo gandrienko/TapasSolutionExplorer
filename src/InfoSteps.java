@@ -110,8 +110,9 @@ public class InfoSteps extends JPanel implements MouseListener {
       }
       for (int i=0; i<min.length; i++) {
         float f=(dk.stepsInfo[step][i]-min[i])*1f/(max[i]-min[i]);
+        int hh=Math.round(h*dk.stepsInfo[step][i]/max[i]);
         g2.setColor(new Color((float)(0.2f+0.4*f),0f,0f,0.5f+f/2));
-        g2.fillRect(x0+step*w,yy[i],w,h);
+        g2.fillRect(x0+step*w,yy[i]+h-hh,w,hh);
       }
       float ff[]=new float[dk.stepsInfo[step].length-4];
       ff[0]=dk.stepsInfo[step][min.length+1];
