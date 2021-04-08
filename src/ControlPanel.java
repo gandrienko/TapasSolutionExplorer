@@ -88,6 +88,10 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       add(p,BorderLayout.EAST);
     }
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
+    if (ic instanceof InfoCanvasAll) {
+      JCrenderingMode.removeItemAt(2);
+      JCrenderingMode.removeItemAt(2);
+    }
     JCrenderingMode.setSelectedIndex(1);
     JCrenderingMode.addActionListener(this);
     JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -98,7 +102,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       JCBemthHotspots = new JCheckBox("more space for " + dk.NintevalsWithHotspots + " intevals with hotspots", false);
       JCBemthHotspots.addItemListener(this);
       JCBemthHotspots.setToolTipText("time intervals that have hotspots will be given double screen space (height)");
-      add(JCBemthHotspots, BorderLayout.CENTER);
+      add(JCBemthHotspots, BorderLayout.EAST);
     }
     ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
   }
