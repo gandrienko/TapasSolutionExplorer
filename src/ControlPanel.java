@@ -19,7 +19,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
   protected JButton bstart=null, bstop=null;
   private final int animationDelay = 1000; // 2sec
 
-  public static String[] hotspotModes={"by entries","by presence"}, hotspotRatios={"demand > 1.1 x capacity","demand > 1 x capacity"};
+  public static String[] hotspotModes={"by entries (distinct flights)","by entries (all)","by presence"}, hotspotRatios={"demand > 1.1 x capacity","demand > 1 x capacity"};
 
   public ControlPanel (DataKeeper dk, InfoCanvasBasics ic, InfoSteps is) {
     this.dk=dk;

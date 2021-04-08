@@ -162,9 +162,10 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         highlightedInterval=ci.interval;
         plotImageValid=false;
         repaint();
-        //s+=ci.sector+", "+ci.interval;
+        /* // flights in the cell: dump to the clipboard
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(new StringSelection("Sector="+ci.sector+" step="+ci.step+" interval="+ci.interval+"\n"+dk.getListOfFlightsAsText(ci.sector,ci.step,ci.interval)), null);
+        */
         return s;
       }
     highlightedSector=null;

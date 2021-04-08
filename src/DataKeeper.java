@@ -227,9 +227,17 @@ public class DataKeeper {
           Record r = vr.get(j);
           for (int k = 0; k < Nintervals; k++) {
             int k1 = k * Ishift, k2 = k1 + Iduration - 1;
-            boolean intersect = (hotspotMode==0) ? r.FromN>=k1 && r.FromN<=k2 : Math.max(k1, r.FromN) <= Math.min(k2, r.ToN);
+            boolean intersect = (hotspotMode<2) ? r.FromN>=k1 && r.FromN<=k2 : Math.max(k1, r.FromN) <= Math.min(k2, r.ToN);
             if (intersect)
-              recsInCells[k][i].add(r);
+              if (hotspotMode==0) {
+                boolean found=false;
+                for (int n=0; !found && n<recsInCells[k][i].size(); n++)
+                  found=r.flight.equals(recsInCells[k][i].elementAt(n).flight);
+                if (!found)
+                  recsInCells[k][i].add(r);
+              }
+              else
+                recsInCells[k][i].add(r);
           }
         }
       }
