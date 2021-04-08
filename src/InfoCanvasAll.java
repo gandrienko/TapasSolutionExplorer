@@ -51,6 +51,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
 
   public void setSTS (int sts[]) {
     this.sts=sts;
+    dk.calcMaxForSelectedSteps(sts);
     plotImageValid=false;
     repaint();
   }
@@ -284,7 +285,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           switch (iRenderingMode) {
             case 0:
               //n=dk.getCount(sector,"CountFlights",i,sts[comp]);
-              ww=(strw-1)*n/dk.iGlobalMax;
+              ww=(strw-1)*n/dk.iLocalMax; // dk.iGlobalMax;
               g2.setColor(Color.gray);
               g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
               break;
@@ -299,14 +300,14 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
               for (int k=nn.length-1; k>=0; k--) {
                 int rgb=255-64-32*k;
                 g2.setColor(new Color(rgb,rgb,rgb));
-                ww=(strw-1)*nn[k]/dk.iGlobalMax;
+                ww=(strw-1)*nn[k]/dk.iLocalMax; // dk.iGlobalMax;
                 g2.fillRect(xx,yy[i],ww,yy[i+1]-yy[i]);
               }
               break;
           }
           if (n>capacity) {
             g2.setColor(Color.red);
-            ww=(strw-1)*capacity/dk.iGlobalMax;
+            ww=(strw-1)*capacity/dk.iLocalMax; // dk.iGlobalMax;
             g2.drawLine(xx+ww,yy[i],xx+ww,yy[i+1]);
           }
           CellInfo ci=new CellInfo();
@@ -396,6 +397,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         public void actionPerformed(ActionEvent e) {
           selectedSectors.clear();
           dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
+          dk.calcMaxForSelectedSteps(sts);
           plotImageValid=false;
           repaint();
         }
@@ -409,6 +411,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
             dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
           else
             dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode);
+          dk.calcMaxForSelectedSteps(sts);
           plotImageValid=false;
           repaint();
         }
@@ -427,6 +430,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           for (String cs:connectedSectors)
             selectedSectors.add(cs);
           dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
+          dk.calcMaxForSelectedSteps(sts);
           plotImageValid=false;
           repaint();
         }

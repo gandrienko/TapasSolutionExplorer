@@ -34,7 +34,6 @@ public class DataKeeper {
     //System.out.println("Sorted sectors: "+sectorsSorted);
   }
 
-
   protected Hashtable<String,Vector<Record>> records=new Hashtable(100000);
 
   public Hashtable<String,Integer> capacities=new Hashtable(100);
@@ -110,7 +109,7 @@ public class DataKeeper {
   protected Hashtable<String,Vector<Record>[][]> recsInCellsAll=null;
   //protected Vector<Record> recsInCells[][]=null;
   public boolean[] hasHotspots=null;
-  public int iGlobalMax=0;
+  public int iGlobalMax=0, iLocalMax=0; // Max count for all steps Vs. currently dispayed steps
 
   public void aggregateAll() {
     recsInCellsAll=new Hashtable<>();
@@ -399,6 +398,26 @@ public class DataKeeper {
     }
     return N;
   }
+
+  public int calcMaxForSelectedSteps (int sts[]) {
+    iLocalMax=0;
+    int i1=0, i2=0;
+    //String s=null;
+    for (String sector:sectorsSorted)
+      for (int interval=0; interval<Nintervals; interval++)
+        for (int i=0; i<sts.length; i++) {
+          int n=getCount(sector,"CountFlights",interval,sts[i]);
+          if (n>iLocalMax) {
+            iLocalMax = n;
+            //s=sector;
+            //i1=interval;
+            //i2=sts[i];
+          }
+        }
+    //System.out.println("* max = "+iGlobalMax+" (global), "+iLocalMax+" (local) in sector "+s+" in interval "+i1+" at step "+i2);
+    return iLocalMax;
+  }
+
   protected int[][] createCounts() {
     int counts[][]=new int[Nintervals][];
     for (int i=0; i<counts.length; i++) {
@@ -408,6 +427,7 @@ public class DataKeeper {
     }
     return counts;
   }
+
   public int[][] getCounts (String sector, String operation) {
     Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);;
     int counts[][]=createCounts();
@@ -450,6 +470,7 @@ public class DataKeeper {
     Collections.sort(labels);
     return labels;
   }
+
   /**
    * Counts distinct values of FromSector/ToSector for a single cell <row,col> or the whole column, if col==-1
    * @param operation
