@@ -138,7 +138,7 @@ public class InfoSteps extends JPanel implements MouseListener {
       sts_animation=i;
     if (sts_animation+1<dk.Nsteps) {
       sts_animation++;
-      System.out.println("* step="+sts_animation);
+      //System.out.println("* step="+sts_animation);
       sts.add(new Integer(sts_animation));
     }
     else
