@@ -89,7 +89,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
                     "</b>\n";
             s+="<table border=0 width=100%><tr align=center><td></td><td></td>";
             for (int i=0; i<sts.length; i++)
-              s+="<td>Step#"+sts[i]+((dk.stepLabels==null)?"":" ("+dk.stepLabels[sts[i]]+")")+"</td>";
+              s+="<td>Step# "+sts[i]+((dk.stepLabels==null)?"":" ("+dk.stepLabels[sts[i]]+")")+"</td>";
             s+="</tr>";
             s+="<tr align=center><td>Hotspots:</td><td></td>";
             for (int i=0; i<sts.length; i++)
@@ -131,7 +131,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
                 ")</b>\n";
         s+="<table border=0 width=100%><tr align=center><td></td><td></td>";
         for (int i=0; i<sts.length; i++)
-          s+="<td>Step "+sts[i]+((dk.stepLabels==null)?"":" ("+dk.stepLabels[sts[i]]+")")+"</td>";
+          s+="<td>Step# "+sts[i]+((dk.stepLabels==null)?"":" ("+dk.stepLabels[sts[i]]+")")+"</td>";
         s+="</tr>";
         s+="<tr align=center><td>Flights:</td><td></td>";
         for (int i=0; i<sts.length; i++) {
@@ -232,7 +232,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     for (int comp=0; comp<sts.length; comp++) {
       g2.setColor(Color.BLACK);
       int xx = (compW+compWextra)*comp;
-      drawCenteredString("step "+sts[comp]+((dk.stepLabels==null)?"":" ("+dk.stepLabels[sts[comp]]+")"),xx,0,compW,strh,g2);
+      drawCenteredString("Step# "+sts[comp]+((dk.stepLabels==null)?"":" ("+dk.stepLabels[sts[comp]]+")"),xx,0,compW,strh,g2);
       g2.drawLine(xx,strh+1,xx+compW,strh+1);
       g2.setColor(Color.GRAY.brighter());
       for (int i=1; i<dk.Nintervals; i++)
