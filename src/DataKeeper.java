@@ -11,6 +11,8 @@ public class DataKeeper {
   public Vector<SectorData> sectorsWithData=new Vector<>(50);
   Vector<String> sectorsSorted=null;
 
+  public String stepLabels[]=null;
+
   protected int hotspotMode=0,  // 0: by entries, 1: by presence
                 hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
 
@@ -505,6 +507,12 @@ public class DataKeeper {
     capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
     TreeSet<Integer> steps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
     Nsteps=steps.size();
+    stepLabels=new String[steps.size()];
+    int n=-1;
+    for (Integer i:steps) {
+      n++;
+      stepLabels[n] = (i.intValue() == -1) ? "baseline" : "" + i.intValue();
+    }
     Hashtable<String, Flight> flights=TapasDataReader.Readers.readFlightDelaysFromDecisions(fnDecisions,steps);
     records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,flights);
     for (String s:records.keySet())

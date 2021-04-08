@@ -41,7 +41,7 @@ public class InfoSteps extends JPanel implements MouseListener {
       int step = (x - x0) / w;
       if (step>dk.Nsteps-1)
         step=dk.Nsteps-1;
-      s="<html><body style=background-color:rgb(255,255,204)>\n<table border=0 width=100%><tr align=center><td>Step = "+step+"</td><td></td><td>count</td><td>%</td></tr>";
+      s="<html><body style=background-color:rgb(255,255,204)>\n<table border=0 width=100%><tr align=center><td>Step# "+step+((dk.stepLabels==null)?"":" ("+dk.stepLabels[step]+")")+"</td><td></td><td>count</td><td>%</td></tr>";
       //s+="<tr align=right><td>step</td><td></td><td>"+step+"</td></tr>\n";
       s+="<tr align=right><td>N hotspots</td><td></td><td>"+dk.stepsInfo[step][0]+"</td></tr>\n";
       s+="<tr align=right><td>N sectors with hotspots</td><td></td><td>"+dk.stepsInfo[step][1]+"</td></tr>\n";
