@@ -1,6 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.util.Vector;
@@ -14,9 +17,21 @@ public class InfoCanvas extends InfoCanvasBasics {
           hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
 
   int x0=0, y0=0, h=10, w=1, yy[]=null;
+  int xhl=-1, yhl=-1; // highlighted column and row
 
   public InfoCanvas (DataKeeper dk) {
     super(dk);
+    addMouseMotionListener(new MouseAdapter() {
+      @Override
+      public void mouseExited (MouseEvent e) {
+        if (xhl!=-1) {
+          xhl=-1; yhl=-1;
+          plotImageValid=false;
+          repaint();
+        }
+        super.mouseMoved(e);
+      }
+    });
   }
 
   public void setSector (String sector) {
@@ -47,6 +62,9 @@ public class InfoCanvas extends InfoCanvasBasics {
           y1=i;
       if (y1==-1)
         return "error";
+      xhl=x1; yhl=y1;
+      plotImageValid=false;
+      repaint();
       String lDelays[]={"no delay","1-4 min","5-9 min","10-29 min","30-59 min","over 60 min"};
       int iDelays[]={dk.getCount(sector,"CountFlights-noDelay",y1,x1),
                      dk.getCount(sector,"CountFlights-Delay1to4",y1,x1),
@@ -85,8 +103,12 @@ public class InfoCanvas extends InfoCanvasBasics {
       //System.out.println(out);
       return out;
     }
-    else
+    else {
+      xhl=-1; yhl=-1;
+      plotImageValid=false;
+      repaint();
       return super.getToolTipText();
+    }
   }
 
   int nY=0;
@@ -138,6 +160,11 @@ public class InfoCanvas extends InfoCanvasBasics {
       g2.drawString(""+i,x0+i*w, g2.getFontMetrics().getAscent()-1);
     g2.setColor(new Color(0f,1f,1f,0.1f));
     g2.fillRect(x0,yy[0],w*dk.Nsteps, yy[yy.length-1]-yy[0]);
+    if (yhl>=0) {
+      g2.setColor(new Color(0f,1f,1f,0.5f));
+      g2.fillRect(0,yy[yhl],x0+w*dk.Nsteps, yy[yhl+1]-yy[yhl]);
+      g2.fillRect(x0+w*xhl,yy[0],w, yy[yy.length-1]-yy[0]);
+    }
     g2.setColor(Color.GRAY);
     g2.drawRect(x0,yy[0],w*dk.Nsteps, yy[yy.length-1]-yy[0]);
     //draw values

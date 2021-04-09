@@ -231,7 +231,8 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       if (sector.length()>maxL)
         maxL=sector.length();
 
-    int compW=2+lblw+dk.sectorsSorted.size()*strw, compWextra=5; // width of a single component
+    int compW=2+lblw+dk.sectorsSorted.size()*strw,
+        compWextra=5; // width of a single component
     //if (compW*sts.length+compWextra*(sts.length-1)>getWidth()) {
       int W=(getWidth()-5*compWextra)/sts.length;
       strw=(W-(lblw-1))/dk.sectorsSorted.size();
