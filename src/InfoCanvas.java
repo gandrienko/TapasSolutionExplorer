@@ -56,7 +56,9 @@ public class InfoCanvas extends InfoCanvasBasics {
                      dk.getCount(sector,"CountFlights-DelayOver60",y1,x1)};
       int iCountsFrom[]=dk.getCountsForNominals(sector,"From",labelsSectors,y1,x1),
           iCountsTo[]=dk.getCountsForNominals(sector,"To",labelsSectors,y1,x1);
-      String out="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+sector+"</b>, capacity="+(int)capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
+      String out="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+sector+"</b>, capacity="+(int)capacity+
+                    "<br>step#=<b>" + x1 + "</b>"+((dk.stepLabels==null)?"":" (<b>"+dk.stepLabels[x1]+"</b>)")+
+                    ", interval=<b>[" +
                     String.format("%02d",y1/3)+":"+String.format("%02d",(y1%3)*20)+".."+
                     String.format("%02d",y1/3+1)+":"+String.format("%02d",(y1%3)*20)+
                     ")</b>, Nflights=<b>";
