@@ -10,6 +10,9 @@ public class InfoCanvas extends InfoCanvasBasics {
   String sector="";
   Vector<String> labelsSectors=null;
 
+  protected int // hotspotMode=0,  // 0: by entries, 1: by presence
+          hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
+
   int x0=0, y0=0, h=10, w=1, yy[]=null;
 
   public InfoCanvas (DataKeeper dk) {
@@ -23,6 +26,12 @@ public class InfoCanvas extends InfoCanvasBasics {
     repaint();
   }
 
+  public void setHotspotRatio (int hotspotRatio) {
+    this.hotspotRatio=hotspotRatio;
+    plotImageValid=false;
+    repaint();
+  }
+
   @Override
   public String getToolTipText(MouseEvent me) {
     Point p = new Point(me.getX(),me.getY());
@@ -31,10 +40,7 @@ public class InfoCanvas extends InfoCanvasBasics {
         labelsSectors = dk.getConnectedSectors(sector);
         //System.out.println("From "+labelsSectors);
       }
-      Integer cap=dk.capacities.get(sector);
-      int capacity=0;
-      if (cap!=null)
-        capacity=cap.intValue();
+      float capacity=dk.capacities.get(sector);
       int x1=(p.x-x0)/w, y1=-1;
       for (int i=0; i<yy.length-1; i++)
         if (p.y>=yy[i] && p.y<=yy[i+1])
@@ -50,12 +56,12 @@ public class InfoCanvas extends InfoCanvasBasics {
                      dk.getCount(sector,"CountFlights-DelayOver60",y1,x1)};
       int iCountsFrom[]=dk.getCountsForNominals(sector,"From",labelsSectors,y1,x1),
           iCountsTo[]=dk.getCountsForNominals(sector,"To",labelsSectors,y1,x1);
-      String out="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+sector+"</b>, capacity="+capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
+      String out="<html><body style=background-color:rgb(255,255,204)><p align=center>sector=<b>"+sector+"</b>, capacity="+(int)capacity+"<br>step=<b>" + x1 + "</b>, interval=<b>[" +
                     String.format("%02d",y1/3)+":"+String.format("%02d",(y1%3)*20)+".."+
                     String.format("%02d",y1/3+1)+":"+String.format("%02d",(y1%3)*20)+
                     ")</b>, Nflights=<b>";
       int demand=dk.getCount(sector,"CountFlights",y1,x1);
-      if (demand>capacity)
+      if (demand > capacity*((hotspotRatio==0)?1.1f:1))
         out+="<font color=red>"+demand+"</font> (+"+Math.round(demand*100f/capacity-100)+"%)";
       else
         out+=demand;
@@ -136,10 +142,9 @@ public class InfoCanvas extends InfoCanvasBasics {
     g2.setColor(Color.darkGray);
     int counts[][]=dk.getCounts(sector,"CountFlights"),
         counts_max=dk.getMax(counts);
-    Integer cap=dk.capacities.get(sector);
-    int capacity=0;
-    if (cap!=null)
-      capacity=cap.intValue();
+    float capacity=dk.capacities.get(sector);
+    if (hotspotRatio==0)
+      capacity=1.1f*capacity;
 
     if (iRenderingMode>1 && labelsSectors==null)
       labelsSectors = dk.getConnectedSectors(sector);
@@ -184,7 +189,7 @@ public class InfoCanvas extends InfoCanvasBasics {
               break;
           }
           if (capacity<counts[i][j]) {
-            hh = (yy[i+1]-yy[i] - 2) * capacity / counts_max;
+            hh = (int)((yy[i+1]-yy[i] - 2) * capacity / counts_max);
             g2.setColor(Color.red);
             g2.drawLine(x0+j*w, yy[i+1]-hh, x0+(j+1)*w, yy[i+1]-hh);
           }
