@@ -102,7 +102,7 @@ public class InfoSteps extends JPanel implements MouseListener {
     }
 
     for (int step=0; step<dk.stepsInfo.length; step++) {
-      if (selectedSteps.contains(new Integer(step))) {
+      if (selectedSteps.contains(new Integer(step)) || sts_animation==step) {
         g2.setColor(Color.cyan);
         g2.drawRect(x0+step*w,0,w,getHeight()-1);
         g2.drawRect(x0+step*w,yy[2]-3,w,4);
