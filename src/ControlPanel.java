@@ -137,10 +137,12 @@ public class ControlPanel extends JPanel implements ActionListener {
     if (ae.getSource().equals(JChotspotsMode)) {
       dk.setHotspotMode(JChotspotsMode.getSelectedIndex());
       ((InfoCanvasAll)ic).setHotspotMode(JChotspotsMode.getSelectedIndex());
+      is.repaint();
     }
     if (ae.getSource().equals(JChotspotsRatio)) {
       dk.setHotspotRatio(JChotspotsRatio.getSelectedIndex());
       ((InfoCanvasAll)ic).setHotspotRatio(JChotspotsRatio.getSelectedIndex());
+      is.repaint();
     }
     if (ae.getSource() instanceof Timer && is!=null) {
       is.animationNextStep();
