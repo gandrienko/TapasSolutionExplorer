@@ -115,6 +115,8 @@ public class DataKeeper {
     recsInCellsAll=new Hashtable<>();
     sectorsWithData=new Vector<>(sectors.size());
     iGlobalMax=0;
+    int nSectorsProcessed=0;
+    System.out.println("* Computing aggregates for "+sectors.size()+" sectors");
     for (String sector:sectors) {
       aggregate(sector,false);
       float capacity=capacities.get(sector);
@@ -144,13 +146,18 @@ public class DataKeeper {
       if (n>iGlobalMax)
         iGlobalMax=n;
       //System.out.println("Sector="+sector+", max_count="+n);
+      nSectorsProcessed++;
+      if (nSectorsProcessed%10==0)
+        System.out.println("* "+nSectorsProcessed+" sectors ready");
     }
     //System.out.println("* global max="+iGlobalMax);
     sortSectors(SectorData.comparisonMode[0]);
+    System.out.println("* Computing aggregates for "+sectors.size()+" sectors ... ready");
   }
 
   public int stepsInfo[][]=null; // 0: nHotspots; 1: n sectors with hotspots ; 2: total delay; 3..8: nFlightsDelay0,1_4,5_9,10-29,30_59,over60;
   public void calcFeaturesOfSteps() {
+    System.out.println("* Computing aggregates for "+Nsteps+" steps");
     if (stepsInfo==null)
       stepsInfo=new int[Nsteps][];
     for (int step=0; step<Nsteps; step++) {
@@ -197,7 +204,11 @@ public class DataKeeper {
         else
           stepsInfo[step][8]++;
       }
+      if (step>0 && step%10==0)
+        System.out.println("* step "+step+" ... ready");
     }
+    System.out.println("* Computing aggregates for "+Nsteps+" steps ... ready");
+
     //for (int i=0; i<Nsteps; i++)
       //System.out.println("step="+i+stepsInfo[i]);
 
