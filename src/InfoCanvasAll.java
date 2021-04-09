@@ -25,6 +25,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   int sts[]=null; // Steps to Show
   protected String highlightedSector=null;
   protected int highlightedInterval=-1;
+  protected boolean bHideSectorsWithUndefinedCapacity=true;
   HashSet<String> selectedSectors=new HashSet<>(dk.sectors.size());
 
   protected int hotspotMode=0,  // 0: by entries, 1: by presence
@@ -48,6 +49,12 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     repaint();
   }
 
+  public void setHideSectorsWithUndefinedCapacity (boolean bHideSectorsWithUndefinedCapacity) {
+    this.bHideSectorsWithUndefinedCapacity=bHideSectorsWithUndefinedCapacity;
+    dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
+    plotImageValid=false;
+    repaint();
+  }
 
   public void setSTS (int sts[]) {
     this.sts=sts;

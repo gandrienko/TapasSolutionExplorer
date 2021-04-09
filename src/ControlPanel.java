@@ -6,7 +6,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.TreeSet;
 
-public class ControlPanel extends JPanel implements ActionListener, ItemListener {
+public class ControlPanel extends JPanel implements ActionListener {
 
   protected DataKeeper dk=null;
   protected InfoCanvasBasics ic=null;
@@ -14,7 +14,7 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 
   public JComboBox JCsectors=null;
   protected JComboBox JCrenderingMode=null, JChotspotsMode=null, JChotspotsRatio=null;
-  protected JCheckBox JCBemthHotspots=null;
+  protected JCheckBox JCBemthHotspots=null, JCBhideSectorsWithUndefinedCapacity=null;
 
   protected Timer timer=null;
   protected JButton bstart=null, bstop=null;
@@ -85,6 +85,16 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
       JChotspotsRatio=new JComboBox(hotspotRatios);
       JChotspotsRatio.addActionListener(this);
       p.add(JChotspotsRatio);
+      p.add(new JLabel("   "));
+      JCBhideSectorsWithUndefinedCapacity=new JCheckBox("hide sectors with undefined capacity",true);
+      JCBhideSectorsWithUndefinedCapacity.addItemListener(new ItemListener() {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          dk.bHideSectorsWithUndefinedCapacity=JCBhideSectorsWithUndefinedCapacity.isSelected();
+          ((InfoCanvasAll)ic).setHideSectorsWithUndefinedCapacity(JCBhideSectorsWithUndefinedCapacity.isSelected());
+        }
+      });
+      p.add(JCBhideSectorsWithUndefinedCapacity);
       add(p,BorderLayout.EAST);
     }
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
@@ -100,7 +110,12 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
     add(p, BorderLayout.CENTER);
     if (ic instanceof InfoCanvas) {
       JCBemthHotspots = new JCheckBox("more space for " + dk.NintevalsWithHotspots + " intevals with hotspots", false);
-      JCBemthHotspots.addItemListener(this);
+      JCBemthHotspots.addItemListener(new ItemListener() {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          ic.setbDoubleSpaceForHotspots(JCBemthHotspots.isSelected());
+        }
+      });
       JCBemthHotspots.setToolTipText("time intervals that have hotspots will be given double screen space (height)");
       add(JCBemthHotspots, BorderLayout.EAST);
     }
@@ -134,12 +149,6 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
         bstart.setEnabled(true);
         bstop.setEnabled(false);
       }
-    }
-  }
-
-  public void itemStateChanged (ItemEvent ie) {
-    if (ie.getSource().equals(JCBemthHotspots)) {
-      ic.setbDoubleSpaceForHotspots(JCBemthHotspots.isSelected());
     }
   }
 

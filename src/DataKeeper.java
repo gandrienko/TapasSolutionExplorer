@@ -15,6 +15,7 @@ public class DataKeeper {
 
   protected int hotspotMode=0,  // 0: by entries, 1: by presence
                 hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
+  public boolean bHideSectorsWithUndefinedCapacity=true;
 
   public void sortSectors (String mode) {
     sortSectors(mode,null);
@@ -25,7 +26,7 @@ public class DataKeeper {
     Collections.sort(sectorsWithData);
     sectorsSorted=new Vector<String>(sectors.size());
     for (SectorData sd:sectorsWithData)
-      if (selection==null || selection.size()==0 || selection.contains(sd.sector)) {
+      if ((!bHideSectorsWithUndefinedCapacity || capacities.get(sd.sector)<999) && (selection==null || selection.size()==0 || selection.contains(sd.sector))) {
         if (mode.equals(SectorData.comparisonMode[0]))
           sectorsSorted.add(sd.sector);
         else
