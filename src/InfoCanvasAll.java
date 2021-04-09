@@ -408,6 +408,30 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     menu.add(item);
     if (selectedSectors.size()>0) {
       menu.add(new JPopupMenu.Separator());
+      item=new JMenuItem("show only selected");
+      item.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode,selectedSectors);
+          dk.calcMaxForSelectedSteps(sts);
+          plotImageValid=false;
+          repaint();
+        }
+      });
+      menu.add(item);
+      //menu.add(new JPopupMenu.Separator());
+      item=new JMenuItem("show all");
+      item.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          dk.sortSectors(dk.sectorsWithData.elementAt(0).compMode);
+          dk.calcMaxForSelectedSteps(sts);
+          plotImageValid=false;
+          repaint();
+        }
+      });
+      menu.add(item);
+      //menu.add(new JPopupMenu.Separator());
       item=new JMenuItem("clear selection");
       item.addActionListener(new ActionListener() {
         @Override
@@ -420,6 +444,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         }
       });
       menu.add(item);
+/*
       JCheckBoxMenuItem cbitem=new JCheckBoxMenuItem("show only selected",dk.sectorsSorted.size()<dk.sectors.size());
       cbitem.addActionListener(new ActionListener() {
         @Override
@@ -434,6 +459,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         }
       });
       menu.add(cbitem);
+*/
     }
     String sector=findSectorByPoint(me.getPoint());
     if (sector!=null) {
@@ -501,6 +527,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
             selectedSectors.add(si.sector);
           plotImageValid = false;
           repaint();
+          return;
         }
       for (CellInfo ci : cellInfos)
         if (ci.r.contains(me.getPoint())) {
@@ -510,6 +537,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
             selectedSectors.add(ci.sector);
           plotImageValid = false;
           repaint();
+          return;
         }
     }
   }
