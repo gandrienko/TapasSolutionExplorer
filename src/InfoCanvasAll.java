@@ -31,6 +31,13 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   protected int hotspotMode=0,  // 0: by entries, 1: by presence
                 hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
 
+  protected Vector<JFrame> children=new Vector<>(10);
+
+  protected void killChildren() {
+    for (JFrame fr:children)
+      fr.dispose();
+  }
+
   public InfoCanvasAll (DataKeeper dk) {
     super(dk);
     addMouseListener(this);
@@ -39,12 +46,14 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
 
   public void setHotspotMode (int hotspotMode) {
     this.hotspotMode=hotspotMode;
+    killChildren();
     plotImageValid=false;
     repaint();
   }
 
   public void setHotspotRatio (int hotspotRatio) {
     this.hotspotRatio=hotspotRatio;
+    killChildren();
     plotImageValid=false;
     repaint();
   }
@@ -452,11 +461,13 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
           InfoCanvas ic=new InfoCanvas(dk);
           ic.setSector(sector);
+          ic.setHotspotRatio(hotspotRatio);
           ControlPanel cp=new ControlPanel(dk,ic,null,sector);
           frame.getContentPane().add(cp, BorderLayout.SOUTH);
           frame.getContentPane().add(ic, BorderLayout.CENTER);
           frame.pack();
           frame.setVisible(true);
+          children.add(frame);
         }
       });
       menu.add(item);
