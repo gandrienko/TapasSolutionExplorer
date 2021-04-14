@@ -1,9 +1,13 @@
+import TapasSectorExplorer.*;
+import TapasDataReader.Record;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.TreeSet;
+import java.util.Vector;
 
 public class InfoSteps extends JPanel implements MouseListener {
 
@@ -59,7 +63,7 @@ public class InfoSteps extends JPanel implements MouseListener {
       s+="</table>\n</body></html>";
     }
     else {
-      s="<html><body><b>Point</b> on step to get info<p><b>Click</b> on step to select/deselect its presentation in the panel above</body></html>";
+      s="<html><body><b>Point</b> on step to get info<p><b>Click</b> on step to select/deselect its presentation in the panel above<p><b>Click on empty space</b> for Flights explorer</body></html>";
     }
     return s;
   }
@@ -187,6 +191,10 @@ public class InfoSteps extends JPanel implements MouseListener {
         repaint();
         icAll.setSTS(getSortedArrayFromHashSet(selectedSteps));
       }
+    }
+    else {
+      Vector<Record> vr[]=new Vector[(selectedSteps.size()==1) ? 1 : 2];
+      TapasSectorExplorer.Connector(vr);
     }
   }
   public void mouseEntered (MouseEvent me) {}
