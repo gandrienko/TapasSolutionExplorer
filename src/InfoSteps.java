@@ -1,4 +1,4 @@
-import TapasSectorExplorer.*;
+//import TapasSectorExplorer.*;
 import TapasDataReader.Record;
 
 import javax.swing.*;
@@ -194,7 +194,7 @@ public class InfoSteps extends JPanel implements MouseListener {
     }
     else {
       Vector<Record> vr[]=new Vector[(selectedSteps.size()==1) ? 1 : 2];
-      TapasSectorExplorer.Connector(vr);
+      //TapasSectorExplorer.Connector(vr);
     }
   }
   public void mouseEntered (MouseEvent me) {}
