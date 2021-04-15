@@ -1,6 +1,8 @@
+package TapasSolutionExplorer.Data;
 
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
+import TapasSolutionExplorer.Data.SectorData;
 
 import java.io.*;
 import java.util.*;
@@ -8,8 +10,13 @@ import java.util.*;
 public class DataKeeper {
 
   protected HashSet<String> flights=new HashSet(1000), sectors=new HashSet(50);
+  public HashSet getSectors() { return sectors; }
   public Vector<SectorData> sectorsWithData=new Vector<>(50);
   Vector<String> sectorsSorted=null;
+
+  public Vector<String> getSectorsSorted() {
+    return sectorsSorted;
+  }
 
   public String stepLabels[]=null;
 
@@ -119,7 +126,7 @@ public class DataKeeper {
     } catch (FileNotFoundException ex) { System.out.println("problem reading file "+fname+" : "+ex); }
   }
 
-  int Nintervals=70, NintevalsWithHotspots=0, Ishift=20, Iduration=60;
+  public int Nintervals=70, NintevalsWithHotspots=0, Ishift=20, Iduration=60;
   protected Hashtable<String,Vector<Record>[][]> recsInCellsAll=null;
   //protected Vector<Record> recsInCells[][]=null;
   public boolean[] hasHotspots=null;

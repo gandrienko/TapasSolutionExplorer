@@ -1,3 +1,5 @@
+package TapasSolutionExplorer.Vis;
+
 import javafx.scene.paint.Color;
 
 public class ColorScales {

@@ -1,7 +1,11 @@
+package TapasSolutionExplorer.Vis;
+
+import TapasSolutionExplorer.Data.SectorData;
+import TapasSolutionExplorer.Data.DataKeeper;
+import TapasSolutionExplorer.UI.ControlPanel;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
@@ -26,7 +30,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   protected String highlightedSector=null;
   protected int highlightedInterval=-1;
   protected boolean bHideSectorsWithUndefinedCapacity=true;
-  HashSet<String> selectedSectors=new HashSet<>(dk.sectors.size());
+  HashSet<String> selectedSectors=new HashSet<>(dk.getSectors().size());
 
   protected int hotspotMode=0,  // 0: by entries, 1: by presence
                 hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
@@ -207,11 +211,11 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2 = (Graphics2D) plotImage.getGraphics();
 
     if (sectorInfos==null)
-      sectorInfos=new Vector<>(dk.sectors.size());
+      sectorInfos=new Vector<>(dk.getSectors().size());
     else
       sectorInfos.clear();
     if (cellInfos ==null)
-      cellInfos =new Vector<>(dk.sectors.size()*dk.Nintervals);
+      cellInfos =new Vector<>(dk.getSectors().size()*dk.Nintervals);
     else
       cellInfos.clear();
 
@@ -227,16 +231,16 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     bounds = gv.getPixelBounds(null,0,0);
     int strw=bounds.width+1, strh=bounds.height+1;
     int maxL=0;
-    for (String sector:dk.sectorsSorted)
+    for (String sector:dk.getSectorsSorted())
       if (sector.length()>maxL)
         maxL=sector.length();
 
-    int compW=2+lblw+dk.sectorsSorted.size()*strw,
+    int compW=2+lblw+dk.getSectorsSorted().size()*strw,
         compWextra=5; // width of a single component
     //if (compW*sts.length+compWextra*(sts.length-1)>getWidth()) {
       int W=(getWidth()-5*compWextra)/sts.length;
-      strw=(W-(lblw-1))/dk.sectorsSorted.size();
-      compW=2+lblw+dk.sectorsSorted.size()*strw;
+      strw=(W-(lblw-1))/dk.getSectorsSorted().size();
+      compW=2+lblw+dk.getSectorsSorted().size()*strw;
     //}
 
     y0=3+(maxL+1)*strh;
@@ -255,7 +259,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2.setColor(Color.GRAY.brighter());
       for (int i=1; i<dk.Nintervals; i++)
         g2.drawLine(xx,yy[i], xx+compW, yy[i]);
-      for (int i=1; i<dk.sectorsSorted.size(); i++)
+      for (int i=1; i<dk.getSectorsSorted().size(); i++)
         g2.drawLine(xx+lblw+1+i*strw, strh+1, xx+lblw+1+i*strw, yy[yy.length-1]+3);
       g2.setColor(Color.GRAY);
       for (int i=0; i<dk.Nintervals; i++) {
@@ -271,7 +275,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2.fillRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
       g2.setColor(Color.BLACK);
       g2.drawRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
-      for (String sector : dk.sectorsSorted) { // new TreeSet<String>(dk.sectors)
+      for (String sector : dk.getSectorsSorted()) { // new TreeSet<String>(dk.sectors)
         if (sector.equals(highlightedSector))
           g2.setColor(Color.black);
         else

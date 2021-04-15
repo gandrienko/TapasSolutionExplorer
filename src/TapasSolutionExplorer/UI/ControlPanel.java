@@ -1,10 +1,17 @@
+package TapasSolutionExplorer.UI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.TreeSet;
+
+import TapasSolutionExplorer.Data.DataKeeper;
+import TapasSolutionExplorer.Vis.InfoCanvas;
+import TapasSolutionExplorer.Vis.InfoCanvasAll;
+import TapasSolutionExplorer.Vis.InfoCanvasBasics;
+import TapasSolutionExplorer.Vis.InfoSteps;
 
 public class ControlPanel extends JPanel implements ActionListener {
 
@@ -42,7 +49,7 @@ public class ControlPanel extends JPanel implements ActionListener {
         dk.aggregate(sector);
         //dk.checkEqual();
         dk.getCounts(sector,"CountFlights");
-        ((InfoCanvas)ic).setSector(sector);
+        ((TapasSolutionExplorer.Vis.InfoCanvas)ic).setSector(sector);
       }
       JPanel p=new JPanel(new FlowLayout(FlowLayout.LEFT,10,0));
       p.add(new JLabel("Sector:"));
@@ -50,7 +57,7 @@ public class ControlPanel extends JPanel implements ActionListener {
       add(p,BorderLayout.WEST);
       */
     }
-    else { // InfoCanvasAll
+    else { // TapasSolutionExplorer.Vis.InfoCanvasAll
       JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
       bstart=new JButton("Animation: start");
       bstop=new JButton("Animation: stop");

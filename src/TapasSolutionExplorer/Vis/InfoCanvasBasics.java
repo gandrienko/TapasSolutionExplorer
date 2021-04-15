@@ -1,14 +1,18 @@
+package TapasSolutionExplorer.Vis;
+
+import TapasSolutionExplorer.Data.DataKeeper;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class InfoCanvasBasics extends JPanel {
 
   static public String RenderingModes[]={"none","delays","sectors (from)","sectors (to)"};
-  int iRenderingMode=1;
+  protected int iRenderingMode=1;
 
-  DataKeeper dk=null;
+  protected DataKeeper dk=null;
 
-  boolean bDoubleSpaceForHotspots=false;
+  protected boolean bDoubleSpaceForHotspots=false;
 
   public void setbDoubleSpaceForHotspots (boolean bDoubleSpaceForHotspots) {
     this.bDoubleSpaceForHotspots = bDoubleSpaceForHotspots;

@@ -1,6 +1,7 @@
-import TapasSectorExplorer.data_manage.*;
-import TapasSectorExplorer.*;
+package TapasSolutionExplorer.Vis;
+
 import TapasDataReader.Record;
+import TapasSolutionExplorer.Data.DataKeeper;
 
 import javax.swing.*;
 import java.awt.*;

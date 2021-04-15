@@ -1,9 +1,10 @@
-import javax.swing.*;
+package TapasSolutionExplorer.Vis;
+
+import TapasSolutionExplorer.Data.DataKeeper;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.util.Vector;
@@ -94,7 +95,7 @@ public class InfoCanvas extends InfoCanvasBasics {
       }
       out+="</table></td>\n<td><table border=0><tr><td></td><td></td><td>From</td><td>To</td></tr>";
       for (int i=0; i<iCountsFrom.length; i++) {
-        int rgb[]=ColorScales.getKellyColorAsRGB(i);
+        int rgb[]= ColorScales.getKellyColorAsRGB(i);
         out += "<tr align=right><td>"+labelsSectors.elementAt(i)+"</td><td style=background-color:rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")>" +
                 ".</td><td>" + iCountsFrom[i] + "</td><td>" + iCountsTo[i] + "</td></tr>\n";
       }
