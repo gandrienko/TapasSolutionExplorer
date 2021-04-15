@@ -88,6 +88,19 @@ public class DataKeeper {
     } catch (FileNotFoundException ex) { System.out.println("problem reading file "+fname+" : "+ex); }
   }
 
+  public Vector<Record> getRecordsForStep (int step) {
+    Vector<Record> vr=new Vector(100000,100000);
+    String stepAsStr=""+step;
+    Set<String> keys=records.keySet();
+    for (String key:keys) {
+      String tokens[]=key.split("_");
+      if (tokens!=null && tokens.length>1 && stepAsStr.equals(tokens[1]))
+        for (Record r:records.get(key))
+          vr.add(r);
+    }
+    return vr;
+  }
+
   protected void readCapacities(String fname) {
     try {
       BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fname+".csv")))) ;
