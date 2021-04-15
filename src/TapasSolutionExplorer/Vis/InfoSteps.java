@@ -200,7 +200,7 @@ public class InfoSteps extends JPanel implements MouseListener {
       vr[0]=dk.getRecordsForStep(steps[0]);
       if (vr.length==2)
         vr[1]=dk.getRecordsForStep(steps[steps.length-1]);
-      new TapasSectorExplorer.data_manage.Connector(vr);
+      new TapasSectorExplorer.data_manage.Connector(vr,dk.capacities);
     }
   }
   public void mouseEntered (MouseEvent me) {}
