@@ -196,11 +196,15 @@ public class InfoSteps extends JPanel implements MouseListener {
     }
     else {
       Vector<Record> vr[]=new Vector[(selectedSteps.size()==1) ? 1 : 2];
+      String s[]=new String[vr.length];
       int steps[]=getSortedArrayFromHashSet(selectedSteps);
       vr[0]=dk.getRecordsForStep(steps[0]);
-      if (vr.length==2)
-        vr[1]=dk.getRecordsForStep(steps[steps.length-1]);
-      new TapasSectorExplorer.data_manage.Connector(vr,dk.capacities);
+      s[0]=(dk.stepLabels==null) ? ""+steps[0] : dk.stepLabels[steps[0]];
+      if (vr.length==2) {
+        vr[1] = dk.getRecordsForStep(steps[steps.length - 1]);
+        s[1]=(dk.stepLabels==null) ? ""+steps[steps.length - 1] : dk.stepLabels[steps[steps.length - 1]];
+      }
+      new TapasSectorExplorer.data_manage.Connector(vr,s,dk.capacities);
     }
   }
   public void mouseEntered (MouseEvent me) {}

@@ -352,7 +352,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
 
   protected String findSectorByPoint (Point p) {
     for (SectorInfo si:sectorInfos)
-      if (si.r.contains(p))
+      if (si.r.x<=p.x && si.r.x+si.r.width>=p.x) // (si.r.contains(p)) - here we ignore p.y
         return si.sector;
     return null;
   }

@@ -1,8 +1,12 @@
 package TapasSolutionExplorer.Vis;
 
+import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.DataKeeper;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
@@ -30,7 +34,13 @@ public class InfoCanvas extends InfoCanvasBasics {
           plotImageValid=false;
           repaint();
         }
-        super.mouseMoved(e);
+        super.mouseExited(e);
+      }
+    });
+    addMouseListener(new MouseAdapter() {
+      public void mouseClicked (MouseEvent e) {
+        doPopup(e);
+        super.mouseClicked(e);
       }
     });
   }
@@ -46,6 +56,93 @@ public class InfoCanvas extends InfoCanvasBasics {
     this.hotspotRatio=hotspotRatio;
     plotImageValid=false;
     repaint();
+  }
+
+  protected String getStepLabel (int step) {
+    return (dk.stepLabels==null) ? ""+step : dk.stepLabels[step];
+  }
+  protected void doPopup(MouseEvent me) {
+    int x = me.getX();
+    if (x >= x0 && x < x0 + dk.Nsteps * w) {
+      Vector<Record> vr[]=null; // new Vector[(selectedSteps.size()==1) ? 1 : 2];
+      int step=(x-x0)/w;
+      JPopupMenu menu = new JPopupMenu();
+      JMenuItem item = new JMenuItem("show details for step "+step+" ("+getStepLabel(step)+")");
+      item.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          Vector<Record> vr[]=new Vector[1];
+          vr[0]=dk.getRecordsForStep(step);
+          String s[]=new String[1];
+          s[0]=(dk.stepLabels==null) ? ""+step : dk.stepLabels[step];
+          new TapasSectorExplorer.data_manage.Connector(vr,s,dk.capacities,sector);
+        }
+      });
+      menu.add(item);
+      if (step>0) {
+        menu.add(new JSeparator());
+        item = new JMenuItem("Compare steps "+getStepLabel(0)+" & "+getStepLabel(step));
+        item.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            Vector<Record> vr[]=new Vector[2];
+            vr[0]=dk.getRecordsForStep(0);
+            vr[1]=dk.getRecordsForStep(step);
+            String s[]=new String[2];
+            s[0]=getStepLabel(0);
+            s[1]=getStepLabel(step);
+            new TapasSectorExplorer.data_manage.Connector(vr,s,dk.capacities,sector);
+          }
+        });
+        menu.add(item);
+        item = new JMenuItem("Compare steps "+getStepLabel(step-1)+" & "+getStepLabel(step));
+        item.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            Vector<Record> vr[]=new Vector[2];
+            vr[0]=dk.getRecordsForStep(step-1);
+            vr[1]=dk.getRecordsForStep(step);
+            String s[]=new String[2];
+            s[0]=getStepLabel(step-1);
+            s[1]=getStepLabel(step);
+            new TapasSectorExplorer.data_manage.Connector(vr,s,dk.capacities,sector);
+          }
+        });
+        menu.add(item);
+      }
+      if (step<dk.Nsteps-1) {
+        menu.add(new JSeparator());
+        item = new JMenuItem("Compare steps "+getStepLabel(step)+" & "+getStepLabel(step+1));
+        item.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            Vector<Record> vr[]=new Vector[2];
+            vr[0]=dk.getRecordsForStep(step);
+            vr[1]=dk.getRecordsForStep(step+1);
+            String s[]=new String[2];
+            s[0]=getStepLabel(step);
+            s[1]=getStepLabel(step+1);
+            new TapasSectorExplorer.data_manage.Connector(vr,s,dk.capacities,sector);
+          }
+        });
+        menu.add(item);
+        item = new JMenuItem("Compare steps "+getStepLabel(step)+" & "+getStepLabel(dk.Nsteps-1));
+        item.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            Vector<Record> vr[]=new Vector[2];
+            vr[0]=dk.getRecordsForStep(step);
+            vr[1]=dk.getRecordsForStep(dk.Nsteps-1);
+            String s[]=new String[2];
+            s[0]=getStepLabel(step);
+            s[1]=getStepLabel(dk.Nsteps-1);
+            new TapasSectorExplorer.data_manage.Connector(vr,s,dk.capacities,sector);
+          }
+        });
+        menu.add(item);
+      }
+      menu.show(this, me.getX(), me.getY());
+    }
   }
 
   @Override
