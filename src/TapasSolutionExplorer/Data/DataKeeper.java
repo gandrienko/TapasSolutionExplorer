@@ -574,4 +574,26 @@ public class DataKeeper {
     calcFeaturesOfSteps();
   }
 
+  public DataKeeper (String fnCapacities, String fnFlightPlans, String fnSolutions[]) {
+    capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
+    TreeSet<Integer> steps=new TreeSet();
+    steps.add(new Integer(-1)); // step -1 represents the baseline solution
+    Nsteps=1+fnSolutions.length;
+    stepLabels=new String[Nsteps];
+    stepLabels[0]="baseline";
+    records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans, -1,null);
+    for (int i=0; i<fnSolutions.length; i++) {
+      int pos=fnSolutions[i].indexOf('=');
+      stepLabels[1+i]=fnSolutions[i].substring(0,pos);
+      String fn=fnSolutions[i].substring(pos+1);
+      Hashtable<String,Vector<Record>> extraRecords=TapasDataReader.Readers.readSolutionAsStep(fn,i+1);
+      for (String str:extraRecords.keySet())
+        records.put(str,extraRecords.get(str));
+    }
+    for (String s:records.keySet())
+      sectors.add(s.substring(0,s.indexOf("_")));
+    aggregateAll();
+    calcFeaturesOfSteps();
+  }
+
 }
