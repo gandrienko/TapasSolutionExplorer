@@ -78,8 +78,8 @@ public class InfoSteps extends JPanel implements MouseListener {
     g2.fillRect(0,0,getWidth(),getHeight());
 
     w=(getWidth()-5)/dk.Nsteps;
-    if (w>100)
-      w=100;
+    if (w>30)
+      w=30;
     W=w*dk.Nsteps;
     x0=(getWidth()-W)/2;
     int h=15;
