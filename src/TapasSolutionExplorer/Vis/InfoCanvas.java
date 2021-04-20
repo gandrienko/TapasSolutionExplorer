@@ -64,7 +64,6 @@ public class InfoCanvas extends InfoCanvasBasics {
   protected void doPopup(MouseEvent me) {
     int x = me.getX();
     if (x >= x0 && x < x0 + dk.Nsteps * w) {
-      Vector<Record> vr[]=null; // new Vector[(selectedSteps.size()==1) ? 1 : 2];
       int step=(x-x0)/w;
       JPopupMenu menu = new JPopupMenu();
       JMenuItem item = new JMenuItem("show details for step "+step+" ("+getStepLabel(step)+")");
