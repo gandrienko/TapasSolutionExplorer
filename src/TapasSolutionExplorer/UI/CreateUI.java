@@ -22,7 +22,7 @@ public class CreateUI {
     frame.getContentPane().add(cp, BorderLayout.SOUTH);
     JPanel p=new JPanel(new BorderLayout());
     p.add(icAll,BorderLayout.CENTER);
-    p.add(is,BorderLayout.SOUTH);
+    p.add(is,BorderLayout.NORTH);
     //JSplitPane splitPane=new JSplitPane(JSplitPane.VERTICAL_SPLIT,icAll,is);
     //splitPane.setOneTouchExpandable(true);
     //splitPane.setDividerLocation(0.1);
