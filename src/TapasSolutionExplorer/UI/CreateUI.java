@@ -10,9 +10,12 @@ import java.awt.*;
 public class CreateUI {
 
   public CreateUI (DataKeeper dk) {
+    this(dk,true);
+  }
+  public CreateUI (DataKeeper dk, boolean toExitOnClose) {
     //Create and set up the window for all sectors
     JFrame frame = new JFrame("TAPAS Solution Explorer: all sectors");
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setDefaultCloseOperation((toExitOnClose)?JFrame.EXIT_ON_CLOSE:JFrame.DISPOSE_ON_CLOSE);
     InfoCanvasAll icAll=new InfoCanvasAll(dk);
     int sts[]=new int[]{0,dk.Nsteps-1};
     icAll.setSTS(sts);
