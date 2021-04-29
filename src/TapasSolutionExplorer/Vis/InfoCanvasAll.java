@@ -509,7 +509,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       menu.add(item);
       menu.add(new JSeparator());
       int step=(si.step<0)?0:si.step;
-      item = new JMenuItem("show details for step "+step+" ("+getStepLabel(step)+")");
+      item = new JMenuItem("show details for step "+getStepLabel(step));
       item.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
