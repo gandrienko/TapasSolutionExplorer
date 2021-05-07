@@ -357,6 +357,12 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         return si;
     return null;
   }
+  protected CellInfo findCellInfoByPoint (Point p) {
+    for (CellInfo ci:cellInfos)
+      if (ci.r.contains(p)) // (si.r.contains(p)) - here we ignore p.y
+        return ci;
+    return null;
+  }
 
   protected String getStepLabel (int step) {
     return (dk.stepLabels==null) ? ""+step : dk.stepLabels[step];
@@ -485,6 +491,22 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           dk.calcMaxForSelectedSteps(sts);
           plotImageValid=false;
           repaint();
+        }
+      });
+      menu.add(item);
+      menu.add(new JPopupMenu.Separator());
+      CellInfo ci=findCellInfoByPoint(me.getPoint());
+      item=new JMenuItem("Show flights in "+sector+((ci==null)?"":", interval "+ci.interval));
+      item.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          JFrame frame = new JFrame("TAPAS Solution Explorer: flights in "+sector+" at step "+si.step+((ci==null)?"":", interval "+ci.interval));
+          frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+          FlightsTable ft=new FlightsTable(dk.getFlights(sector,si.step),si.step);
+          frame.getContentPane().add(ft, BorderLayout.CENTER);
+          frame.pack();
+          frame.setVisible(true);
+          children.add(frame);
         }
       });
       menu.add(item);

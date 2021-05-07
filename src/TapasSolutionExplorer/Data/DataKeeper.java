@@ -2,14 +2,14 @@ package TapasSolutionExplorer.Data;
 
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
-import TapasSolutionExplorer.Data.SectorData;
 
 import java.io.*;
 import java.util.*;
 
 public class DataKeeper {
 
-  protected HashSet<String> flights=new HashSet(1000), sectors=new HashSet(50);
+  //protected HashSet<String> flights=new HashSet(1000);
+  protected HashSet<String> sectors=new HashSet(50);
   public HashSet getSectors() { return sectors; }
   public Vector<SectorData> sectorsWithData=new Vector<>(50);
   Vector<String> sectorsSorted=null;
@@ -52,6 +52,7 @@ public class DataKeeper {
     try {
       BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fname+".csv")))) ;
       String strLine;
+      HashSet<String> flights=new HashSet(1000);
 
       int n=0;
       try {
@@ -349,6 +350,21 @@ public class DataKeeper {
     return s;
   }
 
+  public Vector<Flight> getFlights (String sector, int step) {
+    if (allFlights==null)
+      return null;
+    Hashtable<String,Flight> fl=new Hashtable<>(100);
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
+    for (int interval=0; interval<Nintervals; interval++)
+      for (Record r:recsInCells[interval][step])
+        if (!fl.containsKey(r.flight))
+          fl.put(r.flight,allFlights.get(r.flight));
+    Vector<Flight> vf=new Vector<>(fl.size());
+    for (String s:fl.keySet())
+      vf.add(fl.get(s));
+    return vf;
+  }
+
   public int getCount (String sector, String operation, int step) {
     int N=0;
     Hashtable<String,Integer> flights=new Hashtable<>(100);
@@ -556,6 +572,7 @@ public class DataKeeper {
     calcFeaturesOfSteps();
   }
 
+  Hashtable<String, Flight> allFlights=null;
   public DataKeeper (String fnCapacities, String fnDecisions, String fnFlightPlans) {
     capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
     TreeSet<Integer> steps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
@@ -566,8 +583,8 @@ public class DataKeeper {
       n++;
       stepLabels[n] = (i.intValue() == -1) ? "baseline" : "" + i.intValue();
     }
-    Hashtable<String, Flight> flights=TapasDataReader.Readers.readFlightDelaysFromDecisions(fnDecisions,steps);
-    records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,flights);
+    allFlights=TapasDataReader.Readers.readFlightDelaysFromDecisions(fnDecisions,steps);
+    records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,allFlights);
     for (String s:records.keySet())
       sectors.add(s.substring(0,s.indexOf("_")));
     aggregateAll();
