@@ -24,13 +24,10 @@ public class FlightsTable extends JPanel {
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
-
     //Create the scroll pane and add the table to it.
     JScrollPane scrollPane = new JScrollPane(table);
-
     //Add the scroll pane to this panel.
     add(scrollPane);
-
   }
 
   class FlightsTableModel extends AbstractTableModel {
@@ -71,7 +68,6 @@ public class FlightsTable extends JPanel {
       }
       return vf.elementAt(row).id;//data[row][col];
     }
-
   }
 
 }

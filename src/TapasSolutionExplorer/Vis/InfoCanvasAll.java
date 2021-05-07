@@ -1,5 +1,6 @@
 package TapasSolutionExplorer.Vis;
 
+import TapasDataReader.Flight;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.SectorData;
 import TapasSolutionExplorer.Data.DataKeeper;
@@ -496,13 +497,14 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       menu.add(item);
       menu.add(new JPopupMenu.Separator());
       CellInfo ci=findCellInfoByPoint(me.getPoint());
-      item=new JMenuItem("Show flights in "+sector+((ci==null)?"":", interval "+ci.interval));
+      item=new JMenuItem("Show flights in "+sector+" at step #"+si.step+" ("+getStepLabel(si.step)+")"+((ci==null)?"":", interval "+ci.interval));
       item.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-          JFrame frame = new JFrame("TAPAS Solution Explorer: flights in "+sector+" at step "+si.step+((ci==null)?"":", interval "+ci.interval));
+          Vector<Flight> vf=dk.getFlights(sector,si.step);
+          JFrame frame = new JFrame("TAPAS Solution Explorer: "+vf.size()+" flights in "+sector+" at step #"+si.step+" ("+getStepLabel(si.step)+")"+((ci==null)?"":", interval "+ci.interval));
           frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-          FlightsTable ft=new FlightsTable(dk.getFlights(sector,si.step),si.step);
+          FlightsTable ft=new FlightsTable(vf,si.step);
           frame.getContentPane().add(ft, BorderLayout.CENTER);
           frame.pack();
           frame.setVisible(true);
