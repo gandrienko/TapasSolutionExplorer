@@ -501,8 +501,10 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       item.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-          Vector<Flight> vf=dk.getFlights(sector,si.step);
-          JFrame frame = new JFrame("TAPAS Solution Explorer: "+vf.size()+" flights in "+sector+" at step #"+si.step+" ("+getStepLabel(si.step)+")"+((ci==null)?"":", interval "+ci.interval));
+          Vector<Flight> vf=(ci==null)?dk.getFlights(sector,si.step):dk.getFlights(sector,ci.interval,ci.step);
+          JFrame frame = new JFrame("TAPAS Solution Explorer: "+vf.size()+" flights in "+sector+" at step #"+si.step+" ("+getStepLabel(si.step)+")"+
+                  ((ci==null)?"":", interval "+String.format("%02d",ci.interval/3)+":"+String.format("%02d",(ci.interval%3)*20)+".."+
+                          String.format("%02d",ci.interval/3+1)+":"+String.format("%02d",(ci.interval%3)*20)));
           frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
           FlightsTable ft=new FlightsTable(vf,si.step);
           frame.getContentPane().add(ft, BorderLayout.CENTER);

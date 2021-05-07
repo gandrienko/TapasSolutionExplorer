@@ -403,6 +403,16 @@ public class DataKeeper {
     return N;
   }
 
+  public Vector<Flight> getFlights (String sector, int interval, int step) {
+    if (allFlights==null)
+      return null;
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
+    Vector<Flight> vf=new Vector<>(recsInCells[interval][step].size());
+    for (int i=0; i<recsInCells[interval][step].size(); i++)
+      vf.add(allFlights.get(recsInCells[interval][step].elementAt(i).flight));
+    return vf;
+  }
+
   public int getCount (String sector, String operation, int interval, int step) {
     Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
     int N=-1;
