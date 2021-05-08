@@ -6,6 +6,7 @@ import TapasSolutionExplorer.Data.DataKeeper;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -24,12 +25,26 @@ public class FlightsTable extends JPanel {
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+    table.getColumnModel().getColumn(4).setCellRenderer(new RenderBar());
     //Create the scroll pane and add the table to it.
     JScrollPane scrollPane = new JScrollPane(table);
     //Add the scroll pane to this panel.
     add(scrollPane);
   }
 
+  class RenderBar extends JProgressBar implements TableCellRenderer {
+    public RenderBar() {
+      super(0,100);
+      setValue(0);
+      setStringPainted(true);
+    }
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      int v=((Integer)value).intValue();
+      setValue(v);
+      setString(""+v);
+      return this;
+    }
+  }
   class FlightsTableModel extends AbstractTableModel {
     Vector<Flight> vf=null;
     int step;
