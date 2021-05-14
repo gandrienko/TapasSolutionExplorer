@@ -14,12 +14,10 @@ public class FlightsTable extends JPanel {
   public FlightsTable (Vector<Flight> vf, int step) {
     super();
     setLayout(new GridLayout(1,0));
-
     float max=0;
     for (Flight fl:vf)
       if (fl.delays[step]>max)
         max=fl.delays[step];
-
     JTable table = new JTable(new FlightsTableModel(vf,step));
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     table.setFillsViewportHeight(true);
@@ -28,12 +26,9 @@ public class FlightsTable extends JPanel {
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
-    //table.getColumnModel().getColumn(4).setCellRenderer(new RenderBar());
     table.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,max));
     table.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelTimeLine(max));
-    //Create the scroll pane and add the table to it.
     JScrollPane scrollPane = new JScrollPane(table);
-    //Add the scroll pane to this panel.
     add(scrollPane);
   }
 
@@ -71,9 +66,9 @@ public class FlightsTable extends JPanel {
           t=vf.elementAt(row).id.split("-");
           return t[2];
         case 4:
-          return new Integer(vf.elementAt(row).delays[step]);
+          return vf.elementAt(row).delays[step]; // new Integer(vf.elementAt(row).delays[step]);
         case 5:
-          return (vf.elementAt(row).delays[step]==0)?null:vf.elementAt(row).delays;
+          return vf.elementAt(row).delays;
       }
       return vf.elementAt(row).id;
     }
