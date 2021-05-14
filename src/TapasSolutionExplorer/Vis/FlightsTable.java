@@ -55,7 +55,7 @@ public class FlightsTable extends JPanel {
         x[0]=0; x[x.length-1]=getWidth();
         y[0]=y[y.length-1]=getHeight();
         for (int i=0; i<v.length; i++) {
-          x[1+i]=(int)Math.round(getWidth()*(1f*i/v.length));
+          x[1+i]=(int)Math.round(getWidth()*(1f*i/(v.length-1)));
           y[1+i]=(int)Math.round(getHeight()*(1-1f*v[i]/max));
         }
         g.setColor(Color.lightGray);
