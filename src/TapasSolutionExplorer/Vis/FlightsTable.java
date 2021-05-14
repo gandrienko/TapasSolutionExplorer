@@ -1,11 +1,11 @@
 package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.Flight;
+import TapasUtilities.*;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.Vector;
 
@@ -37,6 +37,7 @@ public class FlightsTable extends JPanel {
     add(scrollPane);
   }
 
+/*
   class JLabel_TimeLine extends JLabel {
     float max;
     int v[]=null;
@@ -118,6 +119,7 @@ public class FlightsTable extends JPanel {
       return this;
     }
   }
+*/
 /*
   class RenderBar extends JProgressBar implements TableCellRenderer {
     public RenderBar() {
