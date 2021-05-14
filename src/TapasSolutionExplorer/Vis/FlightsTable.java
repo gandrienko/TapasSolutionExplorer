@@ -37,106 +37,6 @@ public class FlightsTable extends JPanel {
     add(scrollPane);
   }
 
-/*
-  class JLabel_TimeLine extends JLabel {
-    float max;
-    int v[]=null;
-    public JLabel_TimeLine (float max) {
-      super("");
-      this.max=max;
-    }
-    public void setValue (int v[]) {
-      this.v=v;
-    }
-    public void paint (Graphics g) {
-      g.setColor(getBackground());
-      g.fillRect(0,0,getWidth(),getHeight());
-      if (v!=null && v.length>0) {
-        int x[] = new int[2 + v.length], y[] = new int[2 + v.length];
-        x[0]=0; x[x.length-1]=getWidth();
-        y[0]=y[y.length-1]=getHeight();
-        for (int i=0; i<v.length; i++) {
-          x[1+i]=(int)Math.round(getWidth()*(1f*i/(v.length-1)));
-          y[1+i]=(int)Math.round(getHeight()*(1-1f*v[i]/max));
-        }
-        g.setColor(Color.lightGray);
-        g.fillPolygon(x, y, x.length);
-      }
-      super.paint(g);
-    }
-  }
-  class RenderLabelTimeLine extends JLabel_TimeLine implements TableCellRenderer {
-    public RenderLabelTimeLine(float max) {
-      super(max);
-      setOpaque(false);
-    }
-    public Component getTableCellRendererComponent (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      setValue((int[])value);
-      if (isSelected)
-        setBackground(table.getSelectionBackground());
-      else
-        setBackground(table.getBackground());
-      return this;
-    }
-  }
-  class JLabel_BarChart extends JLabel {
-    float min,max,v;
-    String text;
-    public JLabel_BarChart(float min, float max) {
-      super("",Label.RIGHT);
-      this.min=min;
-      this.max=max;
-      setHorizontalAlignment(SwingConstants.RIGHT);
-    }
-    public void setValue (float v) {
-      this.v=v;
-    }
-    public void setText (String text) {
-      super.setText(text);
-      this.text=text;
-    }
-    public void paint (Graphics g) {
-      g.setColor(getBackground());
-      g.fillRect(0,0,getWidth(),getHeight());
-      g.setColor(Color.lightGray);
-      g.fillRect(0,2,(int)Math.round(getWidth()*(v-min)/(max-min)),getHeight()-4);
-      super.paint(g);
-    }
-  }
-  class RenderLabelBarChart extends JLabel_BarChart implements TableCellRenderer {
-    public RenderLabelBarChart(float min, float max) {
-      super(min,max);
-      setOpaque(false);
-    }
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      int v=((Integer)value).intValue();
-      setValue(v);
-      setText(""+v);
-      if (isSelected)
-        setBackground(table.getSelectionBackground());
-      else
-        setBackground(table.getBackground());
-      return this;
-    }
-  }
-*/
-/*
-  class RenderBar extends JProgressBar implements TableCellRenderer {
-    public RenderBar() {
-      super(0,100);
-      setValue(0);
-      setStringPainted(true);
-      setOpaque(false);
-      // https://stackoverflow.com/questions/25385700/how-to-set-position-of-string-painted-in-jprogressbar
-    }
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      int v=((Integer)value).intValue();
-      setValue(v);
-      setString(""+v);
-      return this;
-    }
-  }
-*/
   class FlightsTableModel extends AbstractTableModel {
     Vector<Flight> vf=null;
     int step;
@@ -155,7 +55,7 @@ public class FlightsTable extends JPanel {
       return columnNames[col];
     }
     public Class getColumnClass(int c) {
-      return getValueAt(0, c).getClass();
+      return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
     public Object getValueAt(int row, int col) {
       switch (col) {
@@ -175,7 +75,7 @@ public class FlightsTable extends JPanel {
         case 5:
           return (vf.elementAt(row).delays[step]==0)?null:vf.elementAt(row).delays;
       }
-      return vf.elementAt(row).id;//data[row][col];
+      return vf.elementAt(row).id;
     }
   }
 
