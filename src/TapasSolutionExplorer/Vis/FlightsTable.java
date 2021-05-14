@@ -1,14 +1,12 @@
 package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.Flight;
-import TapasSolutionExplorer.Data.DataKeeper;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.util.Hashtable;
 import java.util.Vector;
 
 public class FlightsTable extends JPanel {
@@ -31,17 +29,59 @@ public class FlightsTable extends JPanel {
     table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
     //table.getColumnModel().getColumn(4).setCellRenderer(new RenderBar());
-    table.getColumnModel().getColumn(4).setCellRenderer(new RenderBarLabel(0,max));
+    table.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,max));
+    table.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelTimeLine(max));
     //Create the scroll pane and add the table to it.
     JScrollPane scrollPane = new JScrollPane(table);
     //Add the scroll pane to this panel.
     add(scrollPane);
   }
 
-  class MyLabel extends JLabel {
+  class JLabel_TimeLine extends JLabel {
+    float max;
+    int v[]=null;
+    public JLabel_TimeLine (float max) {
+      super("");
+      this.max=max;
+    }
+    public void setValue (int v[]) {
+      this.v=v;
+    }
+    public void paint (Graphics g) {
+      g.setColor(getBackground());
+      g.fillRect(0,0,getWidth(),getHeight());
+      if (v!=null && v.length>0) {
+        int x[] = new int[2 + v.length], y[] = new int[2 + v.length];
+        x[0]=0; x[x.length-1]=getWidth();
+        y[0]=y[y.length-1]=getHeight();
+        for (int i=0; i<v.length; i++) {
+          x[1+i]=(int)Math.round(getWidth()*(1f*i/v.length));
+          y[1+i]=(int)Math.round(getHeight()*(1-1f*v[i]/max));
+        }
+        g.setColor(Color.lightGray);
+        g.fillPolygon(x, y, x.length);
+      }
+      super.paint(g);
+    }
+  }
+  class RenderLabelTimeLine extends JLabel_TimeLine implements TableCellRenderer {
+    public RenderLabelTimeLine(float max) {
+      super(max);
+      setOpaque(false);
+    }
+    public Component getTableCellRendererComponent (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      setValue((int[])value);
+      if (isSelected)
+        setBackground(table.getSelectionBackground());
+      else
+        setBackground(table.getBackground());
+      return this;
+    }
+  }
+  class JLabel_BarChart extends JLabel {
     float min,max,v;
     String text;
-    public MyLabel (float min, float max) {
+    public JLabel_BarChart(float min, float max) {
       super("",Label.RIGHT);
       this.min=min;
       this.max=max;
@@ -62,8 +102,8 @@ public class FlightsTable extends JPanel {
       super.paint(g);
     }
   }
-  class RenderBarLabel extends MyLabel implements TableCellRenderer {
-    public RenderBarLabel(float min, float max) {
+  class RenderLabelBarChart extends JLabel_BarChart implements TableCellRenderer {
+    public RenderLabelBarChart(float min, float max) {
       super(min,max);
       setOpaque(false);
     }
@@ -102,7 +142,7 @@ public class FlightsTable extends JPanel {
       this.vf=vf;
       this.step=step;
     }
-    private String[] columnNames={"Flight ID","From","To","CallSign","Delay"};
+    private String[] columnNames={"Flight ID","From","To","CallSign","Delay","delays"};
     public int getColumnCount() {
       return columnNames.length;
     }
@@ -130,6 +170,8 @@ public class FlightsTable extends JPanel {
           return t[2];
         case 4:
           return new Integer(vf.elementAt(row).delays[step]);
+        case 5:
+          return (vf.elementAt(row).delays[step]==0)?null:vf.elementAt(row).delays;
       }
       return vf.elementAt(row).id;//data[row][col];
     }
