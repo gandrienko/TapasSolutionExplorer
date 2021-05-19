@@ -58,12 +58,13 @@ public class FlightsTable extends JPanel {
     table.setAutoCreateRowSorter(true);
     DefaultTableCellRenderer centerRenderer=new DefaultTableCellRenderer();
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-    table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-    table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
-    table.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,max));
-    table.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelTimeLine(max));
-    table.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelBarChart(0,maxNChanges));
-    table.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
+    for (int i=1; i<4; i++)
+      table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+    //table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+    table.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelBarChart(0,max));
+    table.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelTimeLine(max));
+    table.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNChanges));
+    table.getColumnModel().getColumn(8).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
     JScrollPane scrollPane = new JScrollPane(table);
     add(scrollPane);
   }
@@ -75,7 +76,7 @@ public class FlightsTable extends JPanel {
       this.vf=vf;
       this.step=step;
     }
-    private String[] columnNames={"Flight ID","From","To","CallSign","Delay","delays","N changes","changes"};
+    private String[] columnNames={"Flight ID","From","To","Airline","CallSign","Delay","Cumulative delays","N changes","Added delays"};
     public int getColumnCount() {
       return columnNames.length;
     }
@@ -92,21 +93,29 @@ public class FlightsTable extends JPanel {
       switch (col) {
         case 0:
           return vf.elementAt(row).id;
-        case 1:
+        case 3:
           String t[]=vf.elementAt(row).id.split("-");
+          String s=t[2];
+          int idxDigit=-1;
+          for (int i=0; idxDigit==-1 && i<s.length(); i++)
+            if (Character.isDigit(s.charAt(i)))
+              idxDigit=i;
+          return (idxDigit==-1) ? s : s.substring(0,idxDigit);
+        case 1:
+          t=vf.elementAt(row).id.split("-");
           return t[0];
         case 2:
           t=vf.elementAt(row).id.split("-");
           return t[1];
-        case 3:
+        case 4:
           t=vf.elementAt(row).id.split("-");
           return t[2];
-        case 4:
+        case 5:
           return vf.elementAt(row).delays[step]; // new Integer(vf.elementAt(row).delays[step]);
-        case 5: case 7:
+        case 6: case 8:
           setToolTipText(vf.elementAt(row).id);
           return vf.elementAt(row).delays;
-        case 6:
+        case 7:
           int v[]=vf.elementAt(row).delays;
           int n=0;
           for (int i=1; i<v.length; i++)
