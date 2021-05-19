@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
 
 public class FlightsTable extends JPanel {
@@ -30,7 +31,28 @@ public class FlightsTable extends JPanel {
       maxNChanges=Math.max(maxNChanges,n);
       maxAmpl=Math.max(maxAmpl,dv);
     }
-    JTable table = new JTable(new FlightsTableModel(vf,step));
+    JTable table = new JTable(new FlightsTableModel(vf,step)){
+      public String getToolTipText (MouseEvent e) {
+        String s="";
+        java.awt.Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p);
+        int colIndex = columnAtPoint(p);
+        if (rowIndex>=0 && colIndex>=0) {
+          int //realColumnIndex = convertColumnIndexToModel(colIndex),
+              realRowIndex = convertRowIndexToModel(rowIndex);
+          int v[]=vf.elementAt(realRowIndex).delays;
+          s="<html><body style=background-color:rgb(255,255,204)>\n";
+          s+="<p><b>"+vf.elementAt(realRowIndex).id+"</b>\n";
+          s+="<table border=0 width=100%><tr align=right><td>step</td><td>delay</td><td>total</td></tr>\n";
+          for (int i=0; i<v.length; i++)
+            if (i==0 || i==v.length-1 || v[i]>v[i-1])
+              s+="<tr align=right><td>"+i+"</td><td>"+((i==0)?v[0]:v[i]-v[i-1])+"</td><td>"+v[i]+"</tr>\n";
+          s+="</table></body></html>";
+        }
+        return s;
+      }
+
+    };
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     table.setFillsViewportHeight(true);
     table.setAutoCreateRowSorter(true);
@@ -66,7 +88,7 @@ public class FlightsTable extends JPanel {
     public Class getColumnClass(int c) {
       return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
-    public Object getValueAt(int row, int col) {
+    public Object getValueAt (int row, int col) {
       switch (col) {
         case 0:
           return vf.elementAt(row).id;
@@ -82,6 +104,7 @@ public class FlightsTable extends JPanel {
         case 4:
           return vf.elementAt(row).delays[step]; // new Integer(vf.elementAt(row).delays[step]);
         case 5: case 7:
+          setToolTipText(vf.elementAt(row).id);
           return vf.elementAt(row).delays;
         case 6:
           int v[]=vf.elementAt(row).delays;
