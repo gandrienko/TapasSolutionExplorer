@@ -1,15 +1,22 @@
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
+import TapasSolutionExplorer.Data.FlightConstructor;
+import TapasSolutionExplorer.Data.FlightInSector;
+import TapasSolutionExplorer.UI.TableMouseListener;
 import TapasSolutionExplorer.Vis.FlightVariantsTableModel;
+import TapasSolutionExplorer.flight_vis.FlightVariantsShow;
 import TapasUtilities.RenderLabelBarChart;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.*;
 
 public class SeeFlight {
+  
   public static void main(String[] args) {
     String parFileName=(args!=null && args.length>0)?args[0]:"params.txt";
   
@@ -117,6 +124,14 @@ public class SeeFlight {
     }
     System.out.println("Got the steps of changes for "+flightSteps.size()+" flights!");
   
+    FlightInSector flightVariants[][][]= FlightConstructor.getFlightSectorSequences(flightSteps,records);
+    if (flightVariants==null) {
+      System.out.println("Failed to get flight plan variants!");
+      return;
+    }
+    System.out.println("Got the flight plan variants for "+flightVariants.length+" flights!");
+    FlightVariantsShow flShow=new FlightVariantsShow(flightVariants);
+  
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
     FlightVariantsTableModel tModel=new FlightVariantsTableModel(flightSteps);
@@ -129,6 +144,20 @@ public class SeeFlight {
     table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(0, tModel.maxNSteps));
     JScrollPane scrollPane = new JScrollPane(table);
+  
+    JPopupMenu menu=new JPopupMenu();
+    JMenuItem mit=new JMenuItem("Show flight plan variants");
+    menu.add(mit);
+    mit.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        int selectedRow = table.getSelectedRow();
+        String flId=tModel.flightIds[selectedRow];
+        flShow.showFlightVariants(flId);
+      }
+    });
+    table.setComponentPopupMenu(menu);
+    table.addMouseListener(new TableMouseListener(table));
   
     JFrame fr = new JFrame("Flights (" + flightSteps.size() + ")");
     fr.getContentPane().add(scrollPane, BorderLayout.CENTER);
