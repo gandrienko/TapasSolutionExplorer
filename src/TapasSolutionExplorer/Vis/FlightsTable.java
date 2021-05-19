@@ -14,10 +14,22 @@ public class FlightsTable extends JPanel {
   public FlightsTable (Vector<Flight> vf, int step) {
     super();
     setLayout(new GridLayout(1,0));
-    float max=0;
-    for (Flight fl:vf)
-      if (fl.delays[step]>max)
-        max=fl.delays[step];
+    float max=0, maxAmpl=0;
+    int maxNChanges=0;
+    for (Flight fl:vf) {
+      if (fl.delays[step] > max)
+        max = fl.delays[step];
+      int v[]=fl.delays;
+      int n=0;
+      float dv=0;
+      for (int i=1; i<v.length; i++)
+        if (v[i]>v[i-1]) {
+          n++;
+          dv=Math.max(dv,v[i]-v[i-1]);
+        }
+      maxNChanges=Math.max(maxNChanges,n);
+      maxAmpl=Math.max(maxAmpl,dv);
+    }
     JTable table = new JTable(new FlightsTableModel(vf,step));
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     table.setFillsViewportHeight(true);
@@ -28,6 +40,8 @@ public class FlightsTable extends JPanel {
     table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,max));
     table.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelTimeLine(max));
+    table.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelBarChart(0,maxNChanges));
+    table.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
     JScrollPane scrollPane = new JScrollPane(table);
     add(scrollPane);
   }
@@ -39,7 +53,7 @@ public class FlightsTable extends JPanel {
       this.vf=vf;
       this.step=step;
     }
-    private String[] columnNames={"Flight ID","From","To","CallSign","Delay","delays"};
+    private String[] columnNames={"Flight ID","From","To","CallSign","Delay","delays","N changes","changes"};
     public int getColumnCount() {
       return columnNames.length;
     }
@@ -67,8 +81,15 @@ public class FlightsTable extends JPanel {
           return t[2];
         case 4:
           return vf.elementAt(row).delays[step]; // new Integer(vf.elementAt(row).delays[step]);
-        case 5:
+        case 5: case 7:
           return vf.elementAt(row).delays;
+        case 6:
+          int v[]=vf.elementAt(row).delays;
+          int n=0;
+          for (int i=1; i<v.length; i++)
+            if (v[i]>v[i-1])
+              n++;
+          return n;
       }
       return vf.elementAt(row).id;
     }
