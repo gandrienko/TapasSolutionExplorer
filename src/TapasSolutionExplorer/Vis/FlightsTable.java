@@ -1,14 +1,12 @@
 package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.Flight;
-import TapasSolutionExplorer.Data.DataKeeper;
+import TapasUtilities.*;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.util.Hashtable;
 import java.util.Vector;
 
 public class FlightsTable extends JPanel {
@@ -16,7 +14,10 @@ public class FlightsTable extends JPanel {
   public FlightsTable (Vector<Flight> vf, int step) {
     super();
     setLayout(new GridLayout(1,0));
-
+    float max=0;
+    for (Flight fl:vf)
+      if (fl.delays[step]>max)
+        max=fl.delays[step];
     JTable table = new JTable(new FlightsTableModel(vf,step));
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     table.setFillsViewportHeight(true);
@@ -25,56 +26,12 @@ public class FlightsTable extends JPanel {
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
-    table.getColumnModel().getColumn(4).setCellRenderer(new RenderBar());
-    table.getColumnModel().getColumn(5).setCellRenderer(new RenderBarLabel());
-    //Create the scroll pane and add the table to it.
+    table.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,max));
+    table.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelTimeLine(max));
     JScrollPane scrollPane = new JScrollPane(table);
-    //Add the scroll pane to this panel.
     add(scrollPane);
   }
 
-  class MyLabel extends JLabel {
-    public MyLabel (String text) {
-      super(text,Label.RIGHT);
-      setHorizontalAlignment(SwingConstants.RIGHT);
-    }
-    public void paint (Graphics g) {
-      super.paint(g);
-      g.drawLine(0,0,getWidth(),getHeight());
-      //super.paint(g);
-    }
-  }
-  class RenderBarLabel extends MyLabel implements TableCellRenderer {
-    public RenderBarLabel() {
-      super("");
-      setOpaque(false);
-    }
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      int v=((Integer)value).intValue();
-      //setValue(v);
-      setText(""+v);
-      if (isSelected)
-        setBackground(table.getSelectionBackground());
-      else
-        setBackground(table.getBackground());
-      return this;
-    }
-  }
-  class RenderBar extends JProgressBar implements TableCellRenderer {
-    public RenderBar() {
-      super(0,100);
-      setValue(0);
-      setStringPainted(true);
-      setOpaque(false);
-      // https://stackoverflow.com/questions/25385700/how-to-set-position-of-string-painted-in-jprogressbar
-    }
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-      int v=((Integer)value).intValue();
-      setValue(v);
-      setString(""+v);
-      return this;
-    }
-  }
   class FlightsTableModel extends AbstractTableModel {
     Vector<Flight> vf=null;
     int step;
@@ -82,7 +39,7 @@ public class FlightsTable extends JPanel {
       this.vf=vf;
       this.step=step;
     }
-    private String[] columnNames={"Flight ID","From","To","CallSign","Delay","Delay+"};
+    private String[] columnNames={"Flight ID","From","To","CallSign","Delay","delays"};
     public int getColumnCount() {
       return columnNames.length;
     }
@@ -93,7 +50,7 @@ public class FlightsTable extends JPanel {
       return columnNames[col];
     }
     public Class getColumnClass(int c) {
-      return getValueAt(0, c).getClass();
+      return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
     public Object getValueAt(int row, int col) {
       switch (col) {
@@ -108,10 +65,12 @@ public class FlightsTable extends JPanel {
         case 3:
           t=vf.elementAt(row).id.split("-");
           return t[2];
-        case 4: case 5:
-          return new Integer(vf.elementAt(row).delays[step]);
+        case 4:
+          return vf.elementAt(row).delays[step]; // new Integer(vf.elementAt(row).delays[step]);
+        case 5:
+          return vf.elementAt(row).delays;
       }
-      return vf.elementAt(row).id;//data[row][col];
+      return vf.elementAt(row).id;
     }
   }
 
