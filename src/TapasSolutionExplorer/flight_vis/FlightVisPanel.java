@@ -1,5 +1,7 @@
 package TapasSolutionExplorer.flight_vis;
 
+import TapasSolutionExplorer.Data.FlightInSector;
+
 import TapasUtilities.RangeSlider;
 
 import javax.swing.*;
@@ -8,8 +10,17 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalTime;
 
 public class FlightVisPanel extends JPanel implements ChangeListener, ActionListener {
+  /**
+   * Sector sequences for all variants of all flights
+   * dimension 0: flights
+   * dimension 1: flight variants
+   * dimension 2: visited sectors
+   */
+  public FlightInSector flights[][][]=null;
+  
   public FlightVariantsShow flShow=null;
   
   protected JLabel flLabel=null;
@@ -20,10 +31,22 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   protected JTextField tfTStart=null, tfTEnd=null;
   protected JButton bFullRange=null;
   
-  public FlightVisPanel(FlightVariantsShow flShow) {
-    if (flShow==null)
+  public FlightVisPanel(FlightInSector flights[][][]) {
+    if (flights==null)
       return;
-    this.flShow=flShow;
+    this.flights=flights;
+    flShow=new FlightVariantsShow(flights);
+    makeInterior();
+  }
+  
+  public FlightVisPanel(FlightVariantsShow flShow) {
+    if (flShow == null)
+      return;
+    this.flShow = flShow;
+    makeInterior();
+  }
+  
+  protected void makeInterior(){
     setLayout(new BorderLayout());
     add(flShow,BorderLayout.CENTER);
     flLabel=new JLabel("No flight selected",JLabel.CENTER);
@@ -56,6 +79,34 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     bFullRange.addActionListener(this);
     bFullRange.setEnabled(false);
     pp.add(bFullRange);
+  }
+  
+  
+  public void showFlightVariants(String flId) {
+    if (flShow!=null && flShow.showFlightVariants(flId)) {
+      //adjust the time range
+      int fIdx=flShow.getShownFlightIdx();
+      String str="Flight "+flId+": "+flights[fIdx].length+" variants";
+      LocalTime t1=flights[fIdx][0][0].entryTime, t2=flights[fIdx][0][flights[fIdx][0].length-1].exitTime;
+      int delay=flights[fIdx][0][0].delay;
+      for (int i=1; i<flights[fIdx].length; i++) {
+        FlightInSector fSeq[]=flights[fIdx][i];
+        if (fSeq[0].delay>delay) delay=fSeq[0].delay;
+        if (t1.compareTo(fSeq[0].entryTime)>0)
+          t1=fSeq[0].entryTime;
+        if (t2.compareTo(fSeq[fSeq.length-1].exitTime)<0)
+          t2=fSeq[fSeq.length-1].exitTime;
+      }
+      str+="; delay = "+delay;
+      flLabel.setText(str);
+      flLabel.setSize(flLabel.getPreferredSize());
+      timeFocuser.removeChangeListener(this);
+      timeFocuser.setFullRange();
+      timeFocuser.setValue(Math.max(t1.getHour() * 60 + t1.getMinute()-15,timeFocuser.getMinimum()));
+      timeFocuser.setUpperValue(Math.min(t2.getHour() * 60 + t2.getMinute()+15,timeFocuser.getMaximum()));
+      timeFocuser.addChangeListener(this);
+      getTimeRange();
+    }
   }
   
   public void actionPerformed (ActionEvent ae) {

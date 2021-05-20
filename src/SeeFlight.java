@@ -131,7 +131,7 @@ public class SeeFlight {
       return;
     }
     System.out.println("Got the flight plan variants for "+flightVariants.length+" flights!");
-    FlightVariantsShow flShow=new FlightVariantsShow(flightVariants);
+    FlightVisPanel flShow=new FlightVisPanel(flightVariants);
   
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
@@ -168,9 +168,8 @@ public class SeeFlight {
     fr.setLocation(30, 30);
     fr.setVisible(true);
   
-    FlightVisPanel fPan=new FlightVisPanel(flShow);
     JFrame showFrame=new JFrame("Flight variants");
-    showFrame.getContentPane().add(fPan, BorderLayout.CENTER);
+    showFrame.getContentPane().add(flShow, BorderLayout.CENTER);
     showFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     showFrame.pack();
     showFrame.setLocation(size.width-showFrame.getWidth()-30,size.height-showFrame.getHeight()-50);
