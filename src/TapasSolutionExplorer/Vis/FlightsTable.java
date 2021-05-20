@@ -4,19 +4,31 @@ import TapasDataReader.Flight;
 import TapasUtilities.*;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Vector;
 
 public class FlightsTable extends JPanel {
 
+  /**
+   * Controls for selecting the steps range to view
+   */
+  protected RangeSlider stepFocuser=null;
+  protected JTextField tfStart=null, tfEnd=null;
+  //protected JButton bFullRange=null;
+
   public FlightsTable (Vector<Flight> vf, int step) {
     super();
-    setLayout(new GridLayout(1,0));
+    setLayout(new BorderLayout()); //(new GridLayout(1,0));
     float max=0, maxAmpl=0;
     int maxNChanges=0;
+    int maxNstep=vf.elementAt(0).delays.length-1;
     for (Flight fl:vf) {
       if (fl.delays[step] > max)
         max = fl.delays[step];
@@ -31,7 +43,7 @@ public class FlightsTable extends JPanel {
       maxNChanges=Math.max(maxNChanges,n);
       maxAmpl=Math.max(maxAmpl,dv);
     }
-    JTable table = new JTable(new FlightsTableModel(vf,step)){
+    JTable table = new JTable(new FlightsTableModel(vf,step)) {
       public String getToolTipText (MouseEvent e) {
         String s="";
         java.awt.Point p = e.getPoint();
@@ -51,7 +63,6 @@ public class FlightsTable extends JPanel {
         }
         return s;
       }
-
     };
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     table.setFillsViewportHeight(true);
@@ -60,21 +71,77 @@ public class FlightsTable extends JPanel {
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     for (int i=1; i<4; i++)
       table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-    //table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
     table.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelBarChart(0,max));
     table.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelTimeLine(max));
     table.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNChanges));
     table.getColumnModel().getColumn(8).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
     JScrollPane scrollPane = new JScrollPane(table);
-    add(scrollPane);
+    add(scrollPane,BorderLayout.CENTER);
+    JPanel cp=new JPanel(new BorderLayout(5,2));
+    cp.setBorder(BorderFactory.createLineBorder(Color.black));
+    stepFocuser=new RangeSlider();
+    stepFocuser.setPreferredSize(new Dimension(240,stepFocuser.getPreferredSize().height));
+    stepFocuser.setMinimum(0);
+    stepFocuser.setMaximum(maxNstep);
+    stepFocuser.setValue(0);
+    stepFocuser.setUpperValue(maxNstep);
+    stepFocuser.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        tfStart.setText(""+stepFocuser.getValue());
+        tfEnd.setText(""+stepFocuser.getUpperValue());
+        ((FlightsTableModel)table.getModel()).setSteps(stepFocuser.getValue(),stepFocuser.getUpperValue());
+      }
+    });
+    tfStart=new JTextField("0",3);
+    tfEnd=new JTextField(""+maxNstep,3);
+    tfStart.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        try {
+          int n=Integer.valueOf(tfStart.getText()).intValue();
+          if (n>=0 && n<=maxNstep && n<=stepFocuser.getUpperValue()) {
+            stepFocuser.setValue(n);
+            ((FlightsTableModel)table.getModel()).setSteps(stepFocuser.getValue(),stepFocuser.getUpperValue());
+          }
+        } catch (NumberFormatException nfe) {
+          tfStart.setText(""+stepFocuser.getValue());
+        }
+      }
+    });
+    tfEnd.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        try {
+          int n=Integer.valueOf(tfEnd.getText()).intValue();
+          if (n>=0 && n<=maxNstep && n>=stepFocuser.getValue()) {
+            stepFocuser.setUpperValue(n);
+            ((FlightsTableModel)table.getModel()).setSteps(stepFocuser.getValue(),stepFocuser.getUpperValue());
+          }
+        } catch (NumberFormatException nfe) {
+          tfEnd.setText(""+stepFocuser.getUpperValue());
+        }
+      }
+    });
+    cp.add(tfStart,BorderLayout.WEST);
+    cp.add(stepFocuser,BorderLayout.CENTER);
+    cp.add(tfEnd,BorderLayout.EAST);
+    add(cp,BorderLayout.SOUTH);
   }
 
   class FlightsTableModel extends AbstractTableModel {
     Vector<Flight> vf=null;
-    int step;
+    int step, minStep, maxStep;
     public FlightsTableModel (Vector<Flight> vf, int step) {
       this.vf=vf;
       this.step=step;
+      minStep=0;
+      maxStep=vf.elementAt(0).delays.length-1;
+    }
+    public void setSteps (int min, int max) {
+      minStep=min; maxStep=max;
+      fireTableDataChanged();
+      //System.out.println("* "+min+" "+max);
     }
     private String[] columnNames={"Flight ID","From","To","Airline","CallSign","Delay","Cumulative delays","N changes","Added delays"};
     public int getColumnCount() {
@@ -113,8 +180,15 @@ public class FlightsTable extends JPanel {
         case 5:
           return vf.elementAt(row).delays[step]; // new Integer(vf.elementAt(row).delays[step]);
         case 6: case 8:
-          setToolTipText(vf.elementAt(row).id);
-          return vf.elementAt(row).delays;
+          //setToolTipText(vf.elementAt(row).id);
+          if (minStep==0 && maxStep==vf.elementAt(row).delays.length-1)
+            return vf.elementAt(row).delays;
+          else {
+            int v[]=new int[maxStep-minStep+1];
+            for (int i=0; i<v.length; i++)
+              v[i]=vf.elementAt(row).delays[minStep+i];
+            return v;
+          }
         case 7:
           int v[]=vf.elementAt(row).delays;
           int n=0;
