@@ -5,6 +5,7 @@ import TapasSolutionExplorer.Data.FlightInSector;
 import TapasSolutionExplorer.UI.TableMouseListener;
 import TapasSolutionExplorer.Vis.FlightVariantsTableModel;
 import TapasSolutionExplorer.flight_vis.FlightVariantsShow;
+import TapasSolutionExplorer.flight_vis.FlightVisPanel;
 import TapasUtilities.RenderLabelBarChart;
 
 import javax.swing.*;
@@ -151,7 +152,7 @@ public class SeeFlight {
     mit.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        int selectedRow = table.getSelectedRow();
+        int selectedRow =table.convertRowIndexToModel(table.getSelectedRow());
         String flId=tModel.flightIds[selectedRow];
         flShow.showFlightVariants(flId);
       }
@@ -166,5 +167,13 @@ public class SeeFlight {
     fr.pack();
     fr.setLocation(30, 30);
     fr.setVisible(true);
+  
+    FlightVisPanel fPan=new FlightVisPanel(flShow);
+    JFrame showFrame=new JFrame("Flight variants");
+    showFrame.getContentPane().add(fPan, BorderLayout.CENTER);
+    showFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    showFrame.pack();
+    showFrame.setLocation(size.width-showFrame.getWidth()-30,size.height-showFrame.getHeight()-50);
+    showFrame.setVisible(true);
   }
 }
