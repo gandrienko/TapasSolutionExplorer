@@ -4,12 +4,15 @@ import TapasSolutionExplorer.Data.FlightInSector;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-public class FlightVariantsShow extends JPanel {
+public class FlightVariantsShow extends JPanel implements MouseListener, MouseMotionListener {
   public static final int secondsInDay =86400, minutesInDay=1440;
   public static float dash1[] = {10.0f,5.0f};
   public static Stroke dashedStroke = new BasicStroke(1.0f,BasicStroke.CAP_BUTT,
@@ -56,6 +59,10 @@ public class FlightVariantsShow extends JPanel {
    */
   protected FlightDrawer flightDrawers[]=null;
   /**
+   * Index of highlighted variant
+   */
+  protected int hlIdx=-1;
+  /**
    * Used to speed up redrawing
    */
   protected BufferedImage off_Image=null;
@@ -72,9 +79,12 @@ public class FlightVariantsShow extends JPanel {
     }
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
     setPreferredSize(new Dimension(Math.round(0.6f*size.width), Math.round(0.6f*size.height)));
+    addMouseListener(this);
+    addMouseMotionListener(this);
   }
   
   public boolean showFlightVariants(String flId) {
+    hlIdx=-1;
     if (flId==null || flightIndex==null)
       return  false;
     Integer ii=flightIndex.get(flId);
@@ -126,21 +136,28 @@ public class FlightVariantsShow extends JPanel {
       }
       if (nMatch==fSeq.length)
         continue;
-      for (int i=0; i<fSeq.length; i++)
-        if (idxs[i]<0 && !sectorSequence.contains(fSeq[i].sectorId)) {
-          int iIns=-1;
-          for (int j=i+1; j<idxs.length && iIns<0; j++)
-            if (idxs[j]>=0)
-              iIns=idxs[j];
-          if (iIns<0) {
-            for (int j=i; j<fSeq.length; j++)
-              sectorSequence.add(fSeq[j].sectorId);
-            break;
+      int lastIdx=-1;
+      for (int i=0; i<fSeq.length; i++) {
+        int idx=sectorSequence.indexOf(fSeq[i].sectorId);
+        if (idx >= 0)
+          lastIdx=idx;
+        else {
+          int iIns = -1;
+          for (int j = i + 1; j < idxs.length && iIns < 0; j++)
+            if (idxs[j] >= 0 && idxs[j] > lastIdx)
+              iIns = idxs[j];
+          if (iIns < 0) {
+            sectorSequence.add(fSeq[i].sectorId);
+            lastIdx = sectorSequence.size() - 1;
           }
-          sectorSequence.add(iIns,fSeq[i].sectorId);
-          for (int j=i+1; j<idxs.length; j++)
-            if (idxs[j]>=0) ++idxs[j];
+          else {
+            sectorSequence.add(iIns, fSeq[i].sectorId);
+            for (int j = i + 1; j < idxs.length; j++)
+              if (idxs[j] >= iIns) ++idxs[j];
+            lastIdx = iIns;
+          }
         }
+      }
     }
     System.out.println("Sector sequence consists of "+sectorSequence.size()+" sectors");
     off_Valid=false;
@@ -204,6 +221,7 @@ public class FlightVariantsShow extends JPanel {
   }
   
   protected void createFlightDrawers(){
+    hlIdx=-1;
     if (flights==null || shownFlightIdx<0 || sectorSequence==null || sectorSequence.isEmpty()) {
       flightDrawers=null;
       return;
@@ -241,6 +259,15 @@ public class FlightVariantsShow extends JPanel {
     }
   }
   
+  public int getFlightIdxAtPosition(int x, int y){
+    if (flightDrawers==null)
+      return -1;
+    for (int i=0; i<flightDrawers.length; i++)
+      if (flightDrawers[i].contains(x,y))
+        return i;
+    return -1;
+  }
+  
   public void paintComponent(Graphics gr) {
     int w=getWidth(), h=getHeight();
     if (w<10 || h<10)
@@ -251,6 +278,8 @@ public class FlightVariantsShow extends JPanel {
       }
       else {
         gr.drawImage(off_Image,0,0,null);
+        if (hlIdx>=0)
+          flightDrawers[hlIdx].drawHighlighted(gr);
         return;
       }
     }
@@ -315,10 +344,44 @@ public class FlightVariantsShow extends JPanel {
     
     off_Valid=true;
     gr.drawImage(off_Image,0,0,null);
+    if (hlIdx>=0)
+      flightDrawers[hlIdx].drawHighlighted(gr);
   }
   
   public void redraw() {
     if (isShowing())
       paintComponent(getGraphics());
   }
+  
+  //---------------------- MouseListener ----------------------------------------
+  
+  public void mouseMoved(MouseEvent me) {
+    if (!isShowing())
+      return;
+    if (me.getButton()!=MouseEvent.NOBUTTON)
+      return;
+    int fIdx= getFlightIdxAtPosition(me.getX(),me.getY());
+    if (fIdx==hlIdx)
+      return;
+    hlIdx=fIdx;
+    redraw();
+  }
+  
+  public void mouseClicked(MouseEvent e) {}
+  public void mousePressed(MouseEvent e) {}
+  public void mouseReleased(MouseEvent e) {}
+  public void mouseEntered(MouseEvent e) {
+    if (hlIdx>=0) {
+      hlIdx=-1;
+      redraw();
+    }
+  }
+  public void mouseExited(MouseEvent e) {
+    if (hlIdx>=0) {
+      hlIdx=-1;
+      redraw();
+    }
+  }
+  public void mouseDragged(MouseEvent e) {}
 }
+
