@@ -582,7 +582,8 @@ public class DataKeeper {
     calcFeaturesOfSteps();
   }
 
-  Hashtable<String, Flight> allFlights=null;
+  protected Hashtable<String, Flight> allFlights=null;
+  
   public DataKeeper (String fnCapacities, String fnDecisions, String fnFlightPlans) {
     capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
     TreeSet<Integer> steps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
@@ -623,6 +624,10 @@ public class DataKeeper {
       sectors.add(s.substring(0,s.indexOf("_")));
     aggregateAll();
     calcFeaturesOfSteps();
+  }
+  
+  public Hashtable<String, Flight> getAllFlights() {
+    return allFlights;
   }
 
 }

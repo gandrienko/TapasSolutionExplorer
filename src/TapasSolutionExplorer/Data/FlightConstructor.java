@@ -33,11 +33,10 @@ public class FlightConstructor {
       for (int i=0; i<sectorRecords.size(); i++) {
         Record r=sectorRecords.elementAt(i);
         int steps[]=flightSteps.get(r.flight);
-        if (steps==null)
-          continue;
         boolean stepFound=r.step==0;
-        for (int j=0; j<steps.length && !stepFound; j++)
-          stepFound=steps[j]==r.step;
+        if (steps!=null)
+          for (int j=0; j<steps.length && !stepFound; j++)
+            stepFound=steps[j]==r.step;
         if (!stepFound)
           continue;
         String key=r.flight+"_"+r.step;

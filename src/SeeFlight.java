@@ -5,6 +5,7 @@ import TapasSolutionExplorer.Data.FlightInSector;
 import TapasSolutionExplorer.UI.TableMouseListener;
 import TapasSolutionExplorer.Vis.FlightVariantsTableModel;
 import TapasSolutionExplorer.flight_vis.FlightVariantsShow;
+import TapasSolutionExplorer.flight_vis.FlightViewManager;
 import TapasSolutionExplorer.flight_vis.FlightVisPanel;
 import TapasUtilities.RenderLabelBarChart;
 
@@ -125,14 +126,6 @@ public class SeeFlight {
     }
     System.out.println("Got the steps of changes for "+flightSteps.size()+" flights!");
   
-    FlightInSector flightVariants[][][]= FlightConstructor.getFlightSectorSequences(flightSteps,records);
-    if (flightVariants==null) {
-      System.out.println("Failed to get flight plan variants!");
-      return;
-    }
-    System.out.println("Got the flight plan variants for "+flightVariants.length+" flights!");
-    FlightVisPanel flShow=new FlightVisPanel(flightVariants);
-  
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
     FlightVariantsTableModel tModel=new FlightVariantsTableModel(flightSteps);
@@ -146,6 +139,9 @@ public class SeeFlight {
     table.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(0, tModel.maxNSteps));
     JScrollPane scrollPane = new JScrollPane(table);
   
+    FlightViewManager flightViewManager=new FlightViewManager(flights,records);
+    flightViewManager.setIncludeOnlyModifiedFlights(true);
+  
     JPopupMenu menu=new JPopupMenu();
     JMenuItem mit=new JMenuItem("Show flight plan variants");
     menu.add(mit);
@@ -154,7 +150,7 @@ public class SeeFlight {
       public void actionPerformed(ActionEvent e) {
         int selectedRow =table.convertRowIndexToModel(table.getSelectedRow());
         String flId=tModel.flightIds[selectedRow];
-        flShow.showFlightVariants(flId);
+        flightViewManager.showFlightVariants(flId);
       }
     });
     table.setComponentPopupMenu(menu);
@@ -167,12 +163,5 @@ public class SeeFlight {
     fr.pack();
     fr.setLocation(30, 30);
     fr.setVisible(true);
-  
-    JFrame showFrame=new JFrame("Flight variants");
-    showFrame.getContentPane().add(flShow, BorderLayout.CENTER);
-    showFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    showFrame.pack();
-    showFrame.setLocation(size.width-showFrame.getWidth()-30,size.height-showFrame.getHeight()-50);
-    showFrame.setVisible(true);
   }
 }

@@ -82,7 +82,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   }
   
   
-  public void showFlightVariants(String flId) {
+  public boolean showFlightVariants(String flId) {
     if (flShow!=null && flShow.showFlightVariants(flId)) {
       //adjust the time range
       int fIdx=flShow.getShownFlightIdx();
@@ -106,7 +106,9 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       timeFocuser.setUpperValue(Math.min(t2.getHour() * 60 + t2.getMinute()+15,timeFocuser.getMaximum()));
       timeFocuser.addChangeListener(this);
       getTimeRange();
+      return true;
     }
+    return false;
   }
   
   public void actionPerformed (ActionEvent ae) {
