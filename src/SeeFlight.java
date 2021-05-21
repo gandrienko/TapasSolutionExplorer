@@ -7,9 +7,12 @@ import TapasSolutionExplorer.Vis.FlightVariantsTableModel;
 import TapasSolutionExplorer.flight_vis.FlightVariantsShow;
 import TapasSolutionExplorer.flight_vis.FlightViewManager;
 import TapasSolutionExplorer.flight_vis.FlightVisPanel;
+import TapasUtilities.RangeSlider;
 import TapasUtilities.RenderLabelBarChart;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -128,17 +131,86 @@ public class SeeFlight {
   
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
-    FlightVariantsTableModel tModel=new FlightVariantsTableModel(flightSteps);
+    FlightVariantsTableModel tModel=new FlightVariantsTableModel(flightSteps,flights);
     JTable table=new JTable(tModel);
     table.setPreferredScrollableViewportSize(new Dimension(Math.round(size.width * 0.35f), Math.round(size.height * 0.4f)));
     table.setFillsViewportHeight(true);
     table.setAutoCreateRowSorter(true);
-    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-    centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-    table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-    table.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(0, tModel.maxNSteps));
+    for (int i=0; i<tModel.getColumnCount(); i++)
+      table.getColumnModel().getColumn(i).setCellRenderer(tModel.getRendererForColumn(i));
+  
     JScrollPane scrollPane = new JScrollPane(table);
   
+    JPanel pAll=new JPanel(new BorderLayout());
+    pAll.add(scrollPane,BorderLayout.CENTER);
+    JPanel cp=new JPanel(new BorderLayout());
+    cp.setBorder(BorderFactory.createLineBorder(Color.black));
+    pAll.add(cp,BorderLayout.SOUTH);
+    RangeSlider stepFocuser=new RangeSlider();
+    cp.add(stepFocuser,BorderLayout.CENTER);
+    stepFocuser.setMinimum(0);
+    stepFocuser.setMaximum(tModel.maxStep);
+    stepFocuser.setValue(0);
+    stepFocuser.setUpperValue(tModel.maxStep);
+  
+    JTextField tfStart=new JTextField("0",4);
+    JTextField tfEnd=new JTextField(String.valueOf(tModel.maxStep),4);
+    JPanel p=new JPanel(new FlowLayout(FlowLayout.LEFT,5,0));
+    p.add(new JLabel("Steps:"));
+    p.add(tfStart);
+    cp.add(p,BorderLayout.WEST);
+    p=new JPanel(new FlowLayout(FlowLayout.LEFT,5,0));
+    p.add(tfEnd);
+    JButton b=new JButton("Full range");
+    b.setEnabled(false);
+    p.add(b);
+    cp.add(p,BorderLayout.EAST);
+  
+    stepFocuser.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        int low=stepFocuser.getValue(), high=stepFocuser.getUpperValue();
+        tfStart.setText(""+low);
+        tfEnd.setText(""+high);
+        tModel.setStepsToShow(low,high);
+        b.setEnabled(low>stepFocuser.getMinimum() || high<stepFocuser.getMaximum());
+      }
+    });
+    b.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        stepFocuser.setFullRange();
+      }
+    });
+    tfStart.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        try {
+          int n=Integer.valueOf(tfStart.getText()).intValue();
+          if (n>=0 && n<=tModel.maxStep && n<=stepFocuser.getUpperValue()) {
+            stepFocuser.setValue(n);
+            tModel.setStepsToShow(stepFocuser.getValue(),stepFocuser.getUpperValue());
+          }
+        } catch (NumberFormatException nfe) {
+          tfStart.setText(""+stepFocuser.getValue());
+        }
+      }
+    });
+    tfEnd.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        try {
+          int n=Integer.valueOf(tfEnd.getText()).intValue();
+          if (n>=0 && n<=tModel.maxStep && n>=stepFocuser.getValue()) {
+            stepFocuser.setUpperValue(n);
+            tModel.setStepsToShow(stepFocuser.getValue(),stepFocuser.getUpperValue());
+          }
+        } catch (NumberFormatException nfe) {
+          tfEnd.setText(""+stepFocuser.getUpperValue());
+        }
+      }
+    });
+    
     FlightViewManager flightViewManager=new FlightViewManager(flights,records);
     flightViewManager.setIncludeOnlyModifiedFlights(true);
   
@@ -157,7 +229,7 @@ public class SeeFlight {
     table.addMouseListener(new TableMouseListener(table));
   
     JFrame fr = new JFrame("Flights (" + flightSteps.size() + ")");
-    fr.getContentPane().add(scrollPane, BorderLayout.CENTER);
+    fr.getContentPane().add(pAll, BorderLayout.CENTER);
     fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     //Display the window.
     fr.pack();
