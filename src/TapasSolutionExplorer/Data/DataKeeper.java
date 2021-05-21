@@ -2,6 +2,7 @@ package TapasSolutionExplorer.Data;
 
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
+import TapasSolutionExplorer.flight_vis.FlightViewManager;
 
 import java.io.*;
 import java.util.*;
@@ -629,5 +630,21 @@ public class DataKeeper {
   public Hashtable<String, Flight> getAllFlights() {
     return allFlights;
   }
-
+  
+  public Hashtable<String,Vector<Record>> getFlightPlans() {
+    return records;
+  }
+  
+  
+  protected FlightViewManager flightViewManager=null;
+  
+  public void showFlightVariants(String flId){
+    if (flightViewManager!=null) {
+      flightViewManager.showFlightVariants(flId);
+      return;
+    }
+    flightViewManager=new FlightViewManager(getAllFlights(),getFlightPlans());
+    flightViewManager.setIncludeOnlyModifiedFlights(false);
+    flightViewManager.showFlightVariants(flId);
+  }
 }

@@ -5,6 +5,7 @@ import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.SectorData;
 import TapasSolutionExplorer.Data.DataKeeper;
 import TapasSolutionExplorer.UI.ControlPanel;
+import TapasSolutionExplorer.UI.TableMouseListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -507,6 +508,22 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
                           String.format("%02d",ci.interval/3+1)+":"+String.format("%02d",(ci.interval%3)*20)));
           frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
           FlightsTable ft=new FlightsTable(vf,si.step);
+          JTable table=ft.getTable();
+          if (table!=null) {
+            JPopupMenu menu=new JPopupMenu();
+            JMenuItem mit=new JMenuItem("Show flight plan variants");
+            menu.add(mit);
+            mit.addActionListener(new ActionListener() {
+              @Override
+              public void actionPerformed(ActionEvent e) {
+                int selectedRow =table.convertRowIndexToModel(table.getSelectedRow());
+                String flId=vf.elementAt(selectedRow).id;
+                dk.showFlightVariants(flId);
+              }
+            });
+            table.setComponentPopupMenu(menu);
+            table.addMouseListener(new TableMouseListener(table));
+          }
           frame.getContentPane().add(ft, BorderLayout.CENTER);
           frame.pack();
           frame.setVisible(true);

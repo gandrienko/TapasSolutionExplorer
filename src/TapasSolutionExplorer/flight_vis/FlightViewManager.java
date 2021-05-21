@@ -60,7 +60,7 @@ public class FlightViewManager {
                              fl.delays[fl.delays.length-1]>0;
       if (!wasDelayed) {//this flight was never delayed
         if (!includeOnlyModifiedFlights)
-          flightSteps.put(fl.id,null);
+          flightSteps.put(fl.id,new int[0]);
         continue;
       }
       ArrayList<Integer> fStepList=new ArrayList<Integer>(20);
@@ -79,7 +79,7 @@ public class FlightViewManager {
       }
       else
         if (!includeOnlyModifiedFlights)
-          flightSteps.put(fl.id,null);
+          flightSteps.put(fl.id,new int[0]);
     }
     if (flightSteps.isEmpty()) {
       System.out.println("Failed to get steps of change for any flight!");

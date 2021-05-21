@@ -22,6 +22,7 @@ public class FlightsTable extends JPanel {
   protected RangeSlider stepFocuser=null;
   protected JTextField tfStart=null, tfEnd=null;
   //protected JButton bFullRange=null;
+  protected JTable table=null;
 
   public FlightsTable (Vector<Flight> vf, int step) {
     super();
@@ -43,7 +44,7 @@ public class FlightsTable extends JPanel {
       maxNChanges=Math.max(maxNChanges,n);
       maxAmpl=Math.max(maxAmpl,dv);
     }
-    JTable table = new JTable(new FlightsTableModel(vf,step)) {
+    table = new JTable(new FlightsTableModel(vf,step)) {
       public String getToolTipText (MouseEvent e) {
         String s="";
         java.awt.Point p = e.getPoint();
@@ -127,6 +128,10 @@ public class FlightsTable extends JPanel {
     cp.add(stepFocuser,BorderLayout.CENTER);
     cp.add(tfEnd,BorderLayout.EAST);
     add(cp,BorderLayout.SOUTH);
+  }
+  
+  public JTable getTable() {
+    return table;
   }
 
   class FlightsTableModel extends AbstractTableModel {
