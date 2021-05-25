@@ -510,7 +510,9 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
           FlightsTable ft=new FlightsTable(vf,si.step);
           JTable table=ft.getTable();
           if (table!=null) {
-            JPopupMenu menu=new JPopupMenu();
+            JPopupMenu menu=table.getComponentPopupMenu();
+            if (menu==null)
+              menu=new JPopupMenu();
             JMenuItem mit=new JMenuItem("Show flight plan variants");
             menu.add(mit);
             mit.addActionListener(new ActionListener() {
