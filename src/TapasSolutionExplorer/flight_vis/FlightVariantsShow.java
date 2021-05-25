@@ -581,20 +581,14 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     }
   }
   
-  //---------------------- MouseListener ----------------------------------------
-  public String getToolTipText(MouseEvent me) {
-    if (!isShowing())
-      return null;
-    if (me.getButton()!=MouseEvent.NOBUTTON)
-      return null;
-    int fIdx= getFlightIdxAtPosition(me.getX(),me.getY());
+  public String getTextForFlightVersion(int fIdx, int xPos, int yPos) {
     if (fIdx<0)
       return null;
     FlightInSector fSeq[]=flights[shownFlightIdx][fIdx];
-    int sIdx=getSectorIdx(me.getY()), sIdxInFlight=-1;
+    int sIdx=getSectorIdx(yPos), sIdxInFlight=-1;
     if (sIdx>=0) { //check if this flight variant goes through this sector
       String sectorId=sectorSequence.get(sIdx);
-      LocalTime t=getTimeForXPos(me.getX()-tMarg,tWidth);
+      LocalTime t=getTimeForXPos(xPos-tMarg,tWidth);
       if (t!=null)
         for (int i=0; i<fSeq.length && sIdxInFlight<0; i++)
           if (sectorId.equals(fSeq[i].sectorId) &&
@@ -623,6 +617,42 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     str+="</table>";
     str+="</body></html>";
     return str;
+  }
+  
+  public String getTextForSector(int sectorIdx, int xPos) {
+    if (sectorIdx<0)
+      return null;
+    LocalTime t=getTimeForXPos(xPos-tMarg,tWidth);
+    String txt="<html><body style=background-color:rgb(255,255,204)>"+
+                   "<font size=5><center>Sector "+sectorSequence.get(sectorIdx)+"</center></font>"+
+                   "<center>Time = "+t+"</center>";
+    if (hourlyCounts!=null && hourlyCounts[sectorIdx]!=null) {
+      txt += "<table border=0 cellmargin=3 cellpadding=1 cellspacing=2>";
+      if (hourlyCounts2==null) {
+        //
+      }
+      else {
+        //
+      }
+      txt+="</table>";
+    }
+    txt+="</body></html>";
+    return txt;
+  }
+  
+  //---------------------- MouseListener ----------------------------------------
+  public String getToolTipText(MouseEvent me) {
+    if (!isShowing())
+      return null;
+    if (me.getButton()!=MouseEvent.NOBUTTON)
+      return null;
+    int fIdx= getFlightIdxAtPosition(me.getX(),me.getY());
+    if (fIdx>=0)
+      return getTextForFlightVersion(fIdx,me.getX(),me.getY());
+    int sIdx=getSectorIdx(me.getY());
+    if (sIdx>=0)
+      return getTextForSector(sIdx,me.getX());
+    return null;
   }
   
   public void mouseMoved(MouseEvent me) {
