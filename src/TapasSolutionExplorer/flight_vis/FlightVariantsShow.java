@@ -44,7 +44,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
    * Used for drawing and calculating positions for times
    */
   protected int tMarg=10, tWidth=0;
-  protected int yMarg=0, plotH=0,
+  protected int yMarg=0, plotH=0, secH=0,
       vSpace=Math.round(6f*Toolkit.getDefaultToolkit().getScreenResolution()/25.4f);
   /**
    * Time range to show (minutes of the day)
@@ -81,6 +81,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     setPreferredSize(new Dimension(Math.round(0.6f*size.width), Math.round(0.6f*size.height)));
     addMouseListener(this);
     addMouseMotionListener(this);
+    ToolTipManager.sharedInstance().registerComponent(this);
+    ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
   }
   
   public boolean showFlightVariants(String flId) {
@@ -322,7 +324,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         RenderingHints.VALUE_ANTIALIAS_ON);
     g.setRenderingHints(rh);
   
-    int secH=(plotH-(sectorSequence.size()-1)*vSpace)/sectorSequence.size();
+    secH=(plotH-(sectorSequence.size()-1)*vSpace)/sectorSequence.size();
   
     int y=yMarg;
     for (int i=0; i<sectorSequence.size(); i++) {
@@ -353,7 +355,58 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       paintComponent(getGraphics());
   }
   
+  protected int getSectorIdx(int yPos) {
+    if (yPos<=yMarg || yPos>=yMarg+plotH)
+      return -1;
+    int sIdx=(yPos-yMarg)/(secH+vSpace);
+    if (sIdx<0 || yPos>yMarg+sIdx*(secH+vSpace)+secH) //the mouse is in a vertical space between sectors
+      return -1;
+    return sIdx;
+  }
+  
   //---------------------- MouseListener ----------------------------------------
+  public String getToolTipText(MouseEvent me) {
+    if (!isShowing())
+      return null;
+    if (me.getButton()!=MouseEvent.NOBUTTON)
+      return null;
+    int fIdx= getFlightIdxAtPosition(me.getX(),me.getY());
+    if (fIdx<0)
+      return null;
+    FlightInSector fSeq[]=flights[shownFlightIdx][fIdx];
+    int sIdx=getSectorIdx(me.getY()), sIdxInFlight=-1;
+    if (sIdx>=0) { //check if this flight variant goes through this sector
+      String sectorId=sectorSequence.get(sIdx);
+      LocalTime t=getTimeForXPos(me.getX()-tMarg,tWidth);
+      if (t!=null)
+        for (int i=0; i<fSeq.length && sIdxInFlight<0; i++)
+          if (sectorId.equals(fSeq[i].sectorId) &&
+                  t.compareTo(fSeq[i].entryTime)>=0 && t.compareTo(fSeq[i].exitTime)<=0)
+            sIdxInFlight=i;
+    }
+    String str="<html><body style=background-color:rgb(255,255,204)><b>"+fSeq[0].flightId+"</b>";
+    str += "<table border=0>";
+    //str+="<tr><td>Flight</td><td><b>"+fSeq[0].flightId+"</b></td></tr>";
+    str+="<tr><td>Version N</td><td>"+fIdx+"</td></tr>";
+    str+="<tr><td>Solution step</td><td>"+fSeq[0].step+"</td></tr>";
+    str+="<tr><td>Delay</td><td>"+fSeq[0].delay+"</td></tr>";
+    if (sIdxInFlight>=0) {
+      FlightInSector fs=fSeq[sIdxInFlight];
+      str+="<tr><td>Sector</td><td>"+fs.sectorId+"</td></tr>";
+      str+="<tr><td>Entry time</td><td>"+fs.entryTime+"</td></tr>";
+      str+="<tr><td>Exit time</td><td>"+fs.exitTime+"</td></tr>";
+      if (fs.prevSectorId!=null)
+        str+="<tr><td>Previous</td><td>"+fs.prevSectorId+"</td></tr>";
+      if (fs.nextSectorId!=null)
+        str+="<tr><td>Next</td><td>"+fs.nextSectorId+"</td></tr>";
+    }
+    str+="</table>";
+    str+="</body></html>";
+  
+    str+="</table>";
+    str+="</body></html>";
+    return str;
+  }
   
   public void mouseMoved(MouseEvent me) {
     if (!isShowing())
