@@ -644,6 +644,7 @@ public class DataKeeper {
       return;
     }
     flightViewManager=new FlightViewManager(getAllFlights(),getFlightPlans());
+    flightViewManager.setCapacities(capacities);
     flightViewManager.setIncludeOnlyModifiedFlights(false);
     flightViewManager.showFlightVariants(flId);
   }

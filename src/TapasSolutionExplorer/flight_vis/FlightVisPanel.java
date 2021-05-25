@@ -1,5 +1,6 @@
 package TapasSolutionExplorer.flight_vis;
 
+import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightInSector;
 
 import TapasUtilities.RangeSlider;
@@ -11,6 +12,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalTime;
+import java.util.Hashtable;
+import java.util.Vector;
 
 public class FlightVisPanel extends JPanel implements ChangeListener, ActionListener {
   /**
@@ -80,7 +83,23 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     bFullRange.setEnabled(false);
     pp.add(bFullRange);
   }
+  /**
+   * Flight plan versions for all solution steps, to be passed to the drawing component
+   * for showing histograms of sector loads.
+   * The keys of the hashtable consist of sector identifiers and step numbers with underscore between them.
+   */
   
+  public void setFlightPlans(Hashtable<String, Vector<Record>> flightPlans) {
+    if (flShow!=null)
+      flShow.setFlightPlans(flightPlans);
+  }
+  /**
+   * Capacities of the sectors (max acceptable N of flights per hour)
+   */
+  public void setCapacities(Hashtable<String, Integer> capacities) {
+    if (flShow!=null)
+      flShow.setCapacities(capacities);
+  }
   
   public boolean showFlightVariants(String flId) {
     if (flShow!=null && flShow.showFlightVariants(flId)) {
@@ -108,6 +127,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       getTimeRange();
       return true;
     }
+    flLabel.setText("No flight selected");
+    flLabel.setSize(flLabel.getPreferredSize());
     return false;
   }
   

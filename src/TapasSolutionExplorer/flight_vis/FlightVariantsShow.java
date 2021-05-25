@@ -1,5 +1,7 @@
 package TapasSolutionExplorer.flight_vis;
 
+import TapasDataReader.Record;
+import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
 
 import javax.swing.*;
@@ -11,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Vector;
 
 public class FlightVariantsShow extends JPanel implements MouseListener, MouseMotionListener {
   public static final int secondsInDay =86400, minutesInDay=1440;
@@ -19,7 +22,9 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
   public static Color
       sectorColor =new Color(128,70,0, 196),
-      sectorBkgColor =new Color(255,165,0,30);
+      sectorBkgColor =new Color(255,165,0,30),
+      capacityColor=new Color(128, 0, 0, 128);
+  public static float alphaMin=0.075f, alphaMax=0.5f;
   /**
    * Sector sequences for all variants of all flights
    * dimension 0: flights
@@ -32,6 +37,15 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
    */
   protected Hashtable<String,Integer> flightIndex=null;
   /**
+   * Flight plan versions for all solution steps.
+   * The keys of the hashtable consist of sector identifiers and step numbers with underscore between them.
+   */
+  protected Hashtable<String, Vector<Record>> flightPlans=null;
+  /**
+   * Capacities of the sectors (max acceptable N of flights per hour)
+   */
+  protected Hashtable<String,Integer> capacities=null;
+  /**
    * Index of the currently shown flight
    */
   protected int shownFlightIdx=-1;
@@ -40,6 +54,36 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
    * includes all sectors present in at least one variant.
    */
   protected ArrayList<String> sectorSequence=null;
+  /**
+   * Time step, in minutes, for aggregating flights in sectors
+   */
+  public int tStepAggregates=20;
+  /**
+   * Whether to count entries (true) or presence (false)
+   */
+  public boolean toCountEntries=true;
+  /**
+   * Whether to ignore re-entries when counting entries
+   */
+  public boolean toIgnoreReEntries=true;
+  /**
+   * Whether to highlight excess of capacity
+   */
+  public boolean toHighlightCapExcess=true;
+  /**
+   * Threshold for the capacity excess to highlight, in percents
+   */
+  public float minExcessPercent=10;
+  /**
+   * Index of highlighted and selected variants
+   */
+  protected int hlIdx=-1, selIdx=-1;
+  /**
+   * Hourly counts of sector entries or occupancies for the solution steps
+   * corresponding to the selected flight variant.
+   * Dimension 0: sectors, dimension 1: time steps.
+   */
+  protected int hourlyCounts[][]=null;
   /**
    * Used for drawing and calculating positions for times
    */
@@ -58,10 +102,6 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
    * Each element draws a line or polygon representing a single flight
    */
   protected FlightDrawer flightDrawers[]=null;
-  /**
-   * Index of highlighted variant
-   */
-  protected int hlIdx=-1;
   /**
    * Used to speed up redrawing
    */
@@ -84,9 +124,23 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     ToolTipManager.sharedInstance().registerComponent(this);
     ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
   }
+  /**
+   * Flight plan versions for all solution steps, to be used for showing histograms of sector loads.
+   * The keys of the hashtable consist of sector identifiers and step numbers with underscore between them.
+   */
+  
+  public void setFlightPlans(Hashtable<String, Vector<Record>> flightPlans) {
+    this.flightPlans = flightPlans;
+  }
+  /**
+   * Capacities of the sectors (max acceptable N of flights per hour)
+   */
+  public void setCapacities(Hashtable<String, Integer> capacities) {
+    this.capacities = capacities;
+  }
   
   public boolean showFlightVariants(String flId) {
-    hlIdx=-1;
+    hlIdx=-1; selIdx=-1; hourlyCounts=null;
     if (flId==null || flightIndex==null)
       return  false;
     Integer ii=flightIndex.get(flId);
@@ -223,12 +277,13 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   }
   
   protected void createFlightDrawers(){
-    hlIdx=-1;
     if (flights==null || shownFlightIdx<0 || sectorSequence==null || sectorSequence.isEmpty()) {
       flightDrawers=null;
+      hlIdx=-1; selIdx=-1;
       return;
     }
     if (flightDrawers==null || flightDrawers.length!=flights[shownFlightIdx].length) {
+      hlIdx=-1; selIdx=-1;
       flightDrawers=new FlightDrawer[flights[shownFlightIdx].length];
       for (int i=0; i<flightDrawers.length; i++) {
         flightDrawers[i] = new FlightDrawer();
@@ -280,6 +335,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       }
       else {
         gr.drawImage(off_Image,0,0,null);
+        if (selIdx>=0)
+          flightDrawers[selIdx].drawSelected(gr);
         if (hlIdx>=0)
           flightDrawers[hlIdx].drawHighlighted(gr);
         return;
@@ -333,6 +390,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       g.setColor(sectorColor);
       g.drawLine(0,y,w,y);
       g.drawLine(0,y+secH,w,y+secH);
+      if (hourlyCounts!=null && hourlyCounts[i]!=null)
+        showSectorVisitAggregates(g,sectorSequence.get(i),hourlyCounts[i],y);
       g.setColor(sectorColor);
       g.drawString(sectorSequence.get(i),5,y+5+asc);
       y+=secH+vSpace;
@@ -346,8 +405,56 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     
     off_Valid=true;
     gr.drawImage(off_Image,0,0,null);
+    if (selIdx>=0)
+      flightDrawers[selIdx].drawSelected(gr);
     if (hlIdx>=0)
       flightDrawers[hlIdx].drawHighlighted(gr);
+  }
+  
+  protected void showSectorVisitAggregates(Graphics g, String sectorId, int counts[], int y0) {
+    if (counts==null || sectorId==null)
+      return;
+    int max=0;
+    for (int j=0; j<counts.length; j++)
+        if (max<counts[j])
+          max=counts[j];
+    if (max<=0) return;
+    
+    Integer capacity=(capacities==null)?null:capacities.get(sectorId);
+    System.out.println("Sector "+sectorId+": capacity = "+capacity+", max count = "+max);
+  
+    float capToHighlight=Float.NaN;
+    
+    if (capacity!=null && capacity<999) {
+      if (toHighlightCapExcess && max>capacity)
+        capToHighlight=(100+minExcessPercent)*capacity/100;
+      max = Math.max(max, capacity);
+    }
+    
+    int nOverlap=Math.round(60/tStepAggregates)-1;
+    float overlapRatio=nOverlap/59;
+    float alpha=alphaMax-overlapRatio*(alphaMax-alphaMin);
+  
+    int maxBH=secH-2;
+    for (int j = 0; j < counts.length; j++)
+      if (counts[j] > 0) {
+        int t=j*tStepAggregates;
+        int x1 = tMarg+getXPos(t, tWidth), x2 = tMarg+getXPos(t +60, tWidth);
+        float ratio=Math.min(((float) counts[j]) / max,1);
+        int bh=Math.round(ratio * maxBH);
+        if (!Float.isNaN(capToHighlight) && counts[j] > capToHighlight)
+          g.setColor(new Color(ratio,0,0,alpha));
+        else
+          g.setColor(new Color(1-ratio,1-ratio,1-ratio,alpha));
+        g.fillRect(x1, y0 + secH -1 - bh, x2 - x1 + 1, bh);
+        g.drawRect(x1, y0 + secH -1 - bh, x2 - x1 + 1, bh);
+      }
+    if (capacity!=null && capacity<max) {
+      System.out.println("Sector "+sectorId+": capacity = "+capacity);
+      g.setColor(capacityColor);
+      int cy=y0+secH-Math.round(((float)capacity) / max * maxBH);
+      g.drawLine(0,cy,tWidth,cy);
+    }
   }
   
   public void redraw() {
@@ -362,6 +469,35 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     if (sIdx<0 || yPos>yMarg+sIdx*(secH+vSpace)+secH) //the mouse is in a vertical space between sectors
       return -1;
     return sIdx;
+  }
+  
+  protected void selectVariant1(int vIdx) {
+    if (selIdx==vIdx)
+      return;
+    selIdx=vIdx;
+    if (selIdx<0)
+      hourlyCounts=null;
+    else
+    if (flightPlans!=null && !flightPlans.isEmpty())  {
+      int solutionStep=flightDrawers[selIdx].step;
+      hourlyCounts=new int[sectorSequence.size()][];
+      for (int i=0; i<sectorSequence.size(); i++)
+        hourlyCounts[i]= FlightConstructor.getHourlyCountsOfSectorEntries(flightPlans,
+            sectorSequence.get(i),solutionStep,tStepAggregates,toIgnoreReEntries);
+      off_Valid=false;
+    }
+    redraw();
+  }
+  
+  protected void selectVariant2(int vIdx){
+    //
+  }
+  
+  protected void cancelSelection() {
+    if (selIdx>=0) {
+      selIdx=-1;
+      redraw();
+    }
   }
   
   //---------------------- MouseListener ----------------------------------------
@@ -420,7 +556,20 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     redraw();
   }
   
-  public void mouseClicked(MouseEvent e) {}
+  public void mouseClicked(MouseEvent e) {
+    if (e.getClickCount()>1) {
+      cancelSelection();
+      return;
+    }
+    int fIdx= getFlightIdxAtPosition(e.getX(),e.getY());
+    if (fIdx<0)
+      return;
+    if (e.getButton()==MouseEvent.BUTTON1)
+      selectVariant1(fIdx);
+    else
+      selectVariant2(fIdx);
+  }
+  
   public void mousePressed(MouseEvent e) {}
   public void mouseReleased(MouseEvent e) {}
   public void mouseEntered(MouseEvent e) {

@@ -23,11 +23,15 @@ public class FlightViewManager {
   /**
    * All versions of flight plans
    */
-  protected Hashtable<String, Vector<Record>> records=null;
+  protected Hashtable<String, Vector<Record>> flightPlans =null;
   /**
    * Reconstructed sector sequences for all distinct versions of the flights
    */
   protected FlightInSector flightVariants[][][]=null;
+  /**
+   * Capacities of the sectors (max acceptable N of flights per hour)
+   */
+  protected Hashtable<String,Integer> capacities=null;
   /**
    * Contains flight visualization. Created once when needed, after that just changes
    * what flight is shown.
@@ -36,17 +40,23 @@ public class FlightViewManager {
   public JFrame showFrame=null;
   
   public FlightViewManager(Hashtable<String, Flight> flights,
-                           Hashtable<String, Vector<Record>> records) {
+                           Hashtable<String, Vector<Record>> flightPlans) {
     this.flights=flights;
-    this.records=records;
+    this.flightPlans =flightPlans;
   }
   
   public void setIncludeOnlyModifiedFlights(boolean includeOnlyModifiedFlights) {
     this.includeOnlyModifiedFlights = includeOnlyModifiedFlights;
   }
   
+  public void setCapacities(Hashtable<String, Integer> capacities) {
+    this.capacities = capacities;
+    if (flShow!=null)
+      flShow.setCapacities(capacities);
+  }
+  
   public boolean showFlightVariants(String flId) {
-    if (flId==null || flights==null || records==null)
+    if (flId==null || flights==null || flightPlans ==null)
       return false;
     if (flShow!=null)
       return flShow.showFlightVariants(flId);
@@ -87,7 +97,7 @@ public class FlightViewManager {
     }
     System.out.println("Got the steps of changes for "+flightSteps.size()+" flights!");
   
-    FlightInSector flightVariants[][][]= FlightConstructor.getFlightSectorSequences(flightSteps,records);
+    FlightInSector flightVariants[][][]= FlightConstructor.getFlightSectorSequences(flightSteps, flightPlans);
     if (flightVariants==null) {
       System.out.println("Failed to get flight plan variants!");
       return false;
@@ -95,6 +105,9 @@ public class FlightViewManager {
     System.out.println("Got the flight plan variants for "+flightVariants.length+" flights!");
     
     flShow=new FlightVisPanel(flightVariants);
+    flShow.setFlightPlans(flightPlans);
+    flShow.setCapacities(capacities);
+    
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
     showFrame=new JFrame("Flight variants");

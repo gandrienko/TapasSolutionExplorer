@@ -1,19 +1,13 @@
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
-import TapasSolutionExplorer.Data.FlightConstructor;
-import TapasSolutionExplorer.Data.FlightInSector;
 import TapasSolutionExplorer.UI.TableMouseListener;
 import TapasSolutionExplorer.Vis.FlightVariantsTableModel;
-import TapasSolutionExplorer.flight_vis.FlightVariantsShow;
 import TapasSolutionExplorer.flight_vis.FlightViewManager;
-import TapasSolutionExplorer.flight_vis.FlightVisPanel;
 import TapasUtilities.RangeSlider;
-import TapasUtilities.RenderLabelBarChart;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -94,8 +88,8 @@ public class SeeFlight {
       return;
     }
     System.out.println("Got "+flights.size()+" flights from the decisions file!");
-    Hashtable<String, Vector<Record>> records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,flights);
-    if (records==null || records.isEmpty()) {
+    Hashtable<String, Vector<Record>> flightPlans=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,flights);
+    if (flightPlans==null || flightPlans.isEmpty()) {
       System.out.println("Failed to read flight plans from file "+fnFlightPlans+" !");
       return;
     }
@@ -211,8 +205,18 @@ public class SeeFlight {
       }
     });
     
-    FlightViewManager flightViewManager=new FlightViewManager(flights,records);
+    FlightViewManager flightViewManager=new FlightViewManager(flights,flightPlans);
     flightViewManager.setIncludeOnlyModifiedFlights(true);
+    if (fnCapacities!=null) {
+      System.out.println("TRying to get sector capacities from file "+fnCapacities);
+      Hashtable<String, Integer> capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
+      if (capacities!=null && !capacities.isEmpty()) {
+        System.out.println("Successfully obtained capacities of "+capacities.size()+" sectors!");
+        flightViewManager.setCapacities(capacities);
+      }
+      else
+        System.out.println("Failed to obtain sector capacities!");
+    }
   
     JPopupMenu menu=new JPopupMenu();
     JMenuItem mit=new JMenuItem("Show flight plan variants");
