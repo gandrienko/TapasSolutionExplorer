@@ -6,6 +6,8 @@ import TapasUtilities.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -69,6 +71,9 @@ public class FlightsTable extends JPanel {
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     table.setFillsViewportHeight(true);
     table.setAutoCreateRowSorter(true);
+    //table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    //table.setRowSelectionAllowed(true);
+    //table.setColumnSelectionAllowed(false);
     DefaultTableCellRenderer centerRenderer=new DefaultTableCellRenderer();
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     for (int i=1; i<4; i++)
@@ -77,6 +82,15 @@ public class FlightsTable extends JPanel {
     table.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelTimeLine(max));
     table.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNChanges));
     table.getColumnModel().getColumn(8).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
+    table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+      public void valueChanged(ListSelectionEvent event) {
+        if (event.getValueIsAdjusting())
+          return;
+        for (int c : table.getSelectedRows())
+          System.out.print(String.format(" %d(%d)", c, table.convertRowIndexToModel(c)));
+        System.out.println();
+      }
+    });
     if (flightsTimesInSector!=null)
       for (int i=9; i<=11; i++) {
         int maxDuration=-1;
