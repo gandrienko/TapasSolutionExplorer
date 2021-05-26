@@ -13,6 +13,7 @@ import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Vector;
 
 class CellInfo {
@@ -511,10 +512,13 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         item.addActionListener(new ActionListener() {
           @Override
           public void actionPerformed(ActionEvent e) {
-            Vector<Flight> vf = ((kk==0)?dk.getFlights():((kk==1)?dk.getFlights(sector,si.step):dk.getFlights(sector,ci.interval,ci.step)));
+            Hashtable<String,int[]> flightsTimesInSector=new Hashtable<>();
+            Vector<Flight> vf = ((kk==0)?dk.getFlights():((kk==1)?dk.getFlights(sector,si.step,flightsTimesInSector):dk.getFlights(sector,ci.interval,ci.step,flightsTimesInSector)));
             JFrame frame = new JFrame("TAPAS Solution Explorer: " + vf.size() + " " + ss);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            FlightsTable ft = new FlightsTable(vf, si.step);
+            if (flightsTimesInSector.size()==0)
+              flightsTimesInSector=null;
+            FlightsTable ft = new FlightsTable(vf, flightsTimesInSector, si.step);
             JTable table = ft.getTable();
             if (table != null) {
               JPopupMenu menu = table.getComponentPopupMenu();

@@ -358,7 +358,7 @@ public class DataKeeper {
     return vf;
   }
 
-  public Vector<Flight> getFlights (String sector, int step) {
+  public Vector<Flight> getFlights (String sector, int step, Hashtable<String,int[]> flightsTimesInSector) {
     if (allFlights==null)
       return null;
     Hashtable<String,Flight> fl=new Hashtable<>(100);
@@ -370,6 +370,23 @@ public class DataKeeper {
     Vector<Flight> vf=new Vector<>(fl.size());
     for (String s:fl.keySet())
       vf.add(fl.get(s));
+    return vf;
+  }
+
+  public Vector<Flight> getFlights (String sector, int interval, int step, Hashtable<String,int[]> flightsTimesInSector) {
+    if (allFlights==null)
+      return null;
+    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
+    Vector<Flight> vf=new Vector<>(recsInCells[interval][step].size());
+    //flightsTimesInSector=new Hashtable<>(recsInCells[interval][step].size());
+    for (int i=0; i<recsInCells[interval][step].size(); i++) {
+      vf.add(allFlights.get(recsInCells[interval][step].elementAt(i).flight));
+      int t[]=new int[2];
+      Record r=recsInCells[interval][step].elementAt(i);
+      t[0]=r.FromN;
+      t[1]=r.ToN;
+      flightsTimesInSector.put(r.flight,t);
+    }
     return vf;
   }
 
@@ -409,16 +426,6 @@ public class DataKeeper {
           N++;
 
     return N;
-  }
-
-  public Vector<Flight> getFlights (String sector, int interval, int step) {
-    if (allFlights==null)
-      return null;
-    Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
-    Vector<Flight> vf=new Vector<>(recsInCells[interval][step].size());
-    for (int i=0; i<recsInCells[interval][step].size(); i++)
-      vf.add(allFlights.get(recsInCells[interval][step].elementAt(i).flight));
-    return vf;
   }
 
   public int getCount (String sector, String operation, int interval, int step) {

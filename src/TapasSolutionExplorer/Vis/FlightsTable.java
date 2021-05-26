@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.Hashtable;
 import java.util.Vector;
 
 public class FlightsTable extends JPanel {
@@ -24,7 +25,7 @@ public class FlightsTable extends JPanel {
   //protected JButton bFullRange=null;
   protected JTable table=null;
 
-  public FlightsTable (Vector<Flight> vf, int step) {
+  public FlightsTable (Vector<Flight> vf, Hashtable<String,int[]> flightsTimesInSector, int step) {
     super();
     setLayout(new BorderLayout()); //(new GridLayout(1,0));
     float max=0, maxAmpl=0;
@@ -44,7 +45,7 @@ public class FlightsTable extends JPanel {
       maxNChanges=Math.max(maxNChanges,n);
       maxAmpl=Math.max(maxAmpl,dv);
     }
-    table = new JTable(new FlightsTableModel(vf,step)) {
+    table = new JTable(new FlightsTableModel(vf,flightsTimesInSector,step)) {
       public String getToolTipText (MouseEvent e) {
         String s="";
         java.awt.Point p = e.getPoint();
@@ -76,6 +77,21 @@ public class FlightsTable extends JPanel {
     table.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelTimeLine(max));
     table.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNChanges));
     table.getColumnModel().getColumn(8).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
+    if (flightsTimesInSector!=null)
+      for (int i=9; i<=11; i++) {
+        int maxDuration=-1;
+        if (i==11) {
+          for (String s:flightsTimesInSector.keySet()) {
+            int t[]=flightsTimesInSector.get(s);
+            if (t[1]-t[0]>maxDuration)
+              maxDuration=t[1]-t[0];
+          }
+        }
+        RenderLabelBarChart rlbc=new RenderLabelBarChart(0,(i==11)?maxDuration:1440);
+        if (i<11)
+          rlbc.setbModeTimeOfDay();
+        table.getColumnModel().getColumn(i).setCellRenderer(rlbc);
+      }
     JScrollPane scrollPane = new JScrollPane(table);
     add(scrollPane,BorderLayout.CENTER);
     JPanel cp=new JPanel(new BorderLayout(5,2));
@@ -136,9 +152,11 @@ public class FlightsTable extends JPanel {
 
   class FlightsTableModel extends AbstractTableModel {
     Vector<Flight> vf=null;
+    Hashtable<String,int[]> flightsTimesInSector=null;
     int step, minStep, maxStep;
-    public FlightsTableModel (Vector<Flight> vf, int step) {
+    public FlightsTableModel (Vector<Flight> vf, Hashtable<String,int[]> flightsTimesInSector, int step) {
       this.vf=vf;
+      this.flightsTimesInSector=flightsTimesInSector;
       this.step=step;
       minStep=0;
       maxStep=vf.elementAt(0).delays.length-1;
@@ -148,15 +166,17 @@ public class FlightsTable extends JPanel {
       fireTableDataChanged();
       //System.out.println("* "+min+" "+max);
     }
-    private String[] columnNames={"Flight ID","From","To","Airline","CallSign","Delay","Cumulative delays","N changes","Added delays"};
-    public int getColumnCount() {
-      return columnNames.length;
-    }
+    private String[] columnNames={"Flight ID","From","To","Airline","CallSign","Delay","Cumulative delays","N changes","Added delays"},
+                     extraColumnNames={"Entry","Exit","Duration"};
+    public int getColumnCount() { return columnNames.length+((flightsTimesInSector==null)?0:3); }
     public int getRowCount() {
       return vf.size();
     }
     public String getColumnName(int col) {
-      return columnNames[col];
+      if (col<columnNames.length)
+        return columnNames[col];
+      else
+        return extraColumnNames[col-columnNames.length];
     }
     public Class getColumnClass(int c) {
       return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
@@ -201,6 +221,14 @@ public class FlightsTable extends JPanel {
             if (v[i]>v[i-1])
               n++;
           return n;
+        case 9: case 10: case 11:
+          if (flightsTimesInSector==null)
+            return 0;
+          String flightId=vf.elementAt(row).id;
+          int times[]=flightsTimesInSector.get(flightId);
+          if (times==null)
+            return 0;
+          return ((col==9)?times[0]:((col==10)?times[1]:times[1]-times[0]));
       }
       return vf.elementAt(row).id;
     }
