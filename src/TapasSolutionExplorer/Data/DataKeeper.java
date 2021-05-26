@@ -365,8 +365,13 @@ public class DataKeeper {
     Vector<Record> recsInCells[][]=recsInCellsAll.get(sector);
     for (int interval=0; interval<Nintervals; interval++)
       for (Record r:recsInCells[interval][step])
-        if (!fl.containsKey(r.flight))
+        if (!fl.containsKey(r.flight)) {
           fl.put(r.flight,allFlights.get(r.flight));
+          int t[]=new int[2];
+          t[0]=r.FromN;
+          t[1]=r.ToN;
+          flightsTimesInSector.put(r.flight,t);
+        }
     Vector<Flight> vf=new Vector<>(fl.size());
     for (String s:fl.keySet())
       vf.add(fl.get(s));
