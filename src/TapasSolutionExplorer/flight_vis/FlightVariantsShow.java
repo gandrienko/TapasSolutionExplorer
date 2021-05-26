@@ -619,22 +619,90 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return str;
   }
   
+  /**
+   * @param binWidth - always in minutes
+   */
+  public int getMinuteOfDayBinIndex(int minuteOfDay, int binWidth){
+    if (minuteOfDay<0 || binWidth<=0)
+      return -1;
+    return minuteOfDay/binWidth;
+  }
+  
+  public static LocalTime[] getTimeBinRange(int binIdx, int binWidth) {
+    if (binWidth<=0)
+      return null;
+    LocalTime tt[]=new LocalTime[2];
+    int m=binIdx*binWidth;
+    tt[0]=LocalTime.of((m/60)%24,m%60,0);
+    m+=59;
+    tt[1]=LocalTime.of((m/60)%24,m%60,59);
+    return tt;
+  }
+  
   public String getTextForSector(int sectorIdx, int xPos) {
     if (sectorIdx<0)
       return null;
-    LocalTime t=getTimeForXPos(xPos-tMarg,tWidth);
+    String sectorId=sectorSequence.get(sectorIdx);
     String txt="<html><body style=background-color:rgb(255,255,204)>"+
-                   "<font size=5><center>Sector "+sectorSequence.get(sectorIdx)+"</center></font>"+
-                   "<center>Time = "+t+"</center>";
+                   "<font size=4><center>Sector "+sectorId+"</center></font>";
+    Integer capacity=(capacities==null)?null:capacities.get(sectorId);
+    if (capacity!=null)
+      txt+="<center>Sector capacity = "+capacity+"</center>";
+    LocalTime t=getTimeForXPos(xPos-tMarg,tWidth);
+    txt+="<center>Time = "+t+"</center>";
+
     if (hourlyCounts!=null && hourlyCounts[sectorIdx]!=null) {
-      txt += "<table border=0 cellmargin=3 cellpadding=1 cellspacing=2>";
-      if (hourlyCounts2==null) {
-        //
+      int m=getMinuteOfDayForXPos(xPos-tMarg,tWidth);
+      int idx=getMinuteOfDayBinIndex(m,tStepAggregates);
+      LocalTime tt[]=getTimeBinRange(idx,tStepAggregates);
+      if (tt!=null) {
+        FlightInSector fSeq[] = (selIdx >= 0) ? flights[shownFlightIdx][selIdx] : null;
+        FlightInSector fSeq2[] = (selIdx2 >= 0) ? flights[shownFlightIdx][selIdx2] : null;
+  
+        txt += "<table border=0 cellmargin=3 cellpadding=3 cellspacing=3>";
+        
+        String aggrName=(toCountEntries)?"entries":"occupancy";
+        if (hourlyCounts2 == null) {
+          txt += "<tr><td>Flight plan version:</td><td>" + selIdx + "</td></tr>";
+          txt += "<tr><td>Solution step:</td><td>" + fSeq[0].step + "</td></tr>";
+          txt += "<tr><td>Flight delay (minutes):</td><td>" + fSeq[0].delay + "</td></tr>";
+          txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
+          txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx]+"</td></tr>";
+          if (capacity!=null && hourlyCounts[sectorIdx][idx]>capacity) {
+            int diff=hourlyCounts[sectorIdx][idx]-capacity;
+            float percent=100f*diff/capacity;
+            txt+="<tr><td>Excess of capacity:</td><td>"+diff+"</td><td>flights</td><td>("+
+                     String.format("%.2f", percent)+"%)</td></tr>";
+          }
+        }
+        else {
+          txt += "<tr><td>Flight plan versions:</td><td>" + selIdx +"</td><td>" + selIdx2 + "</td></tr>";
+          txt += "<tr><td>Solution steps:</td><td>" + fSeq[0].step +"</td><td>" + fSeq2[0].step + "</td></tr>";
+          int diff=fSeq2[0].delay-fSeq[0].delay;
+          String diffStr=((diff>0)?"+":"-")+diff;
+          txt += "<tr><td>Flight delays (minutes):</td><td>" + fSeq[0].delay +"</td><td>" + fSeq2[0].delay+
+                     "</td><td>" +diffStr + "</td></tr>";
+          diff=hourlyCounts2[sectorIdx][idx]-hourlyCounts[sectorIdx][idx];
+          diffStr=((diff>0)?"+":(diff==0)?"":"-")+diff;
+          txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
+          txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx] +"</td><td>" +
+                     hourlyCounts2[sectorIdx][idx] +"</td><td>" + diffStr +"</td></tr>";
+          if (capacity!=null && (hourlyCounts[sectorIdx][idx]>capacity || hourlyCounts2[sectorIdx][idx]>capacity)) {
+            int diffCap=Math.max(0,hourlyCounts[sectorIdx][idx]-capacity),
+                diffCap2=Math.max(0,hourlyCounts2[sectorIdx][idx]-capacity);
+            diff=diffCap2-diffCap;
+            diffStr=((diff>0)?"+":(diff==0)?"":"-")+diff;
+            txt += "<tr><td>Excess of capacity (count):</td><td>" + diffCap +"</td><td>" + diffCap2+
+                       "</td><td>" +diffStr + "</td></tr>";
+            float percent=(diffCap<=0)?0:100f*diffCap/capacity, percent2=(diffCap2<=0)?0:100f*diffCap2/capacity;
+            float fDiff=percent2-percent;
+            diffStr=((diff>0)?"+":(diff==0)?"":"-")+String.format("%.2f", fDiff);
+            txt+="<tr><td>Excess of capacity (percent):</td><td>"+String.format("%.2f", percent) +
+                     "%</td><td>"+String.format("%.2f", percent2) +"%</td><td>"+diffStr+"%</td></tr>";
+          }
+        }
+        txt += "</table>";
       }
-      else {
-        //
-      }
-      txt+="</table>";
     }
     txt+="</body></html>";
     return txt;
