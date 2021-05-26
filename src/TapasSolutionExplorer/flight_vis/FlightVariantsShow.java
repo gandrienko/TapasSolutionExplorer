@@ -473,19 +473,19 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     if (counts1==null || counts2==null) {
       showSectorVisitAggregates(g,sectorId,(counts1!=null)?counts1:counts2,y0);
     }
-    int counts[]=new int[counts1.length];
-    int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE, max2=0;
-    for (int j=0; j<counts.length; j++) {
-      counts[j]=counts2[j]-counts1[j];
-      if (max < counts[j])
-        max = counts[j];
-      if (min>counts[j])
-        min=counts[j];
+    int diff[]=new int[counts1.length];
+    int minDiff=Integer.MAX_VALUE, maxDiff=Integer.MIN_VALUE, max2=0;
+    for (int j=0; j<diff.length; j++) {
+      diff[j]=counts2[j]-counts1[j];
+      if (maxDiff < diff[j])
+        maxDiff = diff[j];
+      if (minDiff>diff[j])
+        minDiff=diff[j];
       if (max2<counts2[j])
         max2=counts2[j];
     }
-    if (min>=max) return;
-    int absMax=Math.max(Math.abs(min),Math.abs(max));
+    if (minDiff>=maxDiff) return;
+    int absMaxDiff=Math.max(Math.abs(minDiff),Math.abs(maxDiff));
     
     Integer capacity=(capacities==null)?null:capacities.get(sectorId);
     
@@ -494,7 +494,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     if (capacity!=null && capacity<999) {
       if (toHighlightCapExcess && max2>capacity)
         capToHighlight=(100+minExcessPercent)*capacity/100;
-      absMax = Math.max(absMax, capacity);
+      absMaxDiff = Math.max(absMaxDiff, capacity);
     }
     
     int nOverlap=Math.round(60/tStepAggregates)-1;
@@ -502,21 +502,24 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     float alpha=alphaMax-overlapRatio*(alphaMax-alphaMin);
     
     int maxBH=secH-2;
-    int yAxis=(max<=0)?1:(min>=0)?maxBH+1:Math.round(((float)maxBH)/(max-min)*max);
+    int yAxis=(maxDiff<=0)?1:(minDiff>=0)?maxBH+1:Math.round(((float)maxBH)/(maxDiff-minDiff)*maxDiff);
     yAxis+=y0;
     g.setColor(new Color(255,255,255,128));
     g.drawLine(0,yAxis,tWidth,yAxis);
 
-    for (int j = 0; j < counts.length; j++)
-      if (counts[j] != 0) {
+    for (int j = 0; j < diff.length; j++)
+      if (diff[j] != 0) {
         int t=j*tStepAggregates;
         int x1 = tMarg+getXPos(t, tWidth), x2 = tMarg+getXPos(t +60, tWidth);
-        int bh=Math.round(((float) counts[j]) / (max-min) * maxBH);
-        float ratio=((float) counts[j]) / absMax, rAbs=Math.min(1f,Math.abs(ratio));
-        if (!Float.isNaN(capToHighlight) && counts2[j] > capToHighlight)
-          g.setColor(new Color(rAbs,0,0,alpha));
-        else
-          g.setColor(new Color(1-rAbs,1-rAbs,1-rAbs,alpha));
+        int bh=Math.round(((float) diff[j]) / (maxDiff-minDiff) * maxBH);
+        if (!Float.isNaN(capToHighlight) && counts2[j] > capToHighlight) {
+          float ratio=((float) diff[j]) / capacity, rAbs=Math.min(1f,Math.abs(ratio));
+          g.setColor(new Color(rAbs, 0, 0, alpha));
+        }
+        else {
+          float ratio=((float) diff[j]) / absMaxDiff, rAbs=Math.min(1f,Math.abs(ratio));
+          g.setColor(new Color(1 - rAbs, 1 - rAbs, 1 - rAbs, alpha));
+        }
         g.fillRect(x1, (bh>0)?yAxis - bh:yAxis, x2 - x1 + 1, Math.abs(bh));
         g.drawRect(x1, (bh>0)?yAxis - bh:yAxis, x2 - x1 + 1, Math.abs(bh));
       }
@@ -595,21 +598,72 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
                   t.compareTo(fSeq[i].entryTime)>=0 && t.compareTo(fSeq[i].exitTime)<=0)
             sIdxInFlight=i;
     }
+    FlightInSector fSel1[] = (selIdx >= 0) ? flights[shownFlightIdx][selIdx] : null;
+    FlightInSector fSel2[] = (selIdx2 >= 0) ? flights[shownFlightIdx][selIdx2] : null;
+
     String str="<html><body style=background-color:rgb(255,255,204)><b>"+fSeq[0].flightId+"</b>";
-    str += "<table border=0>";
-    //str+="<tr><td>Flight</td><td><b>"+fSeq[0].flightId+"</b></td></tr>";
-    str+="<tr><td>Version N</td><td>"+fIdx+"</td></tr>";
-    str+="<tr><td>Solution step</td><td>"+fSeq[0].step+"</td></tr>";
-    str+="<tr><td>Delay</td><td>"+fSeq[0].delay+"</td></tr>";
+    str += "<table border=0 cellmargin=3 cellpadding=3 cellspacing=3>";
+    
+    if (fSel1!=null || fSel2!=null) {
+      str+="<tr><td> </td><td>At cursor</td>";
+      if (fSel1!=null)
+        str+="<td>Selection 1</td><td>Difference</td>";
+      if (fSel2!=null)
+        str+="<td>Selection 2</td><td>Difference</td>";
+      str+="</tr>";
+    }
+
+    str+="<tr><td>Version N</td><td>"+fIdx+"</td>";
+    if (fSel1!=null)
+      str+="<td>"+selIdx+"</td><td>-</td>";
+    if (fSel2!=null)
+      str+="<td>"+selIdx2+"</td><td>-</td>";
+    str+="</tr>";
+    str+="<tr><td>Solution step</td><td>"+fSeq[0].step+"</td>";
+    if (fSel1!=null) {
+      int diff=fSeq[0].step - fSel1[0].step;
+      String sDiff=((diff>0)?"+":"")+diff;
+      str += "<td>" + fSel1[0].step + "</td><td>" + sDiff + "</td>";
+    }
+    if (fSel2!=null) {
+      int diff=fSeq[0].step - fSel2[0].step;
+      String sDiff=((diff>0)?"+":"")+diff;
+      str += "<td>" + fSel2[0].step + "</td><td>" + sDiff + "</td>";
+    }
+    str+="</tr>";
+    str+="<tr><td>Delay</td><td>"+fSeq[0].delay+"</td>";
+    if (fSel1!=null) {
+      int diff=fSeq[0].delay - fSel1[0].delay;
+      String sDiff=((diff>0)?"+":"")+diff;
+      str += "<td>" + fSel1[0].delay + "</td><td>" + sDiff + "</td>";
+    }
+    if (fSel2!=null) {
+      int diff=fSeq[0].delay - fSel2[0].delay;
+      String sDiff=((diff>0)?"+":"")+diff;
+      str += "<td>" + fSel2[0].delay + "</td><td>" + sDiff + "</td>";
+    }
+    str+="</tr>";
+    
     if (sIdxInFlight>=0) {
       FlightInSector fs=fSeq[sIdxInFlight];
-      str+="<tr><td>Sector</td><td>"+fs.sectorId+"</td></tr>";
-      str+="<tr><td>Entry time</td><td>"+fs.entryTime+"</td></tr>";
-      str+="<tr><td>Exit time</td><td>"+fs.exitTime+"</td></tr>";
-      if (fs.prevSectorId!=null)
-        str+="<tr><td>Previous</td><td>"+fs.prevSectorId+"</td></tr>";
-      if (fs.nextSectorId!=null)
-        str+="<tr><td>Next</td><td>"+fs.nextSectorId+"</td></tr>";
+      str+="<tr><td> </td><td>Sector</td><td>Entry time</td><td>Exit time</td></tr>";
+      str+="<tr><td>At cursor</td><td>"+fs.sectorId+"</td><td>"+fs.entryTime+"</td><td>"+fs.exitTime+"</td></tr>";
+      if (fs.prevSectorId!=null) {
+        str += "<tr><td>Previous</td><td>" + fs.prevSectorId + "</td>";
+        if (sIdxInFlight>0) {
+          FlightInSector fs2=fSeq[sIdxInFlight-1];
+          str+="<td>"+fs2.entryTime+"</td><td>"+fs2.exitTime+"</td></tr>";
+        }
+        str+="</tr>";
+      }
+      if (fs.nextSectorId!=null) {
+        str += "<tr><td>Next</td><td>" + fs.nextSectorId + "</td>";
+        if (sIdxInFlight+1<fSeq.length) {
+          FlightInSector fs2=fSeq[sIdxInFlight+1];
+          str+="<td>"+fs2.entryTime+"</td><td>"+fs2.exitTime+"</td></tr>";
+        }
+        str+="</tr>";
+      }
     }
     str+="</table>";
     str+="</body></html>";
@@ -629,7 +683,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   }
   
   public static LocalTime[] getTimeBinRange(int binIdx, int binWidth) {
-    if (binWidth<=0)
+    if (binWidth<=0 || binIdx<0)
       return null;
     LocalTime tt[]=new LocalTime[2];
     int m=binIdx*binWidth;
@@ -656,17 +710,15 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       int idx=getMinuteOfDayBinIndex(m,tStepAggregates);
       LocalTime tt[]=getTimeBinRange(idx,tStepAggregates);
       if (tt!=null) {
-        FlightInSector fSeq[] = (selIdx >= 0) ? flights[shownFlightIdx][selIdx] : null;
-        FlightInSector fSeq2[] = (selIdx2 >= 0) ? flights[shownFlightIdx][selIdx2] : null;
+        FlightInSector fSel1[] = (selIdx >= 0) ? flights[shownFlightIdx][selIdx] : null;
+        FlightInSector fSel2[] = (selIdx2 >= 0) ? flights[shownFlightIdx][selIdx2] : null;
   
         txt += "<table border=0 cellmargin=3 cellpadding=3 cellspacing=3>";
         
         String aggrName=(toCountEntries)?"entries":"occupancy";
         if (hourlyCounts2 == null) {
-          txt += "<tr><td>Flight plan version:</td><td>" + selIdx + "</td></tr>";
-          txt += "<tr><td>Solution step:</td><td>" + fSeq[0].step + "</td></tr>";
-          txt += "<tr><td>Flight delay (minutes):</td><td>" + fSeq[0].delay + "</td></tr>";
           txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
+          txt += "<tr><td>Solution step:</td><td>" + fSel1[0].step + "</td></tr>";
           txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx]+"</td></tr>";
           if (capacity!=null && hourlyCounts[sectorIdx][idx]>capacity) {
             int diff=hourlyCounts[sectorIdx][idx]-capacity;
@@ -676,14 +728,9 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
           }
         }
         else {
-          txt += "<tr><td>Flight plan versions:</td><td>" + selIdx +"</td><td>" + selIdx2 + "</td></tr>";
-          txt += "<tr><td>Solution steps:</td><td>" + fSeq[0].step +"</td><td>" + fSeq2[0].step + "</td></tr>";
-          int diff=fSeq2[0].delay-fSeq[0].delay;
-          String diffStr=((diff>0)?"+":"-")+diff;
-          txt += "<tr><td>Flight delays (minutes):</td><td>" + fSeq[0].delay +"</td><td>" + fSeq2[0].delay+
-                     "</td><td>" +diffStr + "</td></tr>";
-          diff=hourlyCounts2[sectorIdx][idx]-hourlyCounts[sectorIdx][idx];
-          diffStr=((diff>0)?"+":(diff==0)?"":"-")+diff;
+          txt += "<tr><td>Solution steps:</td><td>" + fSel1[0].step +"</td><td>" + fSel2[0].step + "</td></tr>";
+          int diff=hourlyCounts2[sectorIdx][idx]-hourlyCounts[sectorIdx][idx];
+          String diffStr=((diff>0)?"+":"")+diff;
           txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
           txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx] +"</td><td>" +
                      hourlyCounts2[sectorIdx][idx] +"</td><td>" + diffStr +"</td></tr>";
@@ -691,12 +738,12 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
             int diffCap=Math.max(0,hourlyCounts[sectorIdx][idx]-capacity),
                 diffCap2=Math.max(0,hourlyCounts2[sectorIdx][idx]-capacity);
             diff=diffCap2-diffCap;
-            diffStr=((diff>0)?"+":(diff==0)?"":"-")+diff;
+            diffStr=((diff>0)?"+":"")+diff;
             txt += "<tr><td>Excess of capacity (count):</td><td>" + diffCap +"</td><td>" + diffCap2+
                        "</td><td>" +diffStr + "</td></tr>";
             float percent=(diffCap<=0)?0:100f*diffCap/capacity, percent2=(diffCap2<=0)?0:100f*diffCap2/capacity;
             float fDiff=percent2-percent;
-            diffStr=((diff>0)?"+":(diff==0)?"":"-")+String.format("%.2f", fDiff);
+            diffStr=((diff>0)?"+":"")+String.format("%.2f", fDiff);
             txt+="<tr><td>Excess of capacity (percent):</td><td>"+String.format("%.2f", percent) +
                      "%</td><td>"+String.format("%.2f", percent2) +"%</td><td>"+diffStr+"%</td></tr>";
           }
