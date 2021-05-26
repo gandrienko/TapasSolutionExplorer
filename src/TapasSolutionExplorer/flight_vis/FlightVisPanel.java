@@ -11,11 +11,13 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.time.LocalTime;
 import java.util.Hashtable;
 import java.util.Vector;
 
-public class FlightVisPanel extends JPanel implements ChangeListener, ActionListener {
+public class FlightVisPanel extends JPanel implements ChangeListener, ActionListener, ItemListener {
   /**
    * Sector sequences for all variants of all flights
    * dimension 0: flights
@@ -33,12 +35,30 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   protected RangeSlider timeFocuser=null;
   protected JTextField tfTStart=null, tfTEnd=null;
   protected JButton bFullRange=null;
+  /**
+   * Controls for highlighting excesses of capacity
+   */
+  protected JCheckBox cbHighlightExcess=null;
+  protected JTextField tfPercentExcess=null;
+  /**
+   * Used for setting the aggregation time step
+   */
+  protected JComboBox chAggrStep=null;
+  /**
+   * What to count: entries or presence
+   */
+  protected JComboBox chEntriesOrPresence=null;
+  /**
+   * Whether to ignore repeated entries
+   */
+  protected JCheckBox cbIgnoreReEntries =null;
   
   public FlightVisPanel(FlightInSector flights[][][]) {
     if (flights==null)
       return;
     this.flights=flights;
     flShow=new FlightVariantsShow(flights);
+    flShow.addChangeListener(this);
     makeInterior();
   }
   
@@ -46,6 +66,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     if (flShow == null)
       return;
     this.flShow = flShow;
+    flShow.addChangeListener(this);
     makeInterior();
   }
   
@@ -66,11 +87,15 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     tfTEnd=new JTextField("24:00");
     tfTStart.addActionListener(this);
     tfTEnd.addActionListener(this);
+    
+    JPanel cp=new JPanel(new GridLayout(0,1));
+    add(cp,BorderLayout.SOUTH);
+    
+    JPanel p=new JPanel(new BorderLayout());
+    cp.add(p);
     JPanel pp=new JPanel(new FlowLayout(FlowLayout.LEFT,5,2));
     pp.add(new JLabel("Time range:"));
     pp.add(tfTStart);
-    Panel p=new Panel(new BorderLayout());
-    add(p,BorderLayout.SOUTH);
     p.add(pp,BorderLayout.WEST);
     p.add(timeFocuser,BorderLayout.CENTER);
     pp=new JPanel(new FlowLayout(FlowLayout.LEFT,5,2));
@@ -82,6 +107,50 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     bFullRange.addActionListener(this);
     bFullRange.setEnabled(false);
     pp.add(bFullRange);
+  
+    p=new JPanel(new FlowLayout(FlowLayout.CENTER,20,2));
+    cp.add(p);
+    
+    pp=new JPanel(new FlowLayout(FlowLayout.CENTER,5,2));
+    p.add(pp);
+  
+    pp.add(new JLabel("Aggregate"));
+    chEntriesOrPresence=new JComboBox();
+    pp.add(chEntriesOrPresence);
+    chEntriesOrPresence.addItem("entries");
+    chEntriesOrPresence.addItem("presence");
+    chEntriesOrPresence.setSelectedIndex(0);
+    chEntriesOrPresence.addActionListener(this);
+  
+    pp.add(Box.createRigidArea(new Dimension(10, 0)));
+    cbIgnoreReEntries=new JCheckBox("Ignore re-entries",true);
+    cbIgnoreReEntries.addItemListener(this);
+    pp.add(cbIgnoreReEntries);
+  
+    pp.add(Box.createRigidArea(new Dimension(20, 0)));
+    pp.add(new JLabel("Time step in histograms:"));
+    chAggrStep=new JComboBox();
+    chAggrStep.addItem(new Integer(1));
+    chAggrStep.addItem(new Integer(5));
+    chAggrStep.addItem(new Integer(10));
+    chAggrStep.addItem(new Integer(15));
+    chAggrStep.addItem(new Integer(20));
+    chAggrStep.addItem(new Integer(30));
+    chAggrStep.addItem(new Integer(60));
+    chAggrStep.setSelectedIndex(4);
+    chAggrStep.addActionListener(this);
+    pp.add(chAggrStep);
+    pp.add(new JLabel("minutes"));
+  
+    pp=new JPanel(new FlowLayout(FlowLayout.CENTER,5,2));
+    p.add(pp);
+    cbHighlightExcess=new JCheckBox("Highlight excess of sector capacity by over",true);
+    pp.add(cbHighlightExcess);
+    cbHighlightExcess.addItemListener(this);
+    tfPercentExcess=new JTextField("10",4);
+    pp.add(tfPercentExcess);
+    tfPercentExcess.addActionListener(this);
+    pp.add(new JLabel("%"));
   }
   /**
    * Flight plan versions for all solution steps, to be passed to the drawing component
@@ -101,23 +170,35 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       flShow.setCapacities(capacities);
   }
   
+  public String getCurrentFlightText(){
+    int fIdx=flShow.getShownFlightIdx();
+    if (fIdx>=0) {
+      String str = "Flight " + flights[fIdx][0][0].flightId + ": " + flights[fIdx].length + " variants";
+      int delay = flights[fIdx][0][0].delay;
+      for (int i = 1; i < flights[fIdx].length; i++) {
+        FlightInSector fSeq[] = flights[fIdx][i];
+        if (fSeq[0].delay > delay) delay = fSeq[0].delay;
+      }
+      str += "; max delay = " + delay;
+      return str;
+    }
+    else
+      return "No flight selected";
+  }
+  
   public boolean showFlightVariants(String flId) {
     if (flShow!=null && flShow.showFlightVariants(flId)) {
       //adjust the time range
       int fIdx=flShow.getShownFlightIdx();
-      String str="Flight "+flId+": "+flights[fIdx].length+" variants";
       LocalTime t1=flights[fIdx][0][0].entryTime, t2=flights[fIdx][0][flights[fIdx][0].length-1].exitTime;
-      int delay=flights[fIdx][0][0].delay;
       for (int i=1; i<flights[fIdx].length; i++) {
         FlightInSector fSeq[]=flights[fIdx][i];
-        if (fSeq[0].delay>delay) delay=fSeq[0].delay;
         if (t1.compareTo(fSeq[0].entryTime)>0)
           t1=fSeq[0].entryTime;
         if (t2.compareTo(fSeq[fSeq.length-1].exitTime)<0)
           t2=fSeq[fSeq.length-1].exitTime;
       }
-      str+="; delay = "+delay;
-      flLabel.setText(str);
+      flLabel.setText(getCurrentFlightText());
       flLabel.setSize(flLabel.getPreferredSize());
       timeFocuser.removeChangeListener(this);
       timeFocuser.setFullRange();
@@ -166,6 +247,20 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
               timeFocuser.setUpperValue(m);
         }
       }
+      else
+        if (tf.equals(tfPercentExcess)) {
+          float perc=-1;
+          try {
+            perc=Float.parseFloat(tf.getText());
+          } catch (Exception ex) {}
+          if (perc<0) {
+            perc=(flShow ==null)?10: flShow.getMinExcessPercent();
+            tf.setText(String.valueOf(perc));
+          }
+          else
+            if (flShow !=null)
+              flShow.setMinExcessPercent(perc);
+        }
     }
     else
       if (ae.getActionCommand().equals("full_time_range"))  {
@@ -173,11 +268,49 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
                 timeFocuser.getUpperValue()<timeFocuser.getMaximum())
           timeFocuser.setFullRange();
       }
+      else
+        if (ae.getSource().equals(chAggrStep)) {
+          if (flShow !=null)
+            flShow.setAggregationTimeStep((Integer)chAggrStep.getSelectedItem());
+        }
+        else
+          if (ae.getSource().equals(chEntriesOrPresence)) {
+            if (flShow !=null)
+              flShow.setToCountEntries(chEntriesOrPresence.getSelectedIndex()==0);
+          }
+  }
+  
+  public void itemStateChanged(ItemEvent e) {
+    if (e.getSource().equals(cbIgnoreReEntries)) {
+      if (flShow !=null)
+        flShow.setToIgnoreReEntries(cbIgnoreReEntries.isSelected());
+    }
+    else
+      if (e.getSource().equals(cbHighlightExcess))  {
+        if (flShow !=null)
+            flShow.setToHighlightCapExcess(cbHighlightExcess.isSelected());
+      }
   }
   
   public void stateChanged(ChangeEvent e) {
     if (e.getSource().equals(timeFocuser))
       getTimeRange();
+    else
+      if (e.getSource().equals(flShow)) {
+        String txt=getCurrentFlightText();
+        if (flShow.getSelectedVariant(true)>=0) {
+          txt += "; selected: ";
+          if (flShow.getSelectedVariant(false)>=0)
+            txt += "variants " + flShow.getSelectedVariant(true) + ", " +
+                       flShow.getSelectedVariant(false)+"; steps "+
+                flShow.getSelectedStep(true)+", "+flShow.getSelectedStep(false);
+          else
+            txt+= "variant " + flShow.getSelectedVariant(true) +"; step "+
+                      flShow.getSelectedStep(true);
+        }
+        flLabel.setText(txt);
+        flLabel.setSize(flLabel.getPreferredSize());
+      }
   }
   
   protected void getTimeRange() {

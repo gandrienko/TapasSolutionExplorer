@@ -127,8 +127,7 @@ public class FlightConstructor {
     int counts[]=new int[nSteps];
     for (int i=0; i<nSteps; i++)
       counts[i]=0;
-    HashSet<String> repeated=(!ignoreReEntries)?null:
-                             new HashSet<String>(sFlights.size()/2);
+    HashSet<String> repeated=null;
     for (int i=0; i<sFlights.size(); i++) {
       Record r=sFlights.elementAt(i);
       if (repeated!=null && repeated.contains(r.flight))
@@ -142,8 +141,10 @@ public class FlightConstructor {
         HashSet<Integer> idxs=null;
         for (int j=i+1; j<sFlights.size(); j++)
           if (r.flight.equals(sFlights.elementAt(j).flight)) {
+            if (repeated==null)
+              repeated=new HashSet<String>(sFlights.size()/2);
             repeated.add(r.flight);
-            Record r2=sFlights.elementAt(i);
+            Record r2=sFlights.elementAt(j);
             int idx1_2=(r2.FromN-60)/tStep+1, idx2_2=r2.FromN/tStep;
             if (idx1_2==idx1 || idx1_2>=counts.length)
               continue;
@@ -159,6 +160,64 @@ public class FlightConstructor {
               }
           }
       }
+    }
+    return counts;
+  }
+  
+  /**
+   * Computes hourly counts of flights present in the given sector with the given time step, in minutes.
+   * @param flightPlans  - Contains records about sectors for different solution steps.
+   *    The keys of the hashtable consist of sector identifiers and step numbers with underscore between them.
+   * @param sectorId - the sector for which to count the presence
+   * @param solutionStep - the step in solution for which to take the flight plans for counting
+   * @param tStep - time step (shift) between consecutive time intervals
+   * @return
+   */
+  public static int[] getHourlyFlightCounts(Hashtable<String, Vector<Record>> flightPlans,
+                                            String sectorId, int solutionStep,int tStep) {
+    if (flightPlans==null || sectorId==null || tStep<=0)
+      return null;
+    String key=sectorId+"_"+solutionStep;
+    Vector<Record> sFlights=flightPlans.get(key);
+    if (sFlights==null || sFlights.isEmpty())
+      return null;
+    int nSteps=minutesInDay/tStep;
+    if (nSteps*tStep<minutesInDay)
+      ++nSteps;
+    int counts[]=new int[nSteps];
+    for (int i=0; i<nSteps; i++)
+      counts[i]=0;
+    HashSet<String> repeated=null;
+    for (int i=0; i<sFlights.size(); i++) {
+      Record r=sFlights.elementAt(i);
+      if (repeated!=null && repeated.contains(r.flight))
+        continue;
+      int idx1=(r.FromN-60)/tStep+1, idx2=r.ToN/tStep;
+      if (idx1>=counts.length)
+        continue;
+      for (int j=Math.max(0,idx1); j<=idx2 && j<counts.length; j++)
+        ++counts[j];
+      HashSet<Integer> idxs=null;
+      for (int j=i+1; j<sFlights.size(); j++)
+        if (r.flight.equals(sFlights.elementAt(j).flight)) {
+          if (repeated==null)
+            repeated=new HashSet<String>(sFlights.size()/2);
+          repeated.add(r.flight);
+          Record r2=sFlights.elementAt(j);
+          int idx1_2=(r2.FromN-60)/tStep+1, idx2_2=r2.ToN/tStep;
+          if (idx1_2==idx1 || idx1_2>=counts.length)
+            continue;
+          if (idxs==null) {
+            idxs = new HashSet<Integer>(10);
+            for (int k=idx1; k<=idx2; k++)
+              idxs.add(k);
+          }
+          for (int k=Math.max(0,idx1_2); k<=idx2_2 && k<counts.length; k++)
+            if (!idxs.contains(k)) {
+              ++counts[k];
+              idxs.add(k);
+            }
+        }
     }
     return counts;
   }

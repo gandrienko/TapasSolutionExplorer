@@ -5,6 +5,8 @@ import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -109,6 +111,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   protected BufferedImage off_Image=null;
   protected boolean off_Valid=false;
   
+  protected ArrayList<ChangeListener> changeListeners=null;
+  
   public FlightVariantsShow(FlightInSector flights[][][]) {
     super();
     this.flights=flights;
@@ -124,6 +128,26 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     addMouseMotionListener(this);
     ToolTipManager.sharedInstance().registerComponent(this);
     ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+  }
+  
+  public void addChangeListener(ChangeListener l) {
+    if (changeListeners==null)
+      changeListeners=new ArrayList(5);
+    if (!changeListeners.contains(l))
+      changeListeners.add(l);
+  }
+  
+  public void removeChangeListener(ChangeListener l) {
+    if (l!=null && changeListeners!=null)
+      changeListeners.remove(l);
+  }
+  
+  public void notifyChange(){
+    if (changeListeners==null || changeListeners.isEmpty())
+      return;
+    ChangeEvent e=new ChangeEvent(this);
+    for (ChangeListener l:changeListeners)
+      l.stateChanged(e);
   }
   /**
    * Flight plan versions for all solution steps, to be used for showing histograms of sector loads.
@@ -236,6 +260,67 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       //redraw();
       repaint();
     }
+  }
+  
+  public int getAggregationTimeStep() {
+    return tStepAggregates;
+  }
+  
+  protected void updateAggregation() {
+    if (hourlyCounts!=null || hourlyCounts2!=null) {
+      hourlyCounts=hourlyCounts2=null;
+      if (selIdx>=0)
+        hourlyCounts=aggregateFlights(flightDrawers[selIdx].step);
+      if (selIdx2>=0)
+        hourlyCounts2=aggregateFlights(flightDrawers[selIdx2].step);
+      off_Valid = false;
+      redraw();
+    }
+  }
+  
+  public void setAggregationTimeStep(int step) {
+    if (step>0 && step!=tStepAggregates) {
+      tStepAggregates=step;
+      updateAggregation();
+    }
+  }
+  
+  public void setToCountEntries(boolean entries) {
+    if (this.toCountEntries != entries) {
+      this.toCountEntries = entries;
+      updateAggregation();
+    }
+  }
+  
+  public void setToIgnoreReEntries(boolean ignore) {
+    if (this.toIgnoreReEntries != ignore) {
+      this.toIgnoreReEntries = ignore;
+      updateAggregation();
+    }
+  }
+  
+  public void setToHighlightCapExcess(boolean hl) {
+    if (this.toHighlightCapExcess != hl) {
+      this.toHighlightCapExcess = hl;
+      if (hourlyCounts!=null || hourlyCounts2!=null) {
+        off_Valid = false;
+        redraw();
+      }
+    }
+  }
+  
+  public void setMinExcessPercent(float percent) {
+    if (this.minExcessPercent != percent) {
+      this.minExcessPercent = percent;
+      if (toHighlightCapExcess && (hourlyCounts!=null || hourlyCounts2!=null)) {
+        off_Valid = false;
+        redraw();
+      }
+    }
+  }
+  
+  public float getMinExcessPercent() {
+    return minExcessPercent;
   }
   
   public int getMinuteStart() {
@@ -539,45 +624,60 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return sIdx;
   }
   
+  protected int[][] aggregateFlights(int step) {
+    if (step<0 || flightPlans==null || flightPlans.isEmpty() || sectorSequence==null || sectorSequence.isEmpty())
+      return null;
+    int counts[][]=new int[sectorSequence.size()][];
+    for (int i=0; i<sectorSequence.size(); i++)
+      counts[i]=(toCountEntries)?
+                    FlightConstructor.getHourlyCountsOfSectorEntries(flightPlans,
+                        sectorSequence.get(i),step,tStepAggregates,toIgnoreReEntries):
+                    FlightConstructor.getHourlyFlightCounts(flightPlans,
+                        sectorSequence.get(i),step,tStepAggregates);
+    return counts;
+  }
+  
   protected void selectVariant1(int vIdx) {
     if (selIdx==vIdx || selIdx2==vIdx)
       return;
     selIdx=vIdx;
+    notifyChange();
     if (selIdx<0)
       hourlyCounts=null;
     else
-    if (flightPlans!=null && !flightPlans.isEmpty())  {
-      int solutionStep=flightDrawers[selIdx].step;
-      hourlyCounts=new int[sectorSequence.size()][];
-      for (int i=0; i<sectorSequence.size(); i++)
-        hourlyCounts[i]= FlightConstructor.getHourlyCountsOfSectorEntries(flightPlans,
-            sectorSequence.get(i),solutionStep,tStepAggregates,toIgnoreReEntries);
-      off_Valid=false;
-    }
+      hourlyCounts=aggregateFlights(flightDrawers[selIdx].step);
+    off_Valid=false;
     redraw();
+  }
+  
+  public int getSelectedVariant(boolean primary) {
+    return (primary)?selIdx:selIdx2;
+  }
+  
+  public int getSelectedStep(boolean primary) {
+    int fIdx=(primary)?selIdx:selIdx2;
+    if (fIdx<0) return -1;
+    FlightInSector fSeq[]=flights[shownFlightIdx][fIdx];
+    return fSeq[0].step;
   }
   
   protected void selectVariant2(int vIdx){
     if (selIdx2==vIdx || selIdx==vIdx)
       return;
     selIdx2=vIdx;
+    notifyChange();
     if (selIdx2<0)
       hourlyCounts2=null;
     else
-      if (flightPlans!=null && !flightPlans.isEmpty())  {
-        int solutionStep=flightDrawers[selIdx2].step;
-        hourlyCounts2=new int[sectorSequence.size()][];
-        for (int i=0; i<sectorSequence.size(); i++)
-          hourlyCounts2[i]= FlightConstructor.getHourlyCountsOfSectorEntries(flightPlans,
-              sectorSequence.get(i),solutionStep,tStepAggregates,toIgnoreReEntries);
-        off_Valid=false;
-      }
+      hourlyCounts2=aggregateFlights(flightDrawers[selIdx2].step);
+    off_Valid=false;
     redraw();
   }
   
   protected void cancelSelection() {
     if (selIdx>=0 || selIdx2>=0) {
       selIdx=-1; selIdx2=-1;
+      notifyChange();
       hourlyCounts=hourlyCounts2=null;
       off_Valid=false;
       redraw();
@@ -728,10 +828,10 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
           }
         }
         else {
+          txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
           txt += "<tr><td>Solution steps:</td><td>" + fSel1[0].step +"</td><td>" + fSel2[0].step + "</td></tr>";
           int diff=hourlyCounts2[sectorIdx][idx]-hourlyCounts[sectorIdx][idx];
           String diffStr=((diff>0)?"+":"")+diff;
-          txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
           txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx] +"</td><td>" +
                      hourlyCounts2[sectorIdx][idx] +"</td><td>" + diffStr +"</td></tr>";
           if (capacity!=null && (hourlyCounts[sectorIdx][idx]>capacity || hourlyCounts2[sectorIdx][idx]>capacity)) {
