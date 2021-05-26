@@ -498,41 +498,49 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       menu.add(item);
       menu.add(new JPopupMenu.Separator());
       CellInfo ci=findCellInfoByPoint(me.getPoint());
-      item=new JMenuItem("Show flights in "+sector+" at step #"+si.step+" ("+getStepLabel(si.step)+")"+((ci==null)?"":", interval "+ci.interval));
-      item.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          Vector<Flight> vf=(ci==null)?dk.getFlights(sector,si.step):dk.getFlights(sector,ci.interval,ci.step);
-          JFrame frame = new JFrame("TAPAS Solution Explorer: "+vf.size()+" flights in "+sector+" at step #"+si.step+" ("+getStepLabel(si.step)+")"+
-                  ((ci==null)?"":", interval "+String.format("%02d",ci.interval/3)+":"+String.format("%02d",(ci.interval%3)*20)+".."+
-                          String.format("%02d",ci.interval/3+1)+":"+String.format("%02d",(ci.interval%3)*20)));
-          frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-          FlightsTable ft=new FlightsTable(vf,si.step);
-          JTable table=ft.getTable();
-          if (table!=null) {
-            JPopupMenu menu=table.getComponentPopupMenu();
-            if (menu==null)
-              menu=new JPopupMenu();
-            JMenuItem mit=new JMenuItem("Show flight plan variants");
-            menu.add(mit);
-            mit.addActionListener(new ActionListener() {
-              @Override
-              public void actionPerformed(ActionEvent e) {
-                int selectedRow =table.convertRowIndexToModel(table.getSelectedRow());
-                String flId=vf.elementAt(selectedRow).id;
-                dk.showFlightVariants(flId);
-              }
-            });
-            table.setComponentPopupMenu(menu);
-            table.addMouseListener(new TableMouseListener(table));
+      for (int k=0; k<((ci==null)?2:3); k++) {
+        String s=(k==0)?"all flights" : "flights";
+        if (k>0)
+          s+=" in " + sector +  " at step #" + si.step + " (" + getStepLabel(si.step) + ")";
+        if (k>1 && ci!=null)
+          s+=", interval " + String.format("%02d", ci.interval / 3) + ":" + String.format("%02d", (ci.interval % 3) * 20) + ".." +
+                  String.format("%02d", ci.interval / 3 + 1) + ":" + String.format("%02d", (ci.interval % 3) * 20);
+        final String ss=s;
+        final int kk=k;
+        item = new JMenuItem("Show "+s);
+        item.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            Vector<Flight> vf = ((kk==0)?dk.getFlights():((kk==1)?dk.getFlights(sector,si.step):dk.getFlights(sector,ci.interval,ci.step)));
+            JFrame frame = new JFrame("TAPAS Solution Explorer: " + vf.size() + " " + ss);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            FlightsTable ft = new FlightsTable(vf, si.step);
+            JTable table = ft.getTable();
+            if (table != null) {
+              JPopupMenu menu = table.getComponentPopupMenu();
+              if (menu == null)
+                menu = new JPopupMenu();
+              JMenuItem mit = new JMenuItem("Show flight plan variants");
+              menu.add(mit);
+              mit.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                  int selectedRow = table.convertRowIndexToModel(table.getSelectedRow());
+                  String flId = vf.elementAt(selectedRow).id;
+                  dk.showFlightVariants(flId);
+                }
+              });
+              table.setComponentPopupMenu(menu);
+              table.addMouseListener(new TableMouseListener(table));
+            }
+            frame.getContentPane().add(ft, BorderLayout.CENTER);
+            frame.pack();
+            frame.setVisible(true);
+            children.add(frame);
           }
-          frame.getContentPane().add(ft, BorderLayout.CENTER);
-          frame.pack();
-          frame.setVisible(true);
-          children.add(frame);
-        }
-      });
-      menu.add(item);
+        });
+        menu.add(item);
+      }
       menu.add(new JPopupMenu.Separator());
       item=new JMenuItem("Show full history for "+sector);
       item.addActionListener(new ActionListener() {

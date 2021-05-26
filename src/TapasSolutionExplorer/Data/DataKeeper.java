@@ -351,6 +351,13 @@ public class DataKeeper {
     return s;
   }
 
+  public Vector<Flight> getFlights() {
+    Vector<Flight> vf=new Vector<>(allFlights.size());
+    for (String s:allFlights.keySet())
+      vf.add(allFlights.get(s));
+    return vf;
+  }
+
   public Vector<Flight> getFlights (String sector, int step) {
     if (allFlights==null)
       return null;
