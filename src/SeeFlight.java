@@ -218,6 +218,22 @@ public class SeeFlight {
         System.out.println("Failed to obtain sector capacities!");
     }
   
+    Hashtable<String,int[]> attrs=new Hashtable<String, int[]>();
+    final String pathToData=path;
+    SwingWorker worker=new SwingWorker() {
+      @Override
+      public Boolean doInBackground(){
+        TapasDataReader.Readers.readExplanations(pathToData,steps,flights,attrs);
+        return !attrs.isEmpty();
+      }
+      @Override
+      protected void done() {
+        if (!attrs.isEmpty())
+          System.out.println("Successfully loaded explanations!");
+      }
+    };
+    worker.execute();
+  
     JPopupMenu menu=new JPopupMenu();
     JMenuItem mit=new JMenuItem("Show flight plan variants");
     menu.add(mit);
