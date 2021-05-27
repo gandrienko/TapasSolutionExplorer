@@ -208,7 +208,7 @@ public class SeeFlight {
     FlightViewManager flightViewManager=new FlightViewManager(flights,flightPlans);
     flightViewManager.setIncludeOnlyModifiedFlights(true);
     if (fnCapacities!=null) {
-      System.out.println("TRying to get sector capacities from file "+fnCapacities);
+      System.out.println("Trying to get sector capacities from file "+fnCapacities);
       Hashtable<String, Integer> capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
       if (capacities!=null && !capacities.isEmpty()) {
         System.out.println("Successfully obtained capacities of "+capacities.size()+" sectors!");
@@ -229,7 +229,7 @@ public class SeeFlight {
       @Override
       protected void done() {
         if (!attrs.isEmpty())
-          System.out.println("Successfully loaded explanations!");
+          flightViewManager.explanationsReady(attrs);
       }
     };
     worker.execute();
@@ -240,7 +240,13 @@ public class SeeFlight {
     mit.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        int selectedRow =table.convertRowIndexToModel(table.getSelectedRow());
+        Point p = table.getMousePosition();
+        int selectedRow =table.rowAtPoint(p)-1;
+        System.out.println("Selected row: "+selectedRow);
+        if (selectedRow<0)
+          return;
+        selectedRow =table.convertRowIndexToModel(selectedRow);
+        System.out.println("Selected row: "+selectedRow);
         String flId=tModel.flightIds[selectedRow];
         flightViewManager.showFlightVariants(flId);
       }

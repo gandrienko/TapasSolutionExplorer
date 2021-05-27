@@ -33,6 +33,10 @@ public class FlightViewManager {
    */
   protected Hashtable<String,Integer> capacities=null;
   /**
+   * Ranges of attribute values used in explanations
+   */
+  protected Hashtable<String,int[]> attrs=null;
+  /**
    * Contains flight visualization. Created once when needed, after that just changes
    * what flight is shown.
    */
@@ -118,5 +122,13 @@ public class FlightViewManager {
     showFrame.setVisible(true);
     
     return flShow.showFlightVariants(flId);
+  }
+  
+  /**
+   * Called when explanations have been loaded in background mode using a thread.
+   * @param attrs - ranges of attribute values used in the explanations
+   */
+  public void explanationsReady(Hashtable<String,int[]> attrs) {
+    System.out.println("Successfully loaded explanations!");
   }
 }
