@@ -251,8 +251,11 @@ public class FlightConstructor {
               currNode.level=-1;
             }
             currNode.addUse();
-            if (f.expl[i].step>0)
-              currNode.addStep(f.expl[i].step);
+            if (f.expl[i].step>=0)
+              if (solutionSteps==null || !solutionSteps.contains(f.expl[i].step))
+                currNode.addStep(f.expl[i].step);
+              else
+                currNode.addStep(stepList.indexOf(f.expl[i].step));
             for (int j = 0; j < combItems.length; j++) {
               ExplanationItem eIt = combItems[j];
               if (eIt == null)
@@ -268,7 +271,7 @@ public class FlightConstructor {
               }
               child.addUse();
               currNode = child;
-              if (f.expl[i].step>0)
+              if (f.expl[i].step>=0)
                 if (solutionSteps==null || !solutionSteps.contains(f.expl[i].step))
                   currNode.addStep(f.expl[i].step);
                 else
