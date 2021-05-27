@@ -1,5 +1,6 @@
 package TapasSolutionExplorer.flight_vis;
 
+import TapasDataReader.ExTreeNode;
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
@@ -9,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.TreeSet;
 import java.util.Vector;
 
 public class FlightViewManager {
@@ -29,11 +31,17 @@ public class FlightViewManager {
    */
   protected FlightInSector flightVariants[][][]=null;
   /**
+   * Solution steps as labelled by the ML model
+   */
+  protected TreeSet<Integer> solutionSteps =null;
+  /**
    * Capacities of the sectors (max acceptable N of flights per hour)
    */
   protected Hashtable<String,Integer> capacities=null;
   /**
    * Ranges of attribute values used in explanations
+   * When this hashtable is not null and not empty,
+   * it is a signal that the explanations have been loaded and can be used.
    */
   protected Hashtable<String,int[]> explAttrMinMaxValues =null;
   /**
@@ -53,6 +61,10 @@ public class FlightViewManager {
     this.includeOnlyModifiedFlights = includeOnlyModifiedFlights;
   }
   
+  public void setSolutionSteps(TreeSet<Integer> solutionSteps) {
+    this.solutionSteps = solutionSteps;
+  }
+  
   public void setCapacities(Hashtable<String, Integer> capacities) {
     this.capacities = capacities;
     if (flShow!=null)
@@ -62,8 +74,12 @@ public class FlightViewManager {
   public boolean showFlightVariants(String flId) {
     if (flId==null || flights==null || flightPlans ==null)
       return false;
-    if (flShow!=null)
-      return flShow.showFlightVariants(flId);
+    if (flShow!=null) {
+      if (!flShow.showFlightVariants(flId))
+        return false;
+      showExplanationsForCurrentFlight();
+      return true;
+    }
     
     // For the flights that were changed, the numbers of the simulation steps corresponding to the plan changes
     // If includeOnlyModifiedFlights is false, creates also hashtable entries for the remaining flights.
@@ -112,9 +128,6 @@ public class FlightViewManager {
     flShow.setFlightPlans(flightPlans);
     flShow.setCapacities(capacities);
     
-    if (explAttrMinMaxValues !=null && !explAttrMinMaxValues.isEmpty())
-      flShow.setAttributeRangesInExplanations(explAttrMinMaxValues);
-    
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
     showFrame=new JFrame("Flight variants");
@@ -124,7 +137,24 @@ public class FlightViewManager {
     showFrame.setLocation(size.width-showFrame.getWidth()-30,size.height-showFrame.getHeight()-50);
     showFrame.setVisible(true);
     
-    return flShow.showFlightVariants(flId);
+    if (!flShow.showFlightVariants(flId))
+      return false;
+    showExplanationsForCurrentFlight();
+    return true;
+  }
+  
+  public void showExplanationsForCurrentFlight() {
+    if (flShow==null)
+      return;
+    if (explAttrMinMaxValues==null || explAttrMinMaxValues.isEmpty())
+      return;
+    String flId=flShow.getShownFlightId();
+    if (flId==null)
+      return;
+    Hashtable<Integer, ExTreeNode> explTree=
+        FlightConstructor.reconstructExplTreeForFlight(flId,flights,solutionSteps);
+    if (explTree!=null)
+      flShow.setExplanations(explTree);
   }
   
   /**
@@ -135,8 +165,7 @@ public class FlightViewManager {
     if (attrs!=null && !attrs.isEmpty()) {
       System.out.println("Successfully loaded explanations!");
       this.explAttrMinMaxValues = attrs;
-      if (flShow!=null)
-        flShow.setAttributeRangesInExplanations(attrs);
+      showExplanationsForCurrentFlight();
     }
   }
 }

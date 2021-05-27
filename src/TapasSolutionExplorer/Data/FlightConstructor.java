@@ -225,12 +225,15 @@ public class FlightConstructor {
     return counts;
   }
   
-  public Hashtable<Integer, ExTreeNode> reconstructExplTreeForFlight(String flightId,
-                                                                     Hashtable<String, Flight> flightPlans) {
-    if (flightId==null || flightPlans==null || flightPlans.isEmpty())
+  public static Hashtable<Integer, ExTreeNode> reconstructExplTreeForFlight(String flightId,
+                                                                            Hashtable<String, Flight> flightData,
+                                                                            TreeSet<Integer> solutionSteps) {
+    if (flightId==null || flightData==null || flightData.isEmpty())
       return null;
     Hashtable<Integer,ExTreeNode> topNodes=null;
-    for (Map.Entry<String,Flight> e:flightPlans.entrySet()) {
+    ArrayList<Integer> stepList=(solutionSteps==null || solutionSteps.isEmpty())?null:
+                                    new ArrayList<Integer>(solutionSteps);
+    for (Map.Entry<String,Flight> e:flightData.entrySet()) {
       Flight f=e.getValue();
       if (f.expl==null || f.expl.length<1 || !flightId.equals(f.id))
         continue;
@@ -266,7 +269,10 @@ public class FlightConstructor {
               child.addUse();
               currNode = child;
               if (f.expl[i].step>0)
-                currNode.addStep(f.expl[i].step);
+                if (solutionSteps==null || !solutionSteps.contains(f.expl[i].step))
+                  currNode.addStep(f.expl[i].step);
+                else
+                  currNode.addStep(stepList.indexOf(f.expl[i].step));
             }
           }
         }

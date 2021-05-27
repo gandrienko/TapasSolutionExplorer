@@ -251,6 +251,12 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return shownFlightIdx;
   }
   
+  public String getShownFlightId(){
+    if (flights==null || shownFlightIdx<0)
+      return null;
+    return flights[shownFlightIdx][0][0].flightId;
+  }
+  
   public void setTimeRange(int minute1, int minute2) {
     if ((minute1!=minuteStart || minute2!=minuteEnd) && minute2-minute1>=60) {
       minuteStart=minute1; minuteEnd=minute2;

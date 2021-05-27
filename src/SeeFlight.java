@@ -1,6 +1,5 @@
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
-import TapasSolutionExplorer.UI.TableMouseListener;
 import TapasSolutionExplorer.Vis.FlightVariantsTableModel;
 import TapasSolutionExplorer.flight_vis.FlightViewManager;
 import TapasUtilities.RangeSlider;
@@ -207,6 +206,7 @@ public class SeeFlight {
     
     FlightViewManager flightViewManager=new FlightViewManager(flights,flightPlans);
     flightViewManager.setIncludeOnlyModifiedFlights(true);
+    flightViewManager.setSolutionSteps(steps);
     if (fnCapacities!=null) {
       System.out.println("Trying to get sector capacities from file "+fnCapacities);
       Hashtable<String, Integer> capacities=TapasDataReader.Readers.readCapacities(fnCapacities);

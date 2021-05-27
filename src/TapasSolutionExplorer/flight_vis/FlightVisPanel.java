@@ -1,6 +1,8 @@
 package TapasSolutionExplorer.flight_vis;
 
+import TapasDataReader.ExTreeNode;
 import TapasDataReader.Record;
+import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
 
 import TapasUtilities.RangeSlider;
@@ -25,14 +27,10 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    * dimension 2: visited sectors
    */
   public FlightInSector flights[][][]=null;
-  /**
-   * Ranges of attribute values used in explanations of the modifications applied to the flights.
-   * When this hashtable is not null and not empty,
-   * it is a signal that the explanations have been loaded and can be used.
-   */
-  protected Hashtable<String,int[]> explAttrMinMaxValues=null;
   
   public FlightVariantsShow flShow=null;
+  
+  public ExplanationsPanel exShow=null;
   
   protected JLabel flLabel=null;
   /**
@@ -77,8 +75,11 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   }
   
   protected void makeInterior(){
+    exShow=new ExplanationsPanel();
+    JSplitPane spl=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,flShow,exShow);
+    
     setLayout(new BorderLayout());
-    add(flShow,BorderLayout.CENTER);
+    add(spl,BorderLayout.CENTER);
     flLabel=new JLabel("No flight selected",JLabel.CENTER);
     add(flLabel,BorderLayout.NORTH);
 
@@ -193,6 +194,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   }
   
   public boolean showFlightVariants(String flId) {
+    exShow.removeAll();
     if (flShow!=null && flShow.showFlightVariants(flId)) {
       //adjust the time range
       int fIdx=flShow.getShownFlightIdx();
@@ -219,8 +221,15 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     return false;
   }
   
-  public void setAttributeRangesInExplanations(Hashtable<String,int[]> explAttrMinMaxValues) {
-    this.explAttrMinMaxValues=explAttrMinMaxValues;
+  public String getShownFlightId() {
+    if (flShow==null)
+      return null;
+    return flShow.getShownFlightId();
+  }
+  
+  public void setExplanations(Hashtable<Integer, ExTreeNode> explTree) {
+    if (exShow!=null)
+      exShow.setExplanationsTree(explTree);
   }
   
   public void actionPerformed (ActionEvent ae) {
