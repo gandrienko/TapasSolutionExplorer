@@ -31,7 +31,7 @@ public class FlightsTable extends JPanel {
     super();
     setLayout(new BorderLayout()); //(new GridLayout(1,0));
     float max=0, maxAmpl=0;
-    int maxNChanges=0;
+    int maxNChanges=0, maxStep=0;
     int maxNstep=vf.elementAt(0).delays.length-1;
     for (Flight fl:vf) {
       if (fl.delays[step] > max)
@@ -46,6 +46,8 @@ public class FlightsTable extends JPanel {
         }
       maxNChanges=Math.max(maxNChanges,n);
       maxAmpl=Math.max(maxAmpl,dv);
+      if (maxStep==0)
+        maxStep=fl.delays.length;
     }
     table = new JTable(new FlightsTableModel(vf,flightsTimesInSector,step)) {
       public String getToolTipText (MouseEvent e) {
@@ -82,6 +84,8 @@ public class FlightsTable extends JPanel {
     table.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelTimeLine(max));
     table.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNChanges));
     table.getColumnModel().getColumn(8).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
+    table.getColumnModel().getColumn(9).setCellRenderer(new RenderLabelBarChart(0,maxStep));
+    table.getColumnModel().getColumn(10).setCellRenderer(new RenderLabelBarChart(0,maxStep));
     table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
       public void valueChanged(ListSelectionEvent event) {
         if (event.getValueIsAdjusting())
@@ -92,7 +96,7 @@ public class FlightsTable extends JPanel {
       }
     });
     if (flightsTimesInSector!=null)
-      for (int i=9; i<=11; i++) {
+      for (int i=11; i<=13; i++) {
         int maxDuration=-1;
         if (i==11) {
           for (String s:flightsTimesInSector.keySet()) {
@@ -181,7 +185,7 @@ public class FlightsTable extends JPanel {
       fireTableDataChanged();
       //System.out.println("* "+min+" "+max);
     }
-    private String[] columnNames={"Flight ID","From","To","Airline","CallSign","Delay","Cumulative delays","N changes","Added delays"},
+    private String[] columnNames={"Flight ID","From","To","Airline","CallSign","Delay","Cumulative delays","N changes","Added delays","1st delay","last delay"},
                      extraColumnNames={"Entry","Exit","Duration"};
     public int getColumnCount() { return columnNames.length+((flightsTimesInSector==null)?0:3); }
     public int getRowCount() {
@@ -236,14 +240,28 @@ public class FlightsTable extends JPanel {
             if (v[i]>v[i-1])
               n++;
           return n;
-        case 9: case 10: case 11:
+        case 9:
+          n=-1;
+          Flight fl=vf.elementAt(row);
+          for (int i=1; n==-1 && i<fl.delays.length; i++)
+            if (fl.delays[i]>fl.delays[i-1])
+              n=i;
+          return (n==-1)?-1:n;
+        case 10:
+          n=-1;
+          fl=vf.elementAt(row);
+          for (int i=fl.delays.length-1; n==-1 && i>0; i--)
+            if (fl.delays[i]>fl.delays[i-1])
+              n=i;
+          return (n==-1)?-1:n;
+        case 11: case 12: case 13:
           if (flightsTimesInSector==null)
             return 0;
           String flightId=vf.elementAt(row).id;
           int times[]=flightsTimesInSector.get(flightId);
           if (times==null)
             return 0;
-          return ((col==9)?times[0]:((col==10)?times[1]:times[1]-times[0]));
+          return ((col==11)?times[0]:((col==12)?times[1]:times[1]-times[0]));
       }
       return vf.elementAt(row).id;
     }
