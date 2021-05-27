@@ -535,7 +535,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
                 }
               });
               table.setComponentPopupMenu(menu);
-              table.addMouseListener(new TableMouseListener(table));
+              //table.addMouseListener(new TableMouseListener(table));
             }
             frame.getContentPane().add(ft, BorderLayout.CENTER);
             frame.pack();

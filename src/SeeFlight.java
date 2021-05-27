@@ -246,7 +246,7 @@ public class SeeFlight {
       }
     });
     table.setComponentPopupMenu(menu);
-    table.addMouseListener(new TableMouseListener(table));
+    //table.addMouseListener(new TableMouseListener(table));
   
     JFrame fr = new JFrame("Flights (" + flightSteps.size() + ")");
     fr.getContentPane().add(pAll, BorderLayout.CENTER);

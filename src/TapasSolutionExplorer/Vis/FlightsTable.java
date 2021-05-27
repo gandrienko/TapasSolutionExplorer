@@ -71,9 +71,9 @@ public class FlightsTable extends JPanel {
     table.setPreferredScrollableViewportSize(new Dimension(500, 500));
     table.setFillsViewportHeight(true);
     table.setAutoCreateRowSorter(true);
-    //table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-    //table.setRowSelectionAllowed(true);
-    //table.setColumnSelectionAllowed(false);
+    table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    table.setRowSelectionAllowed(true);
+    table.setColumnSelectionAllowed(false);
     DefaultTableCellRenderer centerRenderer=new DefaultTableCellRenderer();
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     for (int i=1; i<4; i++)
@@ -107,6 +107,7 @@ public class FlightsTable extends JPanel {
         table.getColumnModel().getColumn(i).setCellRenderer(rlbc);
       }
     JScrollPane scrollPane = new JScrollPane(table);
+    scrollPane.setOpaque(true);
     add(scrollPane,BorderLayout.CENTER);
     JPanel cp=new JPanel(new BorderLayout(5,2));
     cp.setBorder(BorderFactory.createLineBorder(Color.black));
