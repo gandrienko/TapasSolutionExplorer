@@ -1,5 +1,8 @@
 package TapasSolutionExplorer.Data;
 
+import TapasDataReader.ExTreeNode;
+import TapasDataReader.ExplanationItem;
+import TapasDataReader.Flight;
 import TapasDataReader.Record;
 
 import java.time.LocalTime;
@@ -220,5 +223,54 @@ public class FlightConstructor {
         }
     }
     return counts;
+  }
+  
+  public Hashtable<Integer, ExTreeNode> reconstructExplTreeForFlight(String flightId,
+                                                                     Hashtable<String, Flight> flightPlans) {
+    if (flightId==null || flightPlans==null || flightPlans.isEmpty())
+      return null;
+    Hashtable<Integer,ExTreeNode> topNodes=null;
+    for (Map.Entry<String,Flight> e:flightPlans.entrySet()) {
+      Flight f=e.getValue();
+      if (f.expl==null || f.expl.length<1 || !flightId.equals(f.id))
+        continue;
+      for (int i=0; i<f.expl.length; i++)
+        if (f.expl[i] != null && f.expl[i].action>0 && f.expl[i].eItems != null) {
+          ExplanationItem combItems[] = f.expl[i].getExplItemsCombined(f.expl[i].eItems);
+          if (combItems != null) {
+            if (topNodes==null)
+              topNodes=new Hashtable<Integer,ExTreeNode>(20);
+            ExTreeNode currNode=topNodes.get(f.expl[i].action);
+            if (currNode == null) {
+              currNode = new ExTreeNode();
+              topNodes.put(f.expl[i].action, currNode);
+              currNode.attrName = "Action = " + f.expl[i].action;
+              currNode.level=-1;
+            }
+            currNode.addUse();
+            if (f.expl[i].step>0)
+              currNode.addStep(f.expl[i].step);
+            for (int j = 0; j < combItems.length; j++) {
+              ExplanationItem eIt = combItems[j];
+              if (eIt == null)
+                continue;
+              ExTreeNode child = currNode.findChild(eIt.attr, eIt.interval);
+              if (child == null) {
+                child = new ExTreeNode();
+                child.attrName = eIt.attr;
+                child.level = currNode.level+1;
+                child.condition = eIt.interval.clone();
+                child.isInteger=eIt.isInteger;
+                currNode.addChild(child);
+              }
+              child.addUse();
+              currNode = child;
+              if (f.expl[i].step>0)
+                currNode.addStep(f.expl[i].step);
+            }
+          }
+        }
+    }
+    return topNodes;
   }
 }

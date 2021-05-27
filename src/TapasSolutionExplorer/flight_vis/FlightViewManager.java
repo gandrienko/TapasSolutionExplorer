@@ -35,7 +35,7 @@ public class FlightViewManager {
   /**
    * Ranges of attribute values used in explanations
    */
-  protected Hashtable<String,int[]> attrs=null;
+  protected Hashtable<String,int[]> explAttrMinMaxValues =null;
   /**
    * Contains flight visualization. Created once when needed, after that just changes
    * what flight is shown.
@@ -112,6 +112,9 @@ public class FlightViewManager {
     flShow.setFlightPlans(flightPlans);
     flShow.setCapacities(capacities);
     
+    if (explAttrMinMaxValues !=null && !explAttrMinMaxValues.isEmpty())
+      flShow.setAttributeRangesInExplanations(explAttrMinMaxValues);
+    
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
     showFrame=new JFrame("Flight variants");
@@ -129,6 +132,11 @@ public class FlightViewManager {
    * @param attrs - ranges of attribute values used in the explanations
    */
   public void explanationsReady(Hashtable<String,int[]> attrs) {
-    System.out.println("Successfully loaded explanations!");
+    if (attrs!=null && !attrs.isEmpty()) {
+      System.out.println("Successfully loaded explanations!");
+      this.explAttrMinMaxValues = attrs;
+      if (flShow!=null)
+        flShow.setAttributeRangesInExplanations(attrs);
+    }
   }
 }

@@ -25,6 +25,12 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    * dimension 2: visited sectors
    */
   public FlightInSector flights[][][]=null;
+  /**
+   * Ranges of attribute values used in explanations of the modifications applied to the flights.
+   * When this hashtable is not null and not empty,
+   * it is a signal that the explanations have been loaded and can be used.
+   */
+  protected Hashtable<String,int[]> explAttrMinMaxValues=null;
   
   public FlightVariantsShow flShow=null;
   
@@ -211,6 +217,10 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     flLabel.setText("No flight selected");
     flLabel.setSize(flLabel.getPreferredSize());
     return false;
+  }
+  
+  public void setAttributeRangesInExplanations(Hashtable<String,int[]> explAttrMinMaxValues) {
+    this.explAttrMinMaxValues=explAttrMinMaxValues;
   }
   
   public void actionPerformed (ActionEvent ae) {
