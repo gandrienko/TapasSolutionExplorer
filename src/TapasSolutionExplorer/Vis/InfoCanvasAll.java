@@ -529,7 +529,11 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
               mit.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                  int selectedRow = table.convertRowIndexToModel(table.getSelectedRow());
+                  Point p = table.getMousePosition();
+                  int selectedRow =table.rowAtPoint(p)-1;
+                  if (selectedRow<0)
+                    return;
+                  selectedRow =table.convertRowIndexToModel(selectedRow);
                   String flId = vf.elementAt(selectedRow).id;
                   dk.showFlightVariants(flId);
                 }

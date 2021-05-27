@@ -13,6 +13,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -29,6 +30,7 @@ public class FlightsTable extends JPanel {
 
   public FlightsTable (Vector<Flight> vf, Hashtable<String,int[]> flightsTimesInSector, int step) {
     super();
+    setPreferredSize(new Dimension(1000,900));
     setLayout(new BorderLayout()); //(new GridLayout(1,0));
     float max=0, maxAmpl=0;
     int maxNChanges=0, maxStep=0;
