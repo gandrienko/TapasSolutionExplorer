@@ -4,6 +4,7 @@ import TapasDataReader.Flight;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.flight_vis.FlightViewManager;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
@@ -603,7 +604,28 @@ public class DataKeeper {
   }
 
   protected Hashtable<String, Flight> allFlights=null;
-  
+  protected boolean explanationsLoaded=false;
+  public boolean isExplanationsLoaded() { return explanationsLoaded; }
+
+  protected void loadExplanations (TreeSet<Integer> steps, String fn) {
+    Hashtable<String,int[]> attrs=new Hashtable<String, int[]>();
+    File f=new File(fn);
+    final String pathToData=f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf("\\")+1);
+    SwingWorker worker=new SwingWorker() {
+      @Override
+      public Boolean doInBackground(){
+        TapasDataReader.Readers.readExplanations(pathToData,steps,allFlights,attrs);
+        return !attrs.isEmpty();
+      }
+      @Override
+      protected void done() {
+        if (!attrs.isEmpty())
+          explanationsLoaded=true;
+      }
+    };
+    worker.execute();
+
+  }
   public DataKeeper (String fnCapacities, String fnDecisions, String fnFlightPlans) {
     capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
     TreeSet<Integer> steps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
@@ -620,6 +642,7 @@ public class DataKeeper {
       sectors.add(s.substring(0,s.indexOf("_")));
     aggregateAll();
     calcFeaturesOfSteps();
+    loadExplanations(steps,fnFlightPlans);
   }
 
   public DataKeeper (String fnCapacities, String fnFlightPlans, String fnSolutions[]) {
@@ -644,6 +667,7 @@ public class DataKeeper {
       sectors.add(s.substring(0,s.indexOf("_")));
     aggregateAll();
     calcFeaturesOfSteps();
+    loadExplanations(steps,fnFlightPlans);
   }
   
   public Hashtable<String, Flight> getAllFlights() {

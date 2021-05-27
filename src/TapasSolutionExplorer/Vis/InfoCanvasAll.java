@@ -518,7 +518,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             if (flightsTimesInSector.size()==0)
               flightsTimesInSector=null;
-            FlightsTable ft = new FlightsTable(vf, flightsTimesInSector, si.step);
+            FlightsTable ft = new FlightsTable(vf, flightsTimesInSector, si.step, dk.isExplanationsLoaded());
             JTable table = ft.getTable();
             if (table != null) {
               JPopupMenu menu = table.getComponentPopupMenu();

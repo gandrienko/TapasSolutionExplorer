@@ -27,9 +27,12 @@ public class FlightsTable extends JPanel {
   protected JTextField tfStart=null, tfEnd=null;
   //protected JButton bFullRange=null;
   protected JTable table=null;
+  protected boolean isExplanationsLoaded=false;
 
-  public FlightsTable (Vector<Flight> vf, Hashtable<String,int[]> flightsTimesInSector, int step) {
+  public FlightsTable (Vector<Flight> vf, Hashtable<String,int[]> flightsTimesInSector, int step, boolean isExplanationsLoaded) {
     super();
+    this.isExplanationsLoaded=isExplanationsLoaded;
+    //System.out.println("\n* expl loaded="+isExplanationsLoaded);
     setPreferredSize(new Dimension(1000,900));
     setLayout(new BorderLayout()); //(new GridLayout(1,0));
     float max=0, maxAmpl=0;
@@ -88,6 +91,8 @@ public class FlightsTable extends JPanel {
     table.getColumnModel().getColumn(8).setCellRenderer(new RenderLabelTimeBars(maxAmpl));
     table.getColumnModel().getColumn(9).setCellRenderer(new RenderLabelBarChart(0,maxStep));
     table.getColumnModel().getColumn(10).setCellRenderer(new RenderLabelBarChart(0,maxStep));
+    if (isExplanationsLoaded)
+      table.getColumnModel().getColumn(11+((flightsTimesInSector==null)?0:3)).setCellRenderer(centerRenderer);
     table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
       public void valueChanged(ListSelectionEvent event) {
         if (event.getValueIsAdjusting())
@@ -189,7 +194,7 @@ public class FlightsTable extends JPanel {
     }
     private String[] columnNames={"Flight ID","From","To","Airline","CallSign","Delay","Cumulative delays","N changes","Added delays","1st delay","last delay"},
                      extraColumnNames={"Entry","Exit","Duration"};
-    public int getColumnCount() { return columnNames.length+((flightsTimesInSector==null)?0:3); }
+    public int getColumnCount() { return columnNames.length+((flightsTimesInSector==null)?0:3)+((isExplanationsLoaded)?1:0); }
     public int getRowCount() {
       return vf.size();
     }
@@ -197,12 +202,17 @@ public class FlightsTable extends JPanel {
       if (col<columnNames.length)
         return columnNames[col];
       else
-        return extraColumnNames[col-columnNames.length];
+        if (col-columnNames.length<extraColumnNames.length)
+          return extraColumnNames[col-columnNames.length];
+        else
+          return "Explanations?";
     }
     public Class getColumnClass(int c) {
       return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
     public Object getValueAt (int row, int col) {
+      if (isExplanationsLoaded && col==getColumnCount()-1)
+        return (vf.elementAt(row).expl==null)?"no":"yes";
       switch (col) {
         case 0:
           return vf.elementAt(row).id;
