@@ -5,7 +5,6 @@ import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.SectorData;
 import TapasSolutionExplorer.Data.DataKeeper;
 import TapasSolutionExplorer.UI.ControlPanel;
-import TapasSolutionExplorer.UI.TableMouseListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -539,7 +538,6 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
                 }
               });
               table.setComponentPopupMenu(menu);
-              //table.addMouseListener(new TableMouseListener(table));
             }
             frame.getContentPane().add(ft, BorderLayout.CENTER);
             frame.pack();
