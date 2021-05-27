@@ -105,15 +105,15 @@ public class FlightsTable extends JPanel {
     if (flightsTimesInSector!=null)
       for (int i=11; i<=13; i++) {
         int maxDuration=-1;
-        if (i==11) {
+        if (i==13) {
           for (String s:flightsTimesInSector.keySet()) {
             int t[]=flightsTimesInSector.get(s);
             if (t[1]-t[0]>maxDuration)
               maxDuration=t[1]-t[0];
           }
         }
-        RenderLabelBarChart rlbc=new RenderLabelBarChart(0,(i==11)?maxDuration:1440);
-        if (i<11)
+        RenderLabelBarChart rlbc=new RenderLabelBarChart(0,(i==13)?maxDuration:1440);
+        if (i<13)
           rlbc.setbModeTimeOfDay();
         table.getColumnModel().getColumn(i).setCellRenderer(rlbc);
       }
