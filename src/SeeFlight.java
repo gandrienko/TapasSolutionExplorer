@@ -242,17 +242,14 @@ public class SeeFlight {
       public void actionPerformed(ActionEvent e) {
         Point p = table.getMousePosition();
         int selectedRow =table.rowAtPoint(p)-1;
-        System.out.println("Selected row: "+selectedRow);
         if (selectedRow<0)
           return;
         selectedRow =table.convertRowIndexToModel(selectedRow);
-        System.out.println("Selected row: "+selectedRow);
         String flId=tModel.flightIds[selectedRow];
         flightViewManager.showFlightVariants(flId);
       }
     });
     table.setComponentPopupMenu(menu);
-    //table.addMouseListener(new TableMouseListener(table));
   
     JFrame fr = new JFrame("Flights (" + flightSteps.size() + ")");
     fr.getContentPane().add(pAll, BorderLayout.CENTER);
