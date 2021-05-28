@@ -605,21 +605,22 @@ public class DataKeeper {
 
   protected Hashtable<String, Flight> allFlights=null;
   protected boolean explanationsLoaded=false;
+  public Hashtable<String,int[]> attrsInExpl=null;
   public boolean isExplanationsLoaded() { return explanationsLoaded; }
 
   protected void loadExplanations (TreeSet<Integer> steps, String fn) {
-    Hashtable<String,int[]> attrs=new Hashtable<String, int[]>();
+    attrsInExpl=new Hashtable<String, int[]>();
     File f=new File(fn);
     final String pathToData=f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf("\\")+1);
     SwingWorker worker=new SwingWorker() {
       @Override
       public Boolean doInBackground(){
-        TapasDataReader.Readers.readExplanations(pathToData,steps,allFlights,attrs);
-        return !attrs.isEmpty();
+        TapasDataReader.Readers.readExplanations(pathToData,steps,allFlights,attrsInExpl);
+        return !attrsInExpl.isEmpty();
       }
       @Override
       protected void done() {
-        if (!attrs.isEmpty())
+        if (!attrsInExpl.isEmpty())
           explanationsLoaded=true;
       }
     };
