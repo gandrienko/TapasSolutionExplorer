@@ -241,7 +241,10 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         }
       }
     }
-    System.out.println("Sector sequence consists of "+sectorSequence.size()+" sectors");
+    //System.out.println("Sector sequence consists of "+sectorSequence.size()+" sectors");
+    
+    calculateDemandsInBackground();
+    
     off_Valid=false;
     redraw();
     return !sectorSequence.isEmpty();
@@ -273,6 +276,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   }
   
   protected void updateAggregation() {
+    calculateDemandsInBackground();
     if (hourlyCounts!=null || hourlyCounts2!=null) {
       hourlyCounts=hourlyCounts2=null;
       if (selIdx>=0)
@@ -318,6 +322,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   public void setMinExcessPercent(float percent) {
     if (this.minExcessPercent != percent) {
       this.minExcessPercent = percent;
+      calculateDemandsInBackground();
       if (toHighlightCapExcess && (hourlyCounts!=null || hourlyCounts2!=null)) {
         off_Valid = false;
         redraw();
@@ -394,6 +399,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     createFlightDrawers();
     if (flightDrawers==null)
       return;
+    boolean gotCapacities=capacities!=null && !capacities.isEmpty();
     int secH=(plotH-(sectorSequence.size()-1)*vSpace)/sectorSequence.size();
     for (int i=0; i<flights[shownFlightIdx].length; i++) {
       flightDrawers[i].clearPath();
@@ -402,9 +408,12 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         int sIdx=sectorSequence.indexOf(fSeq[j].sectorId);
         if (sIdx<0)  //must not happen!
           continue;
+        int cap=(gotCapacities && capacities.get(fSeq[j].sectorId)!=null)?
+                    capacities.get(fSeq[j].sectorId):0;
         int y=y0+(secH+vSpace)*sIdx;
         flightDrawers[i].addPathSegment(getXPos(fSeq[j].entryTime,tWidth)+tMarg,
-            getXPos(fSeq[j].exitTime,tWidth)+tMarg,y,y+secH);
+            getXPos(fSeq[j].exitTime,tWidth)+tMarg,y,y+secH,
+            isCriticalCapacityExcess(fSeq[j].maxHourlyDemand,cap));
       }
     }
   }
@@ -643,6 +652,97 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return counts;
   }
   
+  protected void calculateDemandsInBackground() {
+  
+    SwingWorker worker=new SwingWorker() {
+      @Override
+      public Boolean doInBackground(){
+        return calculateMaxSectorDemandsForFlightSegments();
+      }
+      @Override
+      protected void done() {
+        off_Valid=false;
+        repaint();
+      }
+    };
+    worker.execute();
+  }
+  
+  /**
+   * For each flight segment in a sector (instance of FlightInSector) determines the
+   * maximal demand in this sector attained during the time interval when the
+   * flight crosses the sector. Assigns the calculated value to the field maxHourlyDemand
+   * of the structure FlightInSector.
+   * @return true if successful
+   */
+  protected boolean calculateMaxSectorDemandsForFlightSegments() {
+    if (shownFlightIdx<0 || flights==null ||
+            flightPlans==null || flightPlans.isEmpty() ||
+            sectorSequence==null || sectorSequence.isEmpty())
+      return false;
+    System.out.println("Started calculation of sector demands");
+    //  set all demands to 0
+    // (the aggregation parameters might have changed since the last calculation)
+    for (int fv = 0; fv < flights[shownFlightIdx].length; fv++) {
+      FlightInSector fSeq[] = flights[shownFlightIdx][fv];
+      for (int i=0; i<fSeq.length; i++)
+        fSeq[i].maxHourlyDemand=0;
+    }
+    
+    for (int s=0; s<sectorSequence.size(); s++) {
+      String sectorId=sectorSequence.get(s);
+      for (int fv = 0; fv < flights[shownFlightIdx].length; fv++) {
+        FlightInSector fSeq[] = flights[shownFlightIdx][fv];
+        if (!FlightInSector.doesCrossSector(sectorId,fSeq))
+          continue;
+        int counts[] = (toCountEntries) ?
+                           FlightConstructor.getHourlyCountsOfSectorEntries(flightPlans,
+                               sectorId, fSeq[0].step, tStepAggregates, toIgnoreReEntries) :
+                           FlightConstructor.getHourlyFlightCounts(flightPlans,
+                               sectorId, fSeq[0].step, tStepAggregates);
+        if (counts==null)
+          continue;
+        for (int i=0; i<fSeq.length; i++)
+          if (sectorId.equals(fSeq[i].sectorId)) {
+            FlightInSector f=fSeq[i];
+            if (f.entryTime==null || f.exitTime==null)
+              continue;
+            int idx1=-1, idx2=-1;
+            if (toCountEntries) {
+              int m = f.entryTime.getHour() * 60 + f.entryTime.getMinute();
+              idx1=idx2=m/tStepAggregates;
+            }
+            else {
+              int m1 = f.entryTime.getHour() * 60 + f.entryTime.getMinute();
+              int m2 = f.exitTime.getHour() * 60 + f.exitTime.getMinute();
+              idx1 = m1/tStepAggregates;
+              idx2 = m2/tStepAggregates;
+            }
+            for (int j=idx1; j<=idx2 && j<counts.length; j++)
+              if (counts[j]>f.maxHourlyDemand)
+                f.maxHourlyDemand=counts[j];
+          }
+      }
+    }
+    if (flightDrawers!=null && flightDrawers.length==flights[shownFlightIdx].length) {
+      boolean gotCapacities=capacities!=null && !capacities.isEmpty();
+      for (int i = 0; i < flights[shownFlightIdx].length; i++) {
+        FlightInSector fSeq[] = flights[shownFlightIdx][i];
+        for (int j = 0; j < fSeq.length; j++) {
+          int sIdx = sectorSequence.indexOf(fSeq[j].sectorId);
+          if (sIdx < 0)  //must not happen!
+            continue;
+          int cap = (gotCapacities && capacities.get(fSeq[j].sectorId) != null) ?
+                        capacities.get(fSeq[j].sectorId) : 0;
+          flightDrawers[i].setSegmentCriticality(j,
+              isCriticalCapacityExcess(fSeq[j].maxHourlyDemand, cap));
+        }
+      }
+    }
+    System.out.println("Finished calculation of sector demands");
+    return true;
+  }
+  
   protected void selectVariant1(int vIdx) {
     if (selIdx==vIdx || selIdx2==vIdx)
       return;
@@ -688,6 +788,32 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       off_Valid=false;
       redraw();
     }
+  }
+  
+  public boolean isCriticalCapacityExcess(int demand, int capacity) {
+    if (capacity==0 || demand<=capacity)
+      return false;
+    return demand>(100+minExcessPercent)*capacity/100;
+  }
+  
+  public float getCapExcessPercent(int demand, int capacity){
+    if (capacity==0 || demand<=capacity)
+      return 0;
+    return 100f*(demand-capacity)/capacity;
+  }
+
+  public String getCapExcessAsString(int demand, int capacity){
+    int diff=Math.max(demand-capacity,0);
+    return (isCriticalCapacityExcess(demand,capacity))?
+               "<font color=\"#BB0000\"><u>"+diff+"</u></font>":
+               String.valueOf(diff);
+  }
+  
+  public String getCapExcessPercentAsString(int demand, int capacity){
+   float perc=getCapExcessPercent(demand,capacity);
+   return (isCriticalCapacityExcess(demand,capacity))?
+              "<font color=\"#BB0000\"><u>"+String.format("%.2f", perc)+"</u>%</font>":
+              String.format("%.2f", perc)+"%";
   }
   
   public String getTextForFlightVersion(int fIdx, int xPos, int yPos) {
@@ -751,14 +877,30 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     str+="</tr>";
     
     if (sIdxInFlight>=0) {
+      boolean gotCapacities=capacities!=null && !capacities.isEmpty();
       FlightInSector fs=fSeq[sIdxInFlight];
-      str+="<tr><td> </td><td>Sector</td><td>Entry time</td><td>Exit time</td></tr>";
-      str+="<tr><td>At cursor</td><td>"+fs.sectorId+"</td><td>"+fs.entryTime+"</td><td>"+fs.exitTime+"</td></tr>";
+      str+="<tr><td> </td><td>Sector</td><td>Entry time</td><td>Exit time</td><td>Demand</td>";
+      if (gotCapacities)
+        str+="<td>Capacity</td><td>Excess</td><td>Excess %</td>";
+      str+="</tr>";
+      str+="<tr><td>At cursor</td><td>"+fs.sectorId+"</td><td>"+
+               fs.entryTime+"</td><td>"+fs.exitTime+"</td><td>"+fs.maxHourlyDemand+"</td>";
+      if (gotCapacities && capacities.get(fs.sectorId)!=null) {
+        int cap=capacities.get(fs.sectorId);
+        str+="<td>"+cap+"</td><td>"+getCapExcessAsString(fs.maxHourlyDemand,cap)+"</td><td>"+
+              getCapExcessPercentAsString(fs.maxHourlyDemand,cap)+"</td>";
+      }
+      str+="</tr>";
       if (fs.prevSectorId!=null) {
         str += "<tr><td>Previous</td><td>" + fs.prevSectorId + "</td>";
         if (sIdxInFlight>0) {
           FlightInSector fs2=fSeq[sIdxInFlight-1];
-          str+="<td>"+fs2.entryTime+"</td><td>"+fs2.exitTime+"</td></tr>";
+          str+="<td>"+fs2.entryTime+"</td><td>"+fs2.exitTime+"</td><td>"+fs2.maxHourlyDemand+"</td>";
+          if (gotCapacities && capacities.get(fs2.sectorId)!=null) {
+            int cap=capacities.get(fs2.sectorId);
+            str+="<td>"+cap+"</td><td>"+getCapExcessAsString(fs2.maxHourlyDemand,cap)+"</td><td>"+
+                     getCapExcessPercentAsString(fs2.maxHourlyDemand,cap)+"</td>";
+          }
         }
         str+="</tr>";
       }
@@ -766,7 +908,12 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         str += "<tr><td>Next</td><td>" + fs.nextSectorId + "</td>";
         if (sIdxInFlight+1<fSeq.length) {
           FlightInSector fs2=fSeq[sIdxInFlight+1];
-          str+="<td>"+fs2.entryTime+"</td><td>"+fs2.exitTime+"</td></tr>";
+          str+="<td>"+fs2.entryTime+"</td><td>"+fs2.exitTime+"</td><td>"+fs2.maxHourlyDemand+"</td>";
+          if (gotCapacities && capacities.get(fs2.sectorId)!=null) {
+            int cap=capacities.get(fs2.sectorId);
+            str+="<td>"+cap+"</td><td>"+getCapExcessAsString(fs2.maxHourlyDemand,cap)+"</td><td>"+
+                     getCapExcessPercentAsString(fs2.maxHourlyDemand,cap)+"</td>";
+          }
         }
         str+="</tr>";
       }
@@ -827,10 +974,10 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
           txt += "<tr><td>Solution step:</td><td>" + fSel1[0].step + "</td></tr>";
           txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx]+"</td></tr>";
           if (capacity!=null && hourlyCounts[sectorIdx][idx]>capacity) {
-            int diff=hourlyCounts[sectorIdx][idx]-capacity;
-            float percent=100f*diff/capacity;
-            txt+="<tr><td>Excess of capacity:</td><td>"+diff+"</td><td>flights</td><td>("+
-                     String.format("%.2f", percent)+"%)</td></tr>";
+            txt+="<tr><td>Excess of capacity:</td><td>"+
+                     getCapExcessAsString(hourlyCounts[sectorIdx][idx],capacity)+
+                     "</td><td>flights</td><td>("+
+                     getCapExcessPercentAsString(hourlyCounts[sectorIdx][idx],capacity)+")</td></tr>";
           }
         }
         else {
@@ -845,13 +992,17 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
                 diffCap2=Math.max(0,hourlyCounts2[sectorIdx][idx]-capacity);
             diff=diffCap2-diffCap;
             diffStr=((diff>0)?"+":"")+diff;
-            txt += "<tr><td>Excess of capacity (count):</td><td>" + diffCap +"</td><td>" + diffCap2+
+            txt += "<tr><td>Excess of capacity (count):</td><td>" +
+                       getCapExcessAsString(hourlyCounts[sectorIdx][idx],capacity) +"</td><td>" +
+                       getCapExcessAsString(hourlyCounts2[sectorIdx][idx],capacity)+
                        "</td><td>" +diffStr + "</td></tr>";
             float percent=(diffCap<=0)?0:100f*diffCap/capacity, percent2=(diffCap2<=0)?0:100f*diffCap2/capacity;
             float fDiff=percent2-percent;
             diffStr=((diff>0)?"+":"")+String.format("%.2f", fDiff);
-            txt+="<tr><td>Excess of capacity (percent):</td><td>"+String.format("%.2f", percent) +
-                     "%</td><td>"+String.format("%.2f", percent2) +"%</td><td>"+diffStr+"%</td></tr>";
+            txt+="<tr><td>Excess of capacity (percent):</td><td>"+
+                     getCapExcessPercentAsString(hourlyCounts[sectorIdx][idx],capacity) +
+                     "</td><td>"+getCapExcessPercentAsString(hourlyCounts2[sectorIdx][idx],capacity) +
+                     "</td><td>"+diffStr+"%</td></tr>";
           }
         }
         txt += "</table>";

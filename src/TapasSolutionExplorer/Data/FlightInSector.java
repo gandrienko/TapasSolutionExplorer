@@ -28,6 +28,10 @@ public class FlightInSector implements Comparable<FlightInSector>{
    */
   public int delay=0;
   /**
+   * Maximal hourly demand in the sector during the time when the flight crosses it.
+   */
+  public int maxHourlyDemand=0;
+  /**
    * Identifiers of the previous and next sectors
    */
   public String prevSectorId=null, nextSectorId=null;
@@ -72,5 +76,14 @@ public class FlightInSector implements Comparable<FlightInSector>{
     f.prevSectorId=prevSectorId;
     f.nextSectorId=nextSectorId;
     return f;
+  }
+  
+  public static boolean doesCrossSector(String sectorId, FlightInSector sectorSequence[]) {
+    if (sectorId==null || sectorSequence==null)
+      return false;
+    for (int i=0; i<sectorSequence.length; i++)
+      if (sectorSequence[i].sectorId.equals(sectorId))
+        return true;
+    return false;
   }
 }

@@ -10,8 +10,10 @@ public class FlightDrawer {
       BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
   public static Stroke thickDashedStroke = new BasicStroke(3.0f,BasicStroke.CAP_BUTT,
       BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
-  public static Color lineColour =new Color(128,80,0,150),
-                      connectLineColor=new Color(128,80,0,100),
+  public static Color
+      lineColour =new Color(128,80,0,150),
+      connectLineColor=new Color(128,80,0,100),
+      criticalColor=new Color(196,0,0,196),
       highlightColor=Color.yellow,
       highlightBorderColor=new Color(255,255,0,192),
       selectColor=new Color(0,0,0,70),
@@ -34,19 +36,42 @@ public class FlightDrawer {
    * Sequence of points representing the path on the screen
    */
   public ArrayList<Point> screenPath=null;
+  /**
+   * For each path segments, indicates if it needs to be shown as critical
+   */
+  public ArrayList<Boolean> isSegmentCritical=null;
+  
   public Polygon poly=null;
   
   public void clearPath() {
     if (screenPath!=null)
       screenPath.clear();
     poly=null;
+    isSegmentCritical=null;
   }
   
-  public void addPathSegment (int x1, int x2, int y1, int y2) {
+  public void addPathSegment (int x1, int x2, int y1, int y2, boolean showAsCritical) {
     if (screenPath==null)
       screenPath=new ArrayList<Point>(50);
     screenPath.add(new Point(x1,y1));
     screenPath.add(new Point(x2,y2));
+    if (showAsCritical && isSegmentCritical==null) {
+      isSegmentCritical = new ArrayList<Boolean>(25);
+      for (int i=0; i<screenPath.size()/2; i++)
+        isSegmentCritical.add(false);
+    }
+    if (isSegmentCritical!=null)
+      isSegmentCritical.add(showAsCritical);
+  }
+  
+  public void setSegmentCriticality(int segmIdx,boolean critical) {
+    if (critical && isSegmentCritical==null) {
+      isSegmentCritical = new ArrayList<Boolean>(25);
+      for (int i=0; i<screenPath.size()/2; i++)
+        isSegmentCritical.add(false);
+    }
+    if (isSegmentCritical!=null)
+      isSegmentCritical.set(segmIdx,critical);
   }
   
   public void draw (Graphics g) {
@@ -61,8 +86,9 @@ public class FlightDrawer {
     
     for (int k=0; k<screenPath.size(); k+=2) {
       int segmIdx=k/2;
+      boolean isCritical=isSegmentCritical!=null && isSegmentCritical.get(segmIdx);
       g2d.setStroke((variant>0)?thickDashedStroke:thickStroke);
-      g2d.setColor(lineColour);
+      g2d.setColor((isCritical)?criticalColor:lineColour);
       g2d.drawLine(screenPath.get(k).x,screenPath.get(k).y,screenPath.get(k+1).x,screenPath.get(k+1).y);
       g2d.setStroke((variant>0)?dashedStroke:origStroke);
       if (makePoly) {

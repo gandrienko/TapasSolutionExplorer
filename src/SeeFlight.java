@@ -241,6 +241,8 @@ public class SeeFlight {
       @Override
       public void actionPerformed(ActionEvent e) {
         Point p = table.getMousePosition();
+        if (p==null)
+          return;
         int selectedRow =table.rowAtPoint(p)-1;
         if (selectedRow<0)
           return;
