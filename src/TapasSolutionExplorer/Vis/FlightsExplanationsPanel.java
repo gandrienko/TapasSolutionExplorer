@@ -36,10 +36,9 @@ public class FlightsExplanationsPanel extends JPanel {
     tableList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
       public void valueChanged(ListSelectionEvent e) {
-        //FlightsSingleExplTableModel tableExplModel=(FlightsSingleExplTableModel)tableExpl.getModel();
         selectedRow=tableList.getSelectedRow();
-        //tableExplModel.setExpl(vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]]);
         Explanation expl=vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+        tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0,expl.eItems.length));
         setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
       }
     });
