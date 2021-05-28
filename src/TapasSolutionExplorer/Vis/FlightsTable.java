@@ -258,14 +258,14 @@ public class FlightsTable extends JPanel {
           for (int i=1; n==-1 && i<fl.delays.length; i++)
             if (fl.delays[i]>fl.delays[i-1])
               n=i;
-          return (n==-1)?-1:n;
+          return (n==-1)?null:n;
         case 10:
           n=-1;
           fl=vf.elementAt(row);
           for (int i=fl.delays.length-1; n==-1 && i>0; i--)
             if (fl.delays[i]>fl.delays[i-1])
               n=i;
-          return (n==-1)?-1:n;
+          return (n==-1)?null:n;
         case 11: case 12: case 13:
           if (flightsTimesInSector==null)
             return 0;
