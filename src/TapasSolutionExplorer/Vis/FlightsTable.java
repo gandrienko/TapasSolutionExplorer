@@ -138,6 +138,7 @@ public class FlightsTable extends JPanel {
           if (selectedRow < 0)
             return;
           selectedRow = table.convertRowIndexToModel(selectedRow);
+          final int finalSelectedRow=selectedRow;
           String flId = vf.elementAt(selectedRow).id;
           JPopupMenu menu = new JPopupMenu();
           JMenuItem mit = new JMenuItem("Show flight plan variants for "+flId);
@@ -151,11 +152,25 @@ public class FlightsTable extends JPanel {
           if (vf.elementAt(selectedRow).expl!=null) {
             menu.addSeparator();
             mit=new JMenuItem("Show all explanations for "+vf.elementAt(selectedRow).id);
-            // ...
+            mit.addActionListener(new ActionListener() {
+              @Override
+              public void actionPerformed(ActionEvent e) {
+                Vector<Flight> vfl=new Vector<>(1);
+                vfl.add(vf.elementAt(finalSelectedRow));
+                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),true);
+              }
+            });
             menu.add(mit);
             if (vf.elementAt(selectedRow).delays[step]>0) {
               mit=new JMenuItem("Show delay>0 explanations for "+vf.elementAt(selectedRow).id);
-              // ...
+              mit.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                  Vector<Flight> vfl=new Vector<>(1);
+                  vfl.add(vf.elementAt(finalSelectedRow));
+                  new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),false);
+                }
+              });
               menu.add(mit);
             }
           }
