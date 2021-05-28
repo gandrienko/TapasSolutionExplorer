@@ -1,6 +1,7 @@
 package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.Flight;
+import TapasSolutionExplorer.Data.DataKeeper;
 import TapasUtilities.*;
 
 import javax.swing.*;
@@ -29,7 +30,7 @@ public class FlightsTable extends JPanel {
   protected JTable table=null;
   protected boolean isExplanationsLoaded=false;
 
-  public FlightsTable (Vector<Flight> vf, Hashtable<String,int[]> flightsTimesInSector, int step, boolean isExplanationsLoaded) {
+  public FlightsTable (DataKeeper dk, Vector<Flight> vf, Hashtable<String,int[]> flightsTimesInSector, int step, boolean isExplanationsLoaded) {
     super();
     this.isExplanationsLoaded=isExplanationsLoaded;
     //System.out.println("\n* expl loaded="+isExplanationsLoaded);
@@ -117,6 +118,62 @@ public class FlightsTable extends JPanel {
           rlbc.setbModeTimeOfDay();
         table.getColumnModel().getColumn(i).setCellRenderer(rlbc);
       }
+    table.getTableHeader().addMouseListener(new MouseAdapter() { // this is to attach menu to columns, if needed (e.g. for filtering)
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        Point p = table.getTableHeader().getMousePosition();
+        int col = table.columnAtPoint(p), col1=-1;
+        if (col>=0)
+          col1=table.convertColumnIndexToModel(col);  // table.columnAtPoint(new Point(e.getX(),e.getY()))
+        System.out.println("* "+col+", "+col1);
+        super.mouseReleased(e);
+      }
+    });
+    table.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        if (e.getButton()==java.awt.event.MouseEvent.BUTTON3) {
+          Point p = table.getMousePosition();
+          int selectedRow = table.rowAtPoint(p);
+          if (selectedRow < 0)
+            return;
+          selectedRow = table.convertRowIndexToModel(selectedRow);
+          String flId = vf.elementAt(selectedRow).id;
+          JPopupMenu menu = new JPopupMenu();
+          JMenuItem mit = new JMenuItem("Show flight plan variants for "+flId);
+          menu.add(mit);
+          mit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              dk.showFlightVariants(flId);
+            }
+          });
+          if (vf.elementAt(selectedRow).expl!=null) {
+            menu.addSeparator();
+            mit=new JMenuItem("Show all explanations for "+vf.elementAt(selectedRow).id);
+            // ...
+            menu.add(mit);
+            if (vf.elementAt(selectedRow).delays[step]>0) {
+              mit=new JMenuItem("Show delay>0 explanations for "+vf.elementAt(selectedRow).id);
+              // ...
+              menu.add(mit);
+            }
+          }
+          int r[]=table.getSelectedRows();
+          if (r!=null && r.length>1) {
+            menu.addSeparator();
+            mit=new JMenuItem("Show all explanations for "+r.length+" selected flights");
+            // ...
+            menu.add(mit);
+            mit=new JMenuItem("Show delay>0 explanations for "+r.length+" selected flights");
+            // ...
+            menu.add(mit);
+          }
+          menu.show(e.getComponent(),e.getX(),e.getY());
+        }
+        super.mouseReleased(e);
+      }
+    });
     JScrollPane scrollPane = new JScrollPane(table);
     scrollPane.setOpaque(true);
     add(scrollPane,BorderLayout.CENTER);
