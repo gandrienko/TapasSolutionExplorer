@@ -4,6 +4,8 @@ import TapasDataReader.Explanation;
 import TapasDataReader.ExplanationItem;
 import TapasDataReader.Flight;
 import TapasUtilities.RenderLabelBarChart;
+import TapasUtilities.RenderLabel_ValueInSubinterval;
+
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -62,6 +64,7 @@ public class FlightsExplanationsPanel extends JPanel {
     tableExpl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     tableExpl.setRowSelectionAllowed(true);
     tableExpl.setColumnSelectionAllowed(false);
+    tableExpl.getColumnModel().getColumn(7).setCellRenderer(new RenderLabel_ValueInSubinterval());
     //DefaultTableCellRenderer centerRenderer=new DefaultTableCellRenderer();
     //centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     //tableList.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(minStep,maxStep));
@@ -183,7 +186,7 @@ public class FlightsExplanationsPanel extends JPanel {
       this.eItems=eItems;
       fireTableDataChanged();
     }
-    private String columnNames[] = {"Level", "Feature", "Value", "min", "max", "interval_min", "interval-max"};
+    private String columnNames[] = {"Level", "Feature", "Value", "min", "max", "interval_min", "interval-max","magic"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -214,6 +217,14 @@ public class FlightsExplanationsPanel extends JPanel {
           return eItems[row].interval[0];
         case 6:
           return eItems[row].interval[1];
+        case 7:
+          float v1=attrsInExpl.get(eItems[row].attr)[0], v2=attrsInExpl.get(eItems[row].attr)[1],
+                v3=(float)eItems[row].interval[0], v4=(float)eItems[row].interval[1];
+          if (v3==Float.NEGATIVE_INFINITY)
+            v3=v1;
+          if (v4==Float.POSITIVE_INFINITY)
+            v4=v2;
+          return new float[]{eItems[row].value,v1,v2,v3,v4};
       }
       return 0;
     }
