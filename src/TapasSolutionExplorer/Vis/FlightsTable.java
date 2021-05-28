@@ -199,20 +199,20 @@ public class FlightsTable extends JPanel {
       return vf.size();
     }
     public String getColumnName(int col) {
+      if (isExplanationsLoaded && col==getColumnCount()-1)
+        return "Explanations?";
       if (col<columnNames.length)
         return columnNames[col];
       else
-        if (col-columnNames.length<extraColumnNames.length)
+        //if (col-columnNames.length<extraColumnNames.length)
           return extraColumnNames[col-columnNames.length];
-        else
-          return "Explanations?";
     }
     public Class getColumnClass(int c) {
       return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
     public Object getValueAt (int row, int col) {
       if (isExplanationsLoaded && col==getColumnCount()-1)
-        return (vf.elementAt(row).expl==null)?"no":"yes";
+        return (vf.elementAt(row).expl==null)?"-":"yes";
       switch (col) {
         case 0:
           return vf.elementAt(row).id;
@@ -223,7 +223,9 @@ public class FlightsTable extends JPanel {
           for (int i=0; idxDigit==-1 && i<s.length(); i++)
             if (Character.isDigit(s.charAt(i)))
               idxDigit=i;
-          return (idxDigit==-1) ? s : s.substring(0,idxDigit);
+          if (idxDigit>=0)
+            s=s.substring(0,idxDigit);
+          return (s==null) ? "" : s;
         case 1:
           t=vf.elementAt(row).id.split("-");
           return t[0];
@@ -258,14 +260,14 @@ public class FlightsTable extends JPanel {
           for (int i=1; n==-1 && i<fl.delays.length; i++)
             if (fl.delays[i]>fl.delays[i-1])
               n=i;
-          return (n==-1)?null:n;
+          return (n==-1)?-1:n;
         case 10:
           n=-1;
           fl=vf.elementAt(row);
           for (int i=fl.delays.length-1; n==-1 && i>0; i--)
             if (fl.delays[i]>fl.delays[i-1])
               n=i;
-          return (n==-1)?null:n;
+          return (n==-1)?-1:n;
         case 11: case 12: case 13:
           if (flightsTimesInSector==null)
             return 0;
