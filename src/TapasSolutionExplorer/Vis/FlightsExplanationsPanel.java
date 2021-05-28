@@ -1,6 +1,7 @@
 package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.Explanation;
+import TapasDataReader.ExplanationItem;
 import TapasDataReader.Flight;
 import TapasUtilities.RenderLabelBarChart;
 
@@ -10,6 +11,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -17,18 +20,27 @@ public class FlightsExplanationsPanel extends JPanel {
 
   JTable tableList=null,
          tableExpl=null;
+  FlightsSingleExplTableModel tableExplModel=null;
+  int selectedRow=-1;
 
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf, int minStep, int maxStep, boolean bShowZeroActions) {
     super();
     JFrame frame = new JFrame("Explanations for " + ((vf.size()==1) ? vf.elementAt(0).id : vf.size() + " flights") + " at steps ["+minStep+".."+maxStep+"]");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
+    JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
     FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,minStep,maxStep,bShowZeroActions);
+    tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
+
     tableList=new JTable(tableListModel);
     tableList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
       public void valueChanged(ListSelectionEvent e) {
-        FlightsSingleExplTableModel tableExplModel=(FlightsSingleExplTableModel)tableExpl.getModel();
-        tableExplModel.setExpl(vf.elementAt(tableListModel.rowFlNs[tableList.getSelectedRow()]).expl[tableListModel.rowFlSteps[tableList.getSelectedRow()]]);
+        //FlightsSingleExplTableModel tableExplModel=(FlightsSingleExplTableModel)tableExpl.getModel();
+        selectedRow=tableList.getSelectedRow();
+        //tableExplModel.setExpl(vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]]);
+        Explanation expl=vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+        setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
       }
     });
     tableList.setPreferredScrollableViewportSize(new Dimension(400, 300));
@@ -44,7 +56,7 @@ public class FlightsExplanationsPanel extends JPanel {
     JScrollPane scrollPaneList = new JScrollPane(tableList);
     scrollPaneList.setOpaque(true);
 
-    tableExpl=new JTable(new FlightsSingleExplTableModel(attrsInExpl));
+    tableExpl=new JTable(tableExplModel);
     tableExpl.setPreferredScrollableViewportSize(new Dimension(400, 300));
     tableExpl.setFillsViewportHeight(true);
     tableExpl.setAutoCreateRowSorter(true);
@@ -65,9 +77,41 @@ public class FlightsExplanationsPanel extends JPanel {
     scrollPaneList.setMinimumSize(minimumSize);
     scrollPaneExpl.setMinimumSize(minimumSize);
 
+    cbExplCombine.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (selectedRow>=0) {
+          Explanation expl=vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+          setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+        }
+      }
+    });
+    cbExplAsInt.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (selectedRow>=0) {
+          Explanation expl=vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+          setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+        }
+      }
+    });
+
     frame.getContentPane().add(splitPane, BorderLayout.CENTER);
+    JPanel controlPanel=new JPanel(new FlowLayout());
+    controlPanel.add(cbExplCombine);
+    controlPanel.add(cbExplAsInt);
+    frame.getContentPane().add(controlPanel, BorderLayout.SOUTH);
     frame.pack();
     frame.setVisible(true);
+  }
+
+  protected void setExpl (Hashtable<String,int[]> attrsInExpl, Explanation expl, boolean bCombine, boolean bInt) {
+    ExplanationItem eItems[]=expl.eItems;
+    if (bCombine)
+      eItems=expl.getExplItemsCombined(eItems);
+    if (bInt)
+      eItems=expl.getExplItemsAsIntegeres(eItems,attrsInExpl);
+    tableExplModel.setExpl(eItems);
   }
 
   class FlightsListOfExplTableModel extends AbstractTableModel {
@@ -132,12 +176,12 @@ public class FlightsExplanationsPanel extends JPanel {
 
   class FlightsSingleExplTableModel extends AbstractTableModel {
     Hashtable<String,int[]> attrsInExpl=null;
-    Explanation expl=null;
+    ExplanationItem eItems[]=null;
     public FlightsSingleExplTableModel (Hashtable<String,int[]> attrsInExpl) {
       this.attrsInExpl=attrsInExpl;
     }
-    public void setExpl (Explanation expl) {
-      this.expl=expl;
+    public void setExpl (ExplanationItem eItems[]) {
+      this.eItems=eItems;
       fireTableDataChanged();
     }
     private String columnNames[] = {"Level", "Feature", "Value", "min", "max", "interval_min", "interval-max"};
@@ -148,7 +192,7 @@ public class FlightsExplanationsPanel extends JPanel {
       return columnNames.length;
     }
     public int getRowCount() {
-      return (expl==null)?0:expl.eItems.length;
+      return (eItems==null)?0:eItems.length;
     }
     public Class getColumnClass(int c) {
       return (getValueAt(0, c) == null) ? null : getValueAt(0, c).getClass();
@@ -158,19 +202,19 @@ public class FlightsExplanationsPanel extends JPanel {
         case 0:
           return row;
         case 1:
-          return expl.eItems[row].attr;
+          return eItems[row].attr;
         case 2:
-          return expl.eItems[row].value;
+          return eItems[row].value;
         case 3:
-          int minmax[]=attrsInExpl.get(expl.eItems[row].attr);
+          int minmax[]=attrsInExpl.get(eItems[row].attr);
           return minmax[0];
         case 4:
-          minmax=attrsInExpl.get(expl.eItems[row].attr);
+          minmax=attrsInExpl.get(eItems[row].attr);
           return minmax[1];
         case 5:
-          return expl.eItems[row].interval[0];
+          return eItems[row].interval[0];
         case 6:
-          return expl.eItems[row].interval[1];
+          return eItems[row].interval[1];
       }
       return 0;
     }
