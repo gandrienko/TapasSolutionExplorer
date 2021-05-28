@@ -230,56 +230,54 @@ public class FlightConstructor {
                                                                             TreeSet<Integer> solutionSteps) {
     if (flightId==null || flightData==null || flightData.isEmpty())
       return null;
+    Flight f=flightData.get(flightId);
+    if (f==null || f.expl==null || f.expl.length<1 || !flightId.equals(f.id))
+      return null;
     Hashtable<Integer,ExTreeNode> topNodes=null;
     ArrayList<Integer> stepList=(solutionSteps==null || solutionSteps.isEmpty())?null:
                                     new ArrayList<Integer>(solutionSteps);
-    for (Map.Entry<String,Flight> e:flightData.entrySet()) {
-      Flight f=e.getValue();
-      if (f.expl==null || f.expl.length<1 || !flightId.equals(f.id))
-        continue;
-      for (int i=0; i<f.expl.length; i++)
-        if (f.expl[i] != null && f.expl[i].action>0 && f.expl[i].eItems != null) {
-          ExplanationItem combItems[] = f.expl[i].getExplItemsCombined(f.expl[i].eItems);
-          if (combItems != null) {
-            if (topNodes==null)
-              topNodes=new Hashtable<Integer,ExTreeNode>(20);
-            ExTreeNode currNode=topNodes.get(f.expl[i].action);
-            if (currNode == null) {
-              currNode = new ExTreeNode();
-              topNodes.put(f.expl[i].action, currNode);
-              currNode.attrName = "Action = " + f.expl[i].action;
-              currNode.level=-1;
+    for (int i=0; i<f.expl.length; i++)
+      if (f.expl[i] != null && f.expl[i].action>0 && f.expl[i].eItems != null) {
+        ExplanationItem combItems[] = f.expl[i].getExplItemsCombined(f.expl[i].eItems);
+        if (combItems != null) {
+          if (topNodes==null)
+            topNodes=new Hashtable<Integer,ExTreeNode>(20);
+          ExTreeNode currNode=topNodes.get(f.expl[i].action);
+          if (currNode == null) {
+            currNode = new ExTreeNode();
+            topNodes.put(f.expl[i].action, currNode);
+            currNode.attrName = "Action = " + f.expl[i].action;
+            currNode.level=-1;
+          }
+          currNode.addUse();
+          if (f.expl[i].step>=0)
+            if (solutionSteps==null || !solutionSteps.contains(f.expl[i].step))
+              currNode.addStep(f.expl[i].step);
+            else
+              currNode.addStep(stepList.indexOf(f.expl[i].step));
+          for (int j = 0; j < combItems.length; j++) {
+            ExplanationItem eIt = combItems[j];
+            if (eIt == null)
+              continue;
+            ExTreeNode child = currNode.findChild(eIt.attr, eIt.interval);
+            if (child == null) {
+              child = new ExTreeNode();
+              child.attrName = eIt.attr;
+              child.level = currNode.level+1;
+              child.condition = eIt.interval.clone();
+              child.isInteger=eIt.isInteger;
+              currNode.addChild(child);
             }
-            currNode.addUse();
+            child.addUse();
+            currNode = child;
             if (f.expl[i].step>=0)
               if (solutionSteps==null || !solutionSteps.contains(f.expl[i].step))
                 currNode.addStep(f.expl[i].step);
               else
                 currNode.addStep(stepList.indexOf(f.expl[i].step));
-            for (int j = 0; j < combItems.length; j++) {
-              ExplanationItem eIt = combItems[j];
-              if (eIt == null)
-                continue;
-              ExTreeNode child = currNode.findChild(eIt.attr, eIt.interval);
-              if (child == null) {
-                child = new ExTreeNode();
-                child.attrName = eIt.attr;
-                child.level = currNode.level+1;
-                child.condition = eIt.interval.clone();
-                child.isInteger=eIt.isInteger;
-                currNode.addChild(child);
-              }
-              child.addUse();
-              currNode = child;
-              if (f.expl[i].step>=0)
-                if (solutionSteps==null || !solutionSteps.contains(f.expl[i].step))
-                  currNode.addStep(f.expl[i].step);
-                else
-                  currNode.addStep(stepList.indexOf(f.expl[i].step));
-            }
           }
         }
-    }
+      }
     return topNodes;
   }
 }
