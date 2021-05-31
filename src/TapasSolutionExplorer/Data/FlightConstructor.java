@@ -33,6 +33,9 @@ public class FlightConstructor {
       Vector<Record> sectorRecords=e.getValue();
       for (int i=0; i<sectorRecords.size(); i++) {
         Record r=sectorRecords.elementAt(i);
+        FlightInSector fs=getSectorVisitFromRecord(r);
+        if (fs==null)
+          continue;
         int steps[]=flightSteps.get(r.flight);
         boolean stepFound=r.step==0;
         if (steps!=null)
@@ -51,9 +54,9 @@ public class FlightConstructor {
           if (r.ToN<=flSeq.get(j).entryMinute)
             idx=j;
         if (idx<0)
-          flSeq.add(getSectorVisitFromRecord(r));
+          flSeq.add(fs);
         else
-          flSeq.add(idx,getSectorVisitFromRecord(r));
+          flSeq.add(idx,fs);
       }
     }
     int idx=0;
@@ -89,7 +92,15 @@ public class FlightConstructor {
   public static FlightInSector getSectorVisitFromRecord(Record r) {
     if (r==null)
       return null;
+    if (r.FromT==null || r.ToT==null)
+      return null;
     FlightInSector f=new FlightInSector();
+    try {
+      f.entryTime = LocalTime.parse(r.FromT);
+      f.exitTime=LocalTime.parse(r.ToT);
+    } catch (Exception ex) {
+      return null;
+    }
     f.flightId=r.flight;
     f.sectorId=r.sector;
     f.step=r.step;
@@ -98,10 +109,6 @@ public class FlightConstructor {
     f.nextSectorId=r.ToS;
     f.entryMinute=r.FromN;
     f.exitMinute=r.ToN;
-    if (r.FromT!=null)
-      f.entryTime= LocalTime.parse(r.FromT);
-    if (r.ToT!=null)
-      f.exitTime=LocalTime.parse(r.ToT);
     return f;
   }
   

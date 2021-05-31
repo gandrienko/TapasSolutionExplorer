@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class FlightDrawer {
-  public static float dash1[] = {6.0f,2.0f}, dash2[]={3.0f,1.0f};
+  public static float dash1[] = {6.0f,2.0f}, dash2[]={2.0f,2.0f};
   public static Stroke thickStroke=new BasicStroke(3), mediumStroke=new BasicStroke(1.5f);
   public static Stroke thinDashedStroke = new BasicStroke(1.25f,BasicStroke.CAP_BUTT,
       BasicStroke.JOIN_MITER,10.0f, dash2, 0.0f);
@@ -12,14 +12,14 @@ public class FlightDrawer {
       BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
   public static Color
       lineColour =new Color(0,48,192,150),
-      connectLineColor=new Color(0,48,192,100),
+      connectLineColor=new Color(0,48,192,80),
       criticalColor=new Color(196,0,0,196),
       highlightColor=Color.yellow,
       highlightBorderColor=new Color(255,255,0,192),
-      selectColor=new Color(0,0,0,70),
-      selectBorderColor=new Color(0,0,0,192),
-      secondSelectColor=new Color(0,0,192,70),
-      secondSelectBorderColor=new Color(0,0,192,192);
+      secondSelectColor=new Color(0,0,0,70),
+      secondSelectBorderColor=new Color(0,0,0,192),
+      selectColor=new Color(255,255,255,100),
+      selectBorderColor=new Color(255,255,255,192);
   /**
    * Flight identifier
    */

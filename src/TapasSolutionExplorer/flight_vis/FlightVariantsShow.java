@@ -855,7 +855,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     if (fSel1!=null || fSel2!=null) {
       str+="<tr><td> </td><td>At cursor</td>";
       if (fSel1!=null)
-        str+="<td>Selection 1</td><td>Difference</td>";
+        str+="<td>Selection</td><td>Difference</td>";
       if (fSel2!=null)
         str+="<td>Selection 2</td><td>Difference</td>";
       str+="</tr>";
@@ -1056,17 +1056,15 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   }
   
   public void mouseClicked(MouseEvent e) {
+    if (e.getButton()!=MouseEvent.BUTTON1)
+      return;
     if (e.getClickCount()>1) {
       cancelSelection();
       return;
     }
     int fIdx= getFlightIdxAtPosition(e.getX(),e.getY());
-    if (fIdx<0)
-      return;
-    if (e.getButton()==MouseEvent.BUTTON1)
+    if (fIdx>=0)
       selectVariant1(fIdx);
-    else
-      selectVariant2(fIdx);
   }
   
   public void mousePressed(MouseEvent e) {}
