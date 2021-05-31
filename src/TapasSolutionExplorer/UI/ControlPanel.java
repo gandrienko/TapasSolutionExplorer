@@ -102,12 +102,15 @@ public class ControlPanel extends JPanel implements ActionListener {
         }
       });
       p.add(JCBhideSectorsWithUndefinedCapacity);
-      p.add(new JLabel("Show sectors:"));
+      JPanel pp=new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+      pp.setBorder(BorderFactory.createLineBorder(Color.black));
+      pp.add(new JLabel("Show sectors:"));
       Choice ch=new Choice();
       ch.add("all");
       for (int i=1; i<dk.sectorsWithData.size()/10; i++)
         ch.add("top "+10*i);
-      p.add(ch);
+      ch.select(4);
+      pp.add(ch);
       ch.addItemListener(new ItemListener() {
         @Override
         public void itemStateChanged(ItemEvent e) {
@@ -117,6 +120,7 @@ public class ControlPanel extends JPanel implements ActionListener {
           ((InfoCanvasAll)ic).setMaxNsectorsToDisplay(n);
         }
       });
+      p.add(pp);
       add(p,BorderLayout.EAST);
     }
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
