@@ -201,6 +201,13 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
 
   int yy[]=null, y0=0;
 
+  protected int maxNsectorsToDisplay=40;
+  public void setMaxNsectorsToDisplay (int maxNsectorsToDisplay) {
+    this.maxNsectorsToDisplay=maxNsectorsToDisplay;
+    plotImageValid=false;
+    repaint();
+  }
+
   public void paintComponent (Graphics g) {
     super.paintComponent(g);
 
@@ -238,12 +245,12 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       if (sector.length()>maxL)
         maxL=sector.length();
 
-    int compW=2+lblw+dk.getSectorsSorted().size()*strw,
+    int compW=2+lblw+Math.min(maxNsectorsToDisplay,dk.getSectorsSorted().size())*strw,
         compWextra=5; // width of a single component
     //if (compW*sts.length+compWextra*(sts.length-1)>getWidth()) {
       int W=(getWidth()-5*compWextra)/sts.length;
-      strw=(W-(lblw-1))/dk.getSectorsSorted().size();
-      compW=2+lblw+dk.getSectorsSorted().size()*strw;
+      strw=(W-(lblw-1))/Math.min(maxNsectorsToDisplay,dk.getSectorsSorted().size());
+      compW=2+lblw+Math.min(maxNsectorsToDisplay,dk.getSectorsSorted().size())*strw;
     //}
 
     y0=3+(maxL+1)*strh;
@@ -262,7 +269,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2.setColor(Color.GRAY.brighter());
       for (int i=1; i<dk.Nintervals; i++)
         g2.drawLine(xx,yy[i], xx+compW, yy[i]);
-      for (int i=1; i<dk.getSectorsSorted().size(); i++)
+      for (int i=1; i<Math.min(maxNsectorsToDisplay,dk.getSectorsSorted().size()); i++)
         g2.drawLine(xx+lblw+1+i*strw, strh+1, xx+lblw+1+i*strw, yy[yy.length-1]+3);
       g2.setColor(Color.GRAY);
       for (int i=0; i<dk.Nintervals; i++) {
@@ -278,7 +285,11 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2.fillRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
       g2.setColor(Color.BLACK);
       g2.drawRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
+      int nShownSectors=0;
       for (String sector : dk.getSectorsSorted()) { // new TreeSet<String>(dk.sectors)
+        if (nShownSectors>=maxNsectorsToDisplay)
+          continue;
+        nShownSectors++;
         if (sector.equals(highlightedSector))
           g2.setColor(Color.black);
         else

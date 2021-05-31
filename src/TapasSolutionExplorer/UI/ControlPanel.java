@@ -93,7 +93,7 @@ public class ControlPanel extends JPanel implements ActionListener {
       JChotspotsRatio.addActionListener(this);
       p.add(JChotspotsRatio);
       p.add(new JLabel("   "));
-      JCBhideSectorsWithUndefinedCapacity=new JCheckBox("hide sectors with undefined capacity",true);
+      JCBhideSectorsWithUndefinedCapacity=new JCheckBox("hide sectors with undefined capacity;",true);
       JCBhideSectorsWithUndefinedCapacity.addItemListener(new ItemListener() {
         @Override
         public void itemStateChanged(ItemEvent e) {
@@ -102,6 +102,21 @@ public class ControlPanel extends JPanel implements ActionListener {
         }
       });
       p.add(JCBhideSectorsWithUndefinedCapacity);
+      p.add(new JLabel("Show sectors:"));
+      Choice ch=new Choice();
+      ch.add("all");
+      for (int i=1; i<dk.sectorsWithData.size()/10; i++)
+        ch.add("top "+10*i);
+      p.add(ch);
+      ch.addItemListener(new ItemListener() {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+          int n=999;
+          if (ch.getSelectedIndex()>0)
+            n=10*ch.getSelectedIndex();
+          ((InfoCanvasAll)ic).setMaxNsectorsToDisplay(n);
+        }
+      });
       add(p,BorderLayout.EAST);
     }
     JCrenderingMode=new JComboBox(InfoCanvas.RenderingModes);
