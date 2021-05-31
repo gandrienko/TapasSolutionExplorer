@@ -178,10 +178,28 @@ public class FlightsTable extends JPanel {
           if (r!=null && r.length>1) {
             menu.addSeparator();
             mit=new JMenuItem("Show all explanations for "+r.length+" selected flights");
-            // ...
+            mit.addActionListener(new ActionListener() {
+              @Override
+              public void actionPerformed(ActionEvent e) {
+                Vector<Flight> vfl=new Vector<>(1);
+                int r[]=table.getSelectedRows();
+                for (int i=0; i<r.length; i++)
+                  vfl.add(vf.elementAt(table.convertRowIndexToModel(r[i])));
+                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),true);
+              }
+            });
             menu.add(mit);
             mit=new JMenuItem("Show delay>0 explanations for "+r.length+" selected flights");
-            // ...
+            mit.addActionListener(new ActionListener() {
+              @Override
+              public void actionPerformed(ActionEvent e) {
+                Vector<Flight> vfl=new Vector<>(1);
+                int r[]=table.getSelectedRows();
+                for (int i=0; i<r.length; i++)
+                  vfl.add(vf.elementAt(table.convertRowIndexToModel(r[i])));
+                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),false);
+              }
+            });
             menu.add(mit);
           }
           menu.show(e.getComponent(),e.getX(),e.getY());
