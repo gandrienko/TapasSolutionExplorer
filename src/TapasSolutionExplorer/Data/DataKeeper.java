@@ -26,10 +26,12 @@ public class DataKeeper {
                 hotspotRatio=0; // 0: ratio=1.1; 1: ratio=0;
   public boolean bHideSectorsWithUndefinedCapacity=true;
 
+  public String sortMode="";
   public void sortSectors (String mode) {
     sortSectors(mode,null);
   }
   public void sortSectors (String mode, HashSet<String> selection) {
+    sortMode=mode;
     for (SectorData sd:sectorsWithData)
       sd.compMode=mode;
     Collections.sort(sectorsWithData);
@@ -175,7 +177,7 @@ public class DataKeeper {
         System.out.println("* "+nSectorsProcessed+" sectors ready");
     }
     //System.out.println("* global max="+iGlobalMax);
-    sortSectors(SectorData.comparisonMode[0]);
+    sortSectors(SectorData.comparisonMode[2]);
     System.out.println("* Computing aggregates for "+sectors.size()+" sectors ... ready");
   }
 

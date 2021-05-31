@@ -82,9 +82,19 @@ public class Main {
       if (args.length==3)
         dk=new DataKeeper(args[0],args[1],args[2]);
       else {
+/*
         String fnCapacities="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_capacities",
-               fnDecisions="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_decisions",
-               fnFlightPlans="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_baseline_flight_plans";
+                fnDecisions="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_decisions",
+                fnFlightPlans="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\ATFCM-20210331\\0_delays\\scenario_20190801_exp0_baseline_flight_plans";
+*/
+/*
+        String fnCapacities="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\AIML-20210531\\20190801\\0_delays\\scenario_20190801_capacities",
+               fnDecisions="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\AIML-20210531\\20190801\\0_delays\\scenario_20190801_exp0_decisions",
+               fnFlightPlans="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\AIML-20210531\\20190801\\0_delays\\scenario_20190801_exp0_baseline_flight_plans";
+*/
+        String fnCapacities="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\AIML-20210531\\20190704\\0_delays\\scenario_20190704_capacities",
+                fnDecisions="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\AIML-20210531\\20190704\\0_delays\\scenario_20190704_exp0_decisions",
+                fnFlightPlans="C:\\CommonGISprojects\\tracks-avia\\TAPAS\\AIML-20210531\\20190704\\0_delays\\scenario_20190704_exp0_baseline_flight_plans";
         dk=new DataKeeper(fnCapacities,fnDecisions,fnFlightPlans);
       }
     if (dk!=null && !dk.getSectors().isEmpty())

@@ -372,8 +372,8 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
   protected void doPopup (MouseEvent me) {
     //System.out.println("* popup "+me);
     JPopupMenu menu=new JPopupMenu();
-    JMenuItem item=new JMenuItem("Sort sectors by name");
-    item.addActionListener(new ActionListener() {
+    JCheckBoxMenuItem cbitem=new JCheckBoxMenuItem("Sort sectors by name",SectorData.comparisonMode[0].equals(dk.sortMode));
+    cbitem.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         dk.sortSectors(SectorData.comparisonMode[0]);
@@ -381,9 +381,9 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         repaint();
       }
     });
-    menu.add(item);
-    item=new JMenuItem("Sort sectors by N flights");
-    item.addActionListener(new ActionListener() {
+    menu.add(cbitem);
+    cbitem=new JCheckBoxMenuItem("Sort sectors by N flights",SectorData.comparisonMode[1].equals(dk.sortMode));
+    cbitem.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         dk.sortSectors(SectorData.comparisonMode[1]);
@@ -391,9 +391,9 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         repaint();
       }
     });
-    menu.add(item);
-    item=new JMenuItem("Sort sectors by N hotspots (overall)");
-    item.addActionListener(new ActionListener() {
+    menu.add(cbitem);
+    cbitem=new JCheckBoxMenuItem("Sort sectors by N hotspots (overall)",SectorData.comparisonMode[2].equals(dk.sortMode));
+    cbitem.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         dk.sortSectors(SectorData.comparisonMode[2]);
@@ -401,9 +401,9 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         repaint();
       }
     });
-    menu.add(item);
-    item=new JMenuItem("Sort sectors by N hotspots @ first step");
-    item.addActionListener(new ActionListener() {
+    menu.add(cbitem);
+    cbitem=new JCheckBoxMenuItem("Sort sectors by N hotspots @ first step",SectorData.comparisonMode[3].equals(dk.sortMode));
+    cbitem.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         dk.sortSectors(SectorData.comparisonMode[3]);
@@ -411,9 +411,9 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         repaint();
       }
     });
-    menu.add(item);
-    item=new JMenuItem("Sort sectors by N hotspots @ last step");
-    item.addActionListener(new ActionListener() {
+    menu.add(cbitem);
+    cbitem=new JCheckBoxMenuItem("Sort sectors by N hotspots @ last step",SectorData.comparisonMode[4].equals(dk.sortMode));
+    cbitem.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         dk.sortSectors(SectorData.comparisonMode[4]);
@@ -421,10 +421,10 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
         repaint();
       }
     });
-    menu.add(item);
+    menu.add(cbitem);
     if (selectedSectors.size()>0) {
       menu.add(new JPopupMenu.Separator());
-      item=new JMenuItem("show only selected");
+      JMenuItem item=new JMenuItem("show only selected");
       item.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -481,7 +481,7 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
     String sector=(si==null)?null:si.sector;
     if (sector!=null) {
       menu.add(new JPopupMenu.Separator());
-      item=new JMenuItem("Select sectors connected with "+sector);
+      JMenuItem item=new JMenuItem("Select sectors connected with "+sector);
       item.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
