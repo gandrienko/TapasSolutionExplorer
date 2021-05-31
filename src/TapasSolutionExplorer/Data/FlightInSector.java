@@ -28,9 +28,14 @@ public class FlightInSector implements Comparable<FlightInSector>{
    */
   public int delay=0;
   /**
-   * Maximal hourly demand in the sector during the time when the flight crosses it.
+   * Maximal hourly demand in the sector during the time when this flight variant crosses it.
    */
   public int maxHourlyDemand=0;
+  /**
+   * Maximal hourly demand in the sector in the previous step of the simulation
+   * during the time when this flight variant crosses it.
+   */
+  public int maxHourlyDemandPrevStep =0;
   /**
    * Identifiers of the previous and next sectors
    */

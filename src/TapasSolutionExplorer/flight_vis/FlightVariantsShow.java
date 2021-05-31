@@ -23,8 +23,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   public static Stroke dashedStroke = new BasicStroke(1.0f,BasicStroke.CAP_BUTT,
       BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
   public static Color
-      sectorColor =new Color(128,70,0, 196),
-      sectorBkgColor =new Color(255,165,0,30),
+      sectorColor =new Color(0,96,96, 196),
+      sectorBkgColor =new Color(0,165,165,30),
       capacityColor=new Color(128, 0, 0, 128);
   public static float alphaMin=0.075f, alphaMax=0.5f;
   /**
@@ -413,7 +413,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         int y=y0+(secH+vSpace)*sIdx;
         flightDrawers[i].addPathSegment(getXPos(fSeq[j].entryTime,tWidth)+tMarg,
             getXPos(fSeq[j].exitTime,tWidth)+tMarg,y,y+secH,
-            isCriticalCapacityExcess(fSeq[j].maxHourlyDemand,cap));
+            isCriticalCapacityExcess(fSeq[j].maxHourlyDemand,cap),
+            isCriticalCapacityExcess(fSeq[j].maxHourlyDemandPrevStep,cap));
       }
     }
   }
@@ -685,8 +686,10 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     // (the aggregation parameters might have changed since the last calculation)
     for (int fv = 0; fv < flights[shownFlightIdx].length; fv++) {
       FlightInSector fSeq[] = flights[shownFlightIdx][fv];
-      for (int i=0; i<fSeq.length; i++)
-        fSeq[i].maxHourlyDemand=0;
+      for (int i=0; i<fSeq.length; i++) {
+        fSeq[i].maxHourlyDemand = 0;
+        fSeq[i].maxHourlyDemandPrevStep =0;
+      }
     }
     
     for (int s=0; s<sectorSequence.size(); s++) {
@@ -702,6 +705,15 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
                                sectorId, fSeq[0].step, tStepAggregates);
         if (counts==null)
           continue;
+        
+        int prevCounts[]=null;
+        if (fSeq[0].step>0)
+          prevCounts= (toCountEntries) ?
+                          FlightConstructor.getHourlyCountsOfSectorEntries(flightPlans,
+                              sectorId, fSeq[0].step-1, tStepAggregates, toIgnoreReEntries) :
+                          FlightConstructor.getHourlyFlightCounts(flightPlans,
+                              sectorId, fSeq[0].step-1, tStepAggregates);
+  
         for (int i=0; i<fSeq.length; i++)
           if (sectorId.equals(fSeq[i].sectorId)) {
             FlightInSector f=fSeq[i];
@@ -718,9 +730,12 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
               idx1 = m1/tStepAggregates;
               idx2 = m2/tStepAggregates;
             }
-            for (int j=idx1; j<=idx2 && j<counts.length; j++)
-              if (counts[j]>f.maxHourlyDemand)
-                f.maxHourlyDemand=counts[j];
+            for (int j=idx1; j<=idx2 && j<counts.length; j++) {
+              if (counts[j] > f.maxHourlyDemand)
+                f.maxHourlyDemand = counts[j];
+              if (prevCounts!=null && prevCounts[j]>f.maxHourlyDemandPrevStep)
+                f.maxHourlyDemandPrevStep=prevCounts[j];
+            }
           }
       }
     }
@@ -735,7 +750,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
           int cap = (gotCapacities && capacities.get(fSeq[j].sectorId) != null) ?
                         capacities.get(fSeq[j].sectorId) : 0;
           flightDrawers[i].setSegmentCriticality(j,
-              isCriticalCapacityExcess(fSeq[j].maxHourlyDemand, cap));
+              isCriticalCapacityExcess(fSeq[j].maxHourlyDemand, cap),
+              isCriticalCapacityExcess(fSeq[j].maxHourlyDemandPrevStep,cap));
         }
       }
     }

@@ -4,15 +4,15 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class FlightDrawer {
-  public static float dash1[] = {6.0f,2.0f};
-  public static Stroke thickStroke=new BasicStroke(3);
-  public static Stroke dashedStroke = new BasicStroke(1.0f,BasicStroke.CAP_BUTT,
-      BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
+  public static float dash1[] = {6.0f,2.0f}, dash2[]={3.0f,1.0f};
+  public static Stroke thickStroke=new BasicStroke(3), mediumStroke=new BasicStroke(1.5f);
+  public static Stroke thinDashedStroke = new BasicStroke(1.25f,BasicStroke.CAP_BUTT,
+      BasicStroke.JOIN_MITER,10.0f, dash2, 0.0f);
   public static Stroke thickDashedStroke = new BasicStroke(3.0f,BasicStroke.CAP_BUTT,
       BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
   public static Color
-      lineColour =new Color(128,80,0,150),
-      connectLineColor=new Color(128,80,0,100),
+      lineColour =new Color(0,48,192,150),
+      connectLineColor=new Color(0,48,192,100),
       criticalColor=new Color(196,0,0,196),
       highlightColor=Color.yellow,
       highlightBorderColor=new Color(255,255,0,192),
@@ -40,6 +40,10 @@ public class FlightDrawer {
    * For each path segments, indicates if it needs to be shown as critical
    */
   public ArrayList<Boolean> isSegmentCritical=null;
+  /**
+   * For each path segments, indicates if it needs to be shown as critical
+   */
+  public ArrayList<Boolean> wasCriticalBefore=null;
   
   public Polygon poly=null;
   
@@ -48,30 +52,42 @@ public class FlightDrawer {
       screenPath.clear();
     poly=null;
     isSegmentCritical=null;
+    wasCriticalBefore=null;
   }
   
-  public void addPathSegment (int x1, int x2, int y1, int y2, boolean showAsCritical) {
+  public void addPathSegment (int x1, int x2, int y1, int y2,
+                              boolean showAsCritical, boolean criticalBefore) {
     if (screenPath==null)
       screenPath=new ArrayList<Point>(50);
     screenPath.add(new Point(x1,y1));
     screenPath.add(new Point(x2,y2));
-    if (showAsCritical && isSegmentCritical==null) {
+    if ((showAsCritical || criticalBefore) && isSegmentCritical==null) {
       isSegmentCritical = new ArrayList<Boolean>(25);
-      for (int i=0; i<screenPath.size()/2; i++)
+      wasCriticalBefore = new ArrayList<Boolean>(25);
+      for (int i=0; i<screenPath.size()/2; i++) {
         isSegmentCritical.add(false);
+        wasCriticalBefore.add(false);
+      }
     }
-    if (isSegmentCritical!=null)
+    if (isSegmentCritical!=null) {
       isSegmentCritical.add(showAsCritical);
+      wasCriticalBefore.add(criticalBefore);
+    }
   }
   
-  public void setSegmentCriticality(int segmIdx,boolean critical) {
-    if (critical && isSegmentCritical==null) {
+  public void setSegmentCriticality(int segmIdx, boolean critical, boolean criticalBefore) {
+    if ((critical || criticalBefore) && isSegmentCritical==null) {
       isSegmentCritical = new ArrayList<Boolean>(25);
-      for (int i=0; i<screenPath.size()/2; i++)
+      wasCriticalBefore = new ArrayList<Boolean>(25);
+      for (int i=0; i<screenPath.size()/2; i++) {
         isSegmentCritical.add(false);
+        wasCriticalBefore.add(false);
+      }
     }
-    if (isSegmentCritical!=null)
-      isSegmentCritical.set(segmIdx,critical);
+    if (isSegmentCritical!=null) {
+      isSegmentCritical.set(segmIdx, critical);
+      wasCriticalBefore.set(segmIdx,criticalBefore);
+    }
   }
   
   public void draw (Graphics g) {
@@ -87,10 +103,17 @@ public class FlightDrawer {
     for (int k=0; k<screenPath.size(); k+=2) {
       int segmIdx=k/2;
       boolean isCritical=isSegmentCritical!=null && isSegmentCritical.get(segmIdx);
+      boolean wasCritical=wasCriticalBefore!=null && wasCriticalBefore.get(segmIdx);
       g2d.setStroke((variant>0)?thickDashedStroke:thickStroke);
       g2d.setColor((isCritical)?criticalColor:lineColour);
       g2d.drawLine(screenPath.get(k).x,screenPath.get(k).y,screenPath.get(k+1).x,screenPath.get(k+1).y);
-      g2d.setStroke((variant>0)?dashedStroke:origStroke);
+      if ((isCritical || wasCritical) && step>0) {
+        g2d.setColor((wasCritical)?criticalColor:lineColour);
+        g2d.setStroke(mediumStroke);
+        g2d.drawLine(screenPath.get(k).x-4,screenPath.get(k).y,
+            screenPath.get(k+1).x-4,screenPath.get(k+1).y);
+      }
+      g2d.setStroke((variant>0)? thinDashedStroke :origStroke);
       if (makePoly) {
         poly.addPoint(screenPath.get(k).x - 1, screenPath.get(k).y);
         poly.addPoint(screenPath.get(k+1).x - 1, screenPath.get(k+1).y);
@@ -142,7 +165,7 @@ public class FlightDrawer {
     }
     Stroke origStroke=g2d.getStroke();
     if (variant>0)
-      g2d.setStroke(dashedStroke);
+      g2d.setStroke(thinDashedStroke);
     g.setColor(highlightBorderColor);
     g.drawPolygon(poly);
     if (variant>0)
@@ -163,7 +186,7 @@ public class FlightDrawer {
     }
     Stroke origStroke=g2d.getStroke();
     if (variant>0)
-      g2d.setStroke(dashedStroke);
+      g2d.setStroke(thinDashedStroke);
     g.setColor((isSecondSelection)?secondSelectBorderColor:selectBorderColor);
     g.drawPolygon(poly);
     if (variant>0)
