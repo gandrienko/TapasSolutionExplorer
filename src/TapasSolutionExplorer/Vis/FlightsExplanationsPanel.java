@@ -55,7 +55,7 @@ public class FlightsExplanationsPanel extends JPanel {
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
     JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
-    FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,minStep,maxStep,bShowZeroActions);
+    FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
 
     tableList=new JTable(tableListModel);
@@ -158,13 +158,15 @@ public class FlightsExplanationsPanel extends JPanel {
 
   class FlightsListOfExplTableModel extends AbstractTableModel {
     Vector<Flight> vf = null;
+    ArrayList<String> listOfFeatures=null;
     int minStep, maxStep;
     boolean bShowZeroActions;
     public int rowFlNs[] = null;
     public int rowFlSteps[] = null;
 
-    public FlightsListOfExplTableModel(Vector<Flight> vf, int minStep, int maxStep, boolean bShowZeroActions) {
+    public FlightsListOfExplTableModel(Vector<Flight> vf, ArrayList<String> listOfFeatures, int minStep, int maxStep, boolean bShowZeroActions) {
       this.vf = vf;
+      this.listOfFeatures=listOfFeatures;
       this.minStep = minStep;
       this.maxStep = maxStep;
       this.bShowZeroActions = bShowZeroActions;
@@ -191,10 +193,10 @@ public class FlightsExplanationsPanel extends JPanel {
     }
     private String columnNames[] = {"Flight ID", "Step", "Action", "N conditions", "N features"};
     public String getColumnName(int col) {
-      return columnNames[col];
+      return ((col<columnNames.length) ? columnNames[col] : listOfFeatures.get(col-columnNames.length));
     }
     public int getColumnCount() {
-      return columnNames.length;
+      return columnNames.length+listOfFeatures.size();
     }
     public int getRowCount() {
       return rowFlNs.length;
@@ -218,8 +220,10 @@ public class FlightsExplanationsPanel extends JPanel {
           for (int i=0; i<f.expl[rowFlSteps[row]].eItems.length; i++)
             features.add(f.expl[rowFlSteps[row]].eItems[i].attr);
           return features.size();
+        default:
+          return "";
       }
-      return 0;
+      //return 0;
     }
   }
 
