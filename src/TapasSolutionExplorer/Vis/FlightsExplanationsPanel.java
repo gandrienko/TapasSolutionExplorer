@@ -13,11 +13,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 public class FlightsExplanationsPanel extends JPanel {
 
@@ -28,6 +28,29 @@ public class FlightsExplanationsPanel extends JPanel {
 
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf, int minStep, int maxStep, boolean bShowZeroActions) {
     super();
+
+    // compute table statistics
+    HashSet<String> features=new HashSet<>(10);
+    int maxNcond=0, maxNfeatures=0;
+    for (Flight f:vf)
+      for (int step=minStep; step<=maxStep; step++)
+        if (f.expl==null || f.expl[step]==null)
+          ; //System.out.println("* no explanation: flight "+f.id+", step="+step);
+        else
+          if (f.expl[step].action>0 || bShowZeroActions) {
+            ExplanationItem[] e=f.expl[step].eItems,
+                              ee=f.expl[step].getExplItemsCombined(e);
+            maxNcond=Math.max(maxNcond,e.length);
+            maxNfeatures=Math.max(maxNfeatures,ee.length);
+            for (int i=0; i<ee.length; i++)
+              features.add(ee[i].attr);
+          }
+    System.out.println("* N distinct features = "+features.size());
+    ArrayList<String> list = new ArrayList<>(features);
+    Collections.sort(list);
+    for (String s:list)
+      System.out.println(s);
+
     JFrame frame = new JFrame("Explanations for " + ((vf.size()==1) ? vf.elementAt(0).id : vf.size() + " flights") + " at steps ["+minStep+".."+maxStep+"]");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
@@ -55,6 +78,8 @@ public class FlightsExplanationsPanel extends JPanel {
     centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     tableList.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(minStep,maxStep));
     tableList.getColumnModel().getColumn(2).setCellRenderer(new RenderLabelBarChart(0,10));
+    tableList.getColumnModel().getColumn(3).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
+    tableList.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
     JScrollPane scrollPaneList = new JScrollPane(tableList);
     scrollPaneList.setOpaque(true);
 
@@ -84,10 +109,6 @@ public class FlightsExplanationsPanel extends JPanel {
     tableExpl.setRowSelectionAllowed(true);
     tableExpl.setColumnSelectionAllowed(false);
     tableExpl.getColumnModel().getColumn(2).setCellRenderer(new RenderLabel_ValueInSubinterval());
-    //DefaultTableCellRenderer centerRenderer=new DefaultTableCellRenderer();
-    //centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-    //tableList.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(minStep,maxStep));
-    //tableList.getColumnModel().getColumn(2).setCellRenderer(new RenderLabelBarChart(0,10));
     JScrollPane scrollPaneExpl = new JScrollPane(tableExpl);
     scrollPaneExpl.setOpaque(true);
 
@@ -168,7 +189,7 @@ public class FlightsExplanationsPanel extends JPanel {
           }
       }
     }
-    private String columnNames[] = {"Flight ID", "Step", "Action"};
+    private String columnNames[] = {"Flight ID", "Step", "Action", "N conditions", "N features"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -190,6 +211,13 @@ public class FlightsExplanationsPanel extends JPanel {
           return rowFlSteps[row];
         case 2:
           return f.expl[rowFlSteps[row]].action;
+        case 3:
+          return f.expl[rowFlSteps[row]].eItems.length;
+        case 4:
+          HashSet<String> features=new HashSet<>(10);
+          for (int i=0; i<f.expl[rowFlSteps[row]].eItems.length; i++)
+            features.add(f.expl[rowFlSteps[row]].eItems[i].attr);
+          return features.size();
       }
       return 0;
     }

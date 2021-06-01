@@ -98,9 +98,11 @@ public class FlightsTable extends JPanel {
       public void valueChanged(ListSelectionEvent event) {
         if (event.getValueIsAdjusting())
           return;
+/*
         for (int c : table.getSelectedRows())
           System.out.print(String.format(" %d(%d)", c, table.convertRowIndexToModel(c)));
         System.out.println();
+*/
       }
     });
     if (flightsTimesInSector!=null)
@@ -125,7 +127,7 @@ public class FlightsTable extends JPanel {
         int col = table.columnAtPoint(p), col1=-1;
         if (col>=0)
           col1=table.convertColumnIndexToModel(col);  // table.columnAtPoint(new Point(e.getX(),e.getY()))
-        System.out.println("* "+col+", "+col1);
+        //System.out.println("* "+col+", "+col1);
         super.mouseReleased(e);
       }
     });
