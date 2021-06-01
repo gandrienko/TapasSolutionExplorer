@@ -1,22 +1,29 @@
 package TapasSolutionExplorer.flight_vis;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 /**
  * Draws a horizontal or vertical line consisting of squares that may differ in their colors.
  * The squares may also have text labels, which are shown when the mouse cursor is pointing on the squares.
  * Supports selection of one or more squares by mouse-clicking.
- * Notifies listeners (implementing ItemStateListener interface) about selections.
+ * Notifies listeners (implementing ChangeListener interface) about selections.
  */
 
 public class MosaicLine extends JPanel {
   public static final int HORIZONTAL=0, VERTICAL=1;
   public static final float mm=((float)Toolkit.getDefaultToolkit().getScreenResolution())/25.4f;
-  public static Color TileBorderColor=Color.gray;
+  public static Color TileBorderColor=Color.gray, markColor=new Color(255,255,255,200);
+  public static float dash[]={2.0f,2.0f};
+  public static Stroke thickStroke=new BasicStroke(1.5f);
+  public static Stroke thickDashedStroke = new BasicStroke(1.5f,BasicStroke.CAP_BUTT,
+      BasicStroke.JOIN_MITER,10.0f, dash, 0.0f);
   
   public int orientation=HORIZONTAL;
   public int tileSize=Math.round(mm*3.5f);
@@ -24,7 +31,7 @@ public class MosaicLine extends JPanel {
   public Color tileColors[]=null;
   public String tileLabels[]=null;
   
-  public int hlIdx=-1, selIdx=-1;
+  public int hlIdx=-1, selIdx=-1, selIdx2=-1, markedIdx=-1;
   /**
    * Position of the first drawn tile (upper left corner)
    */
@@ -39,6 +46,8 @@ public class MosaicLine extends JPanel {
   protected BufferedImage off_Image=null;
   protected boolean off_Valid=false;
   
+  protected ArrayList<ChangeListener> changeListeners=null;
+  
   public MosaicLine(int nTiles, int orientation) {
     this.nTiles=nTiles; this.orientation=orientation;
     Dimension prefSize=(orientation==HORIZONTAL)?new Dimension(tileSize*nTiles,tileSize):
@@ -49,7 +58,27 @@ public class MosaicLine extends JPanel {
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        super.mouseClicked(e);
+        if (e.getClickCount()>1) {
+          cancelSelection();
+          return;
+        }
+        int idx=getTileIdxAtPosition(e.getX(),e.getY());
+        if (idx<0)
+          return;
+        if (e.getButton()==MouseEvent.BUTTON1) {
+          if (idx!=selIdx) {
+            selIdx=idx;
+            notifyChange();
+            redraw();
+          }
+        }
+        else {
+          if (idx!=selIdx2) {
+            selIdx2=idx;
+            notifyChange();
+            redraw();
+          }
+        }
       }
   
       @Override
@@ -63,6 +92,27 @@ public class MosaicLine extends JPanel {
       }
     });
   }
+  
+  public void addChangeListener(ChangeListener l) {
+    if (changeListeners==null)
+      changeListeners=new ArrayList(5);
+    if (!changeListeners.contains(l))
+      changeListeners.add(l);
+  }
+  
+  public void removeChangeListener(ChangeListener l) {
+    if (l!=null && changeListeners!=null)
+      changeListeners.remove(l);
+  }
+  
+  public void notifyChange(){
+    if (changeListeners==null || changeListeners.isEmpty())
+      return;
+    ChangeEvent e=new ChangeEvent(this);
+    for (ChangeListener l:changeListeners)
+      l.stateChanged(e);
+  }
+  
   
   public void setOrientation(int orientation) {
     if (this.orientation == orientation)
@@ -116,6 +166,25 @@ public class MosaicLine extends JPanel {
     tileLabels[idx]=label;
   }
   
+  public void setMarkedIdx(int idx) {
+    if (markedIdx==idx)
+      return;
+    markedIdx=idx;
+    redraw();
+  }
+  
+  protected void cancelSelection() {
+    if (selIdx >=0 || selIdx2>=0) {
+      selIdx =-1; selIdx2=-1;
+      notifyChange();
+      redraw();
+    }
+  }
+  
+  public int getSelectedIndex(boolean primary) {
+    return (primary)?selIdx:selIdx2;
+  }
+  
   public int getTileIdxAtPosition(int x, int y) {
     int idx=(orientation==HORIZONTAL)?(x-tileX0)/tileW:(y-tileY0)/tileH;
     if (idx<0 || idx>=nTiles)
@@ -146,6 +215,47 @@ public class MosaicLine extends JPanel {
     redraw();;
   }
   
+  public int getXPosForTile(int idx) {
+    if (orientation==HORIZONTAL)
+      return tileX0+idx*tileW;
+    return tileX0;
+  }
+  
+  public int getYPosForTile(int idx) {
+    if (orientation==HORIZONTAL)
+      return tileY0;
+    return tileY0+idx*tileH;
+  }
+  
+  protected void drawMarked(Graphics g) {
+    if (markedIdx<0)
+      return;
+    Graphics2D g2d=(Graphics2D)g;
+    Stroke stroke=g2d.getStroke();
+    g2d.setStroke(thickStroke);
+    g2d.setColor(markColor);
+    g2d.drawRect(getXPosForTile(markedIdx),getYPosForTile(markedIdx),tileW,tileH);
+    g2d.setStroke(stroke);
+  }
+  
+  protected void drawSelected(Graphics g) {
+    if (selIdx<0 && selIdx2<0)
+      return;
+    Graphics2D g2d=(Graphics2D)g;
+    Stroke stroke=g2d.getStroke();
+    if (selIdx>=0) {
+      g2d.setStroke(thickStroke);
+      g2d.setColor(Color.darkGray);
+      g2d.drawRect(getXPosForTile(selIdx),getYPosForTile(selIdx),tileW,tileH);
+    }
+    if (selIdx2>=0) {
+      g2d.setStroke(thickDashedStroke);
+      g2d.setColor(Color.darkGray);
+      g2d.drawRect(getXPosForTile(selIdx2),getYPosForTile(selIdx2),tileW,tileH);
+    }
+    g2d.setStroke(stroke);
+  }
+  
   public void paintComponent(Graphics gr) {
     if (nTiles<1)
       return;
@@ -158,7 +268,8 @@ public class MosaicLine extends JPanel {
       }
       else {
         gr.drawImage(off_Image,0,0,null);
-        //todo: mark selected and highlighted items
+        drawSelected(gr);
+        drawMarked(gr);
         return;
       }
     }
@@ -191,6 +302,7 @@ public class MosaicLine extends JPanel {
     }
     off_Valid=true;
     gr.drawImage(off_Image,0,0,null);
-    //todo: mark selected and highlighted items
+    drawSelected(gr);
+    drawMarked(gr);
   }
 }

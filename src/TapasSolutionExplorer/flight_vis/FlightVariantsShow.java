@@ -77,10 +77,17 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
    */
   public float minExcessPercent=10;
   /**
-   * Index of highlighted and selected variants.
+   * Indexes of highlighted and selected variants of the flights.
    * When two variants are selected, the second is compared with the first.
    */
-  protected int hlIdx=-1, selIdx=-1, selIdx2=-1;
+  protected int hlIdx=-1, selVariantIdx =-1;
+  /**
+   * Indexes of one or two selected steps of the solution (simulation.
+   * When one step is selected, the corresponding sector demands are shown by histograms.
+   * When two steps are selected, the demands on the second selected step are compared
+   * with the demands on the first selected step.
+   */
+  protected int selStepIdx=-1, selStepIdx2=-1;
   /**
    * Hourly counts of sector entries or occupancies for the solution steps
    * corresponding to the selected flight variants.
@@ -165,7 +172,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   }
   
   public boolean showFlightVariants(String flId) {
-    hlIdx=-1; selIdx=-1; selIdx2=-1;
+    hlIdx=-1; selVariantIdx =-1;
     hourlyCounts=null; hourlyCounts2=null;
     if (flId==null || flightIndex==null)
       return  false;
@@ -279,10 +286,10 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     calculateDemandsInBackground();
     if (hourlyCounts!=null || hourlyCounts2!=null) {
       hourlyCounts=hourlyCounts2=null;
-      if (selIdx>=0)
-        hourlyCounts=aggregateFlights(flightDrawers[selIdx].step);
-      if (selIdx2>=0)
-        hourlyCounts2=aggregateFlights(flightDrawers[selIdx2].step);
+      if (selStepIdx >=0)
+        hourlyCounts=aggregateFlights(selStepIdx);
+      if (selStepIdx2 >=0)
+        hourlyCounts2=aggregateFlights(selStepIdx2);
       off_Valid = false;
       redraw();
     }
@@ -377,11 +384,11 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   protected void createFlightDrawers(){
     if (flights==null || shownFlightIdx<0 || sectorSequence==null || sectorSequence.isEmpty()) {
       flightDrawers=null;
-      hlIdx=-1; selIdx=-1; selIdx2=-1;
+      hlIdx=-1; selVariantIdx =-1;
       return;
     }
     if (flightDrawers==null || flightDrawers.length!=flights[shownFlightIdx].length) {
-      hlIdx=-1; selIdx=-1; selIdx2=-1;
+      hlIdx=-1; selVariantIdx =-1;
       flightDrawers=new FlightDrawer[flights[shownFlightIdx].length];
       for (int i=0; i<flightDrawers.length; i++) {
         flightDrawers[i] = new FlightDrawer();
@@ -441,10 +448,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       }
       else {
         gr.drawImage(off_Image,0,0,null);
-        if (selIdx>=0)
-          flightDrawers[selIdx].drawSelected(gr,false);
-        if (selIdx2>=0)
-          flightDrawers[selIdx2].drawSelected(gr,true);
+        if (selVariantIdx >=0)
+          flightDrawers[selVariantIdx].drawSelected(gr,false);
         if (hlIdx>=0)
           flightDrawers[hlIdx].drawHighlighted(gr);
         return;
@@ -516,10 +521,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     
     off_Valid=true;
     gr.drawImage(off_Image,0,0,null);
-    if (selIdx>=0)
-      flightDrawers[selIdx].drawSelected(gr,false);
-    if (selIdx2>=0)
-      flightDrawers[selIdx2].drawSelected(gr,true);
+    if (selVariantIdx >=0)
+      flightDrawers[selVariantIdx].drawSelected(gr,false);
     if (hlIdx>=0)
       flightDrawers[hlIdx].drawHighlighted(gr);
   }
@@ -762,48 +765,51 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return true;
   }
   
-  protected void selectVariant1(int vIdx) {
-    if (selIdx==vIdx || selIdx2==vIdx)
-      return;
-    selIdx=vIdx;
-    notifyChange();
-    /*
-    if (selIdx<0)
-      hourlyCounts=null;
+  public void selectSolutionStep(int sIdx, boolean primary) {
+    if (primary)
+      if (sIdx==selStepIdx) return;
+      else {
+        selStepIdx=sIdx;
+        if (selStepIdx<0)
+          hourlyCounts=null;
+        else
+          hourlyCounts=aggregateFlights(selStepIdx);
+      }
     else
-      hourlyCounts=aggregateFlights(flightDrawers[selIdx].step);
-    off_Valid=false;
-    */
-    redraw();
-  }
-  
-  public int getSelectedVariant(boolean primary) {
-    return (primary)?selIdx:selIdx2;
-  }
-  
-  public int getSelectedStep(boolean primary) {
-    int fIdx=(primary)?selIdx:selIdx2;
-    if (fIdx<0) return -1;
-    FlightInSector fSeq[]=flights[shownFlightIdx][fIdx];
-    return fSeq[0].step;
-  }
-  
-  protected void selectVariant2(int vIdx){
-    if (selIdx2==vIdx || selIdx==vIdx)
+    if (sIdx==selStepIdx2)
       return;
-    selIdx2=vIdx;
-    notifyChange();
-    if (selIdx2<0)
-      hourlyCounts2=null;
-    else
-      hourlyCounts2=aggregateFlights(flightDrawers[selIdx2].step);
+    else {
+      selStepIdx2=sIdx;
+      if (selStepIdx2 <0)
+        hourlyCounts2=null;
+      else
+        hourlyCounts2=aggregateFlights(selStepIdx2);
+    }
     off_Valid=false;
     redraw();
   }
   
-  protected void cancelSelection() {
-    if (selIdx>=0 || selIdx2>=0) {
-      selIdx=-1; selIdx2=-1;
+  protected void selectFlightVariant(int vIdx) {
+    if (selVariantIdx ==vIdx)
+      return;
+    selVariantIdx =vIdx;
+    notifyChange();
+    redraw();
+  }
+  
+  public int getSelectedVariant() {
+    return selVariantIdx;
+  }
+  
+  public int getStepOfSelectedVariant() {
+    if (selVariantIdx <0)
+      return -1;
+    return flights[shownFlightIdx][selVariantIdx][0].step;
+  }
+  
+  protected void cancelFlightSelection() {
+    if (selVariantIdx >=0 ) {
+      selVariantIdx =-1;
       notifyChange();
       hourlyCounts=hourlyCounts2=null;
       off_Valid=false;
@@ -851,49 +857,34 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
                   t.compareTo(fSeq[i].entryTime)>=0 && t.compareTo(fSeq[i].exitTime)<=0)
             sIdxInFlight=i;
     }
-    FlightInSector fSel1[] = (selIdx >= 0) ? flights[shownFlightIdx][selIdx] : null;
-    FlightInSector fSel2[] = (selIdx2 >= 0) ? flights[shownFlightIdx][selIdx2] : null;
+    FlightInSector fSel[] = (selVariantIdx >= 0) ? flights[shownFlightIdx][selVariantIdx] : null;
 
     String str="<html><body style=background-color:rgb(255,255,204)><b>"+fSeq[0].flightId+"</b>";
     str += "<table border=0 cellmargin=3 cellpadding=3 cellspacing=3>";
     
-    if (fSel1!=null || fSel2!=null) {
+    if (fSel!=null) {
       str+="<tr><td> </td><td>At cursor</td>";
-      if (fSel1!=null)
+      if (fSel!=null)
         str+="<td>Selection</td><td>Difference</td>";
-      if (fSel2!=null)
-        str+="<td>Selection 2</td><td>Difference</td>";
       str+="</tr>";
     }
 
     str+="<tr><td>Version N</td><td>"+fIdx+"</td>";
-    if (fSel1!=null)
-      str+="<td>"+selIdx+"</td><td>-</td>";
-    if (fSel2!=null)
-      str+="<td>"+selIdx2+"</td><td>-</td>";
+    if (fSel!=null)
+      str+="<td>"+ selVariantIdx +"</td><td>-</td>";
     str+="</tr>";
     str+="<tr><td>Solution step</td><td>"+fSeq[0].step+"</td>";
-    if (fSel1!=null) {
-      int diff=fSeq[0].step - fSel1[0].step;
+    if (fSel!=null) {
+      int diff=fSeq[0].step - fSel[0].step;
       String sDiff=((diff>0)?"+":"")+diff;
-      str += "<td>" + fSel1[0].step + "</td><td>" + sDiff + "</td>";
-    }
-    if (fSel2!=null) {
-      int diff=fSeq[0].step - fSel2[0].step;
-      String sDiff=((diff>0)?"+":"")+diff;
-      str += "<td>" + fSel2[0].step + "</td><td>" + sDiff + "</td>";
+      str += "<td>" + fSel[0].step + "</td><td>" + sDiff + "</td>";
     }
     str+="</tr>";
     str+="<tr><td>Delay</td><td>"+fSeq[0].delay+"</td>";
-    if (fSel1!=null) {
-      int diff=fSeq[0].delay - fSel1[0].delay;
+    if (fSel!=null) {
+      int diff=fSeq[0].delay - fSel[0].delay;
       String sDiff=((diff>0)?"+":"")+diff;
-      str += "<td>" + fSel1[0].delay + "</td><td>" + sDiff + "</td>";
-    }
-    if (fSel2!=null) {
-      int diff=fSeq[0].delay - fSel2[0].delay;
-      String sDiff=((diff>0)?"+":"")+diff;
-      str += "<td>" + fSel2[0].delay + "</td><td>" + sDiff + "</td>";
+      str += "<td>" + fSel[0].delay + "</td><td>" + sDiff + "</td>";
     }
     str+="</tr>";
     
@@ -984,8 +975,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       int idx=getMinuteOfDayBinIndex(m,tStepAggregates);
       LocalTime tt[]=getTimeBinRange(idx,tStepAggregates);
       if (tt!=null) {
-        FlightInSector fSel1[] = (selIdx >= 0) ? flights[shownFlightIdx][selIdx] : null;
-        FlightInSector fSel2[] = (selIdx2 >= 0) ? flights[shownFlightIdx][selIdx2] : null;
+        FlightInSector fSel1[] = (selVariantIdx >= 0) ? flights[shownFlightIdx][selVariantIdx] : null;
   
         txt += "<table border=0 cellmargin=3 cellpadding=3 cellspacing=3>";
         
@@ -1003,7 +993,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         }
         else {
           txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
-          txt += "<tr><td>Solution steps:</td><td>" + fSel1[0].step +"</td><td>" + fSel2[0].step + "</td></tr>";
+          txt += "<tr><td>Solution steps:</td><td>" + selStepIdx +"</td><td>" + selStepIdx2 + "</td></tr>";
           int diff=hourlyCounts2[sectorIdx][idx]-hourlyCounts[sectorIdx][idx];
           String diffStr=((diff>0)?"+":"")+diff;
           txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx] +"</td><td>" +
@@ -1064,12 +1054,12 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     if (e.getButton()!=MouseEvent.BUTTON1)
       return;
     if (e.getClickCount()>1) {
-      cancelSelection();
+      cancelFlightSelection();
       return;
     }
     int fIdx= getFlightIdxAtPosition(e.getX(),e.getY());
     if (fIdx>=0)
-      selectVariant1(fIdx);
+      selectFlightVariant(fIdx);
   }
   
   public void mousePressed(MouseEvent e) {}

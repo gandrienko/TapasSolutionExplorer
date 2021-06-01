@@ -21,6 +21,8 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 public class FlightVisPanel extends JPanel implements ChangeListener, ActionListener, ItemListener {
+  public static final Color apricot=new Color(255,182,115),
+    denim=new Color(21,96,189);
   /**
    * Sector sequences for all variants of all flights
    * dimension 0: flights
@@ -92,6 +94,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     JPanel p=new JPanel(new GridLayout(0,1));
     p.add(flLabel);
     mosaicLine=new MosaicLine(25,MosaicLine.HORIZONTAL);
+    mosaicLine.addChangeListener(this);
     p.add(mosaicLine);
     add(p,BorderLayout.NORTH);
 
@@ -220,9 +223,20 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   public boolean showFlightVariants(String flId) {
     if (exShow!=null)
       exShow.removeAll();
+    mosaicLine.setMarkedIdx(-1);
+    mosaicLine.cancelSelection();
     if (flShow!=null && flShow.showFlightVariants(flId)) {
-      //adjust the time range
       int fIdx=flShow.getShownFlightIdx();
+      //show indicate the steps of the flight variants in the mosaic line
+      if (solutionSteps!=null) {
+        Color colors[]=new Color[solutionSteps.size()];
+        for (int i=0; i<colors.length; i++)
+          colors[i]=apricot;
+        for (int i=0; i<flights[fIdx].length; i++)
+          colors[flights[fIdx][i][0].step]=denim;
+        mosaicLine.setTileColors(colors);
+      }
+      //adjust the time range
       LocalTime t1=flights[fIdx][0][0].entryTime, t2=flights[fIdx][0][flights[fIdx][0].length-1].exitTime;
       for (int i=1; i<flights[fIdx].length; i++) {
         FlightInSector fSeq[]=flights[fIdx][i];
@@ -342,19 +356,18 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     else
       if (e.getSource().equals(flShow)) {
         String txt=getCurrentFlightText();
-        if (flShow.getSelectedVariant(true)>=0) {
-          txt += "; selected: ";
-          if (flShow.getSelectedVariant(false)>=0)
-            txt += "variants " + flShow.getSelectedVariant(true) + ", " +
-                       flShow.getSelectedVariant(false)+"; steps "+
-                flShow.getSelectedStep(true)+", "+flShow.getSelectedStep(false);
-          else
-            txt+= "variant " + flShow.getSelectedVariant(true) +"; step "+
-                      flShow.getSelectedStep(true);
+        if (flShow.getSelectedVariant()>=0) {
+          txt += "; selected: variant " + flShow.getSelectedVariant() +"; step "+
+                      flShow.getStepOfSelectedVariant();
         }
         flLabel.setText(txt);
         flLabel.setSize(flLabel.getPreferredSize());
+        mosaicLine.setMarkedIdx(flShow.getStepOfSelectedVariant());
       }
+      else
+        if (e.getSource().equals(mosaicLine)) {
+          //
+        }
   }
   
   protected void getTimeRange() {
