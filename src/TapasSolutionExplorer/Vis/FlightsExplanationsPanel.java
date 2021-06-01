@@ -55,7 +55,7 @@ public class FlightsExplanationsPanel extends JPanel {
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
     JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
-    FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,list,minStep,maxStep,bShowZeroActions);
+    FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
 
     tableList=new JTable(tableListModel);
@@ -63,9 +63,11 @@ public class FlightsExplanationsPanel extends JPanel {
       @Override
       public void valueChanged(ListSelectionEvent e) {
         selectedRow=tableList.getSelectedRow();
-        Explanation expl=vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
-        tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0,expl.eItems.length));
-        setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+        if (selectedRow>=0) {
+          Explanation expl = vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+          tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0, expl.eItems.length));
+          setExpl(attrsInExpl, expl, cbExplCombine.isSelected(), cbExplAsInt.isSelected());
+        }
       }
     });
     tableList.setPreferredScrollableViewportSize(new Dimension(400, 300));
@@ -80,6 +82,8 @@ public class FlightsExplanationsPanel extends JPanel {
     tableList.getColumnModel().getColumn(2).setCellRenderer(new RenderLabelBarChart(0,10));
     tableList.getColumnModel().getColumn(3).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
     tableList.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
+    for (int i=0; i<list.size(); i++)
+      tableList.getColumnModel().getColumn(5+i).setCellRenderer(new RenderLabel_ValueInSubinterval());
     JScrollPane scrollPaneList = new JScrollPane(tableList);
     scrollPaneList.setOpaque(true);
 
@@ -159,13 +163,15 @@ public class FlightsExplanationsPanel extends JPanel {
   class FlightsListOfExplTableModel extends AbstractTableModel {
     Vector<Flight> vf = null;
     ArrayList<String> listOfFeatures=null;
+    Hashtable<String,int[]> attrsInExpl=null;
     int minStep, maxStep;
     boolean bShowZeroActions;
     public int rowFlNs[] = null;
     public int rowFlSteps[] = null;
 
-    public FlightsListOfExplTableModel(Vector<Flight> vf, ArrayList<String> listOfFeatures, int minStep, int maxStep, boolean bShowZeroActions) {
+    public FlightsListOfExplTableModel(Vector<Flight> vf, Hashtable<String,int[]> attrsInExpl, ArrayList<String> listOfFeatures, int minStep, int maxStep, boolean bShowZeroActions) {
       this.vf = vf;
+      this.attrsInExpl=attrsInExpl;
       this.listOfFeatures=listOfFeatures;
       this.minStep = minStep;
       this.maxStep = maxStep;
@@ -221,7 +227,22 @@ public class FlightsExplanationsPanel extends JPanel {
             features.add(f.expl[rowFlSteps[row]].eItems[i].attr);
           return features.size();
         default:
-          return "";
+          ExplanationItem ee[]=f.expl[rowFlSteps[row]].getExplItemsCombined(f.expl[rowFlSteps[row]].eItems);
+          int n=-1;
+          for (int i=0; n==-1 && i<ee.length; i++)
+            if (ee[i].attr.equals(listOfFeatures.get(col-columnNames.length)))
+              n=i;
+          if (n==-1)
+            return new float[]{-1,0,1,0,1};
+          else {
+            float v1=attrsInExpl.get(f.expl[rowFlSteps[row]].eItems[n].attr)[0], v2=attrsInExpl.get(f.expl[rowFlSteps[row]].eItems[n].attr)[1],
+                  v3=(float)f.expl[rowFlSteps[row]].eItems[n].interval[0], v4=(float)f.expl[rowFlSteps[row]].eItems[n].interval[1];
+            if (v3==Float.NEGATIVE_INFINITY)
+              v3=v1;
+            if (v4==Float.POSITIVE_INFINITY)
+              v4=v2;
+            return new float[]{f.expl[rowFlSteps[row]].eItems[n].value,v1,v2,v3,v4};
+          }
       }
       //return 0;
     }
