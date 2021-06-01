@@ -15,6 +15,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -57,14 +58,32 @@ public class FlightsExplanationsPanel extends JPanel {
     JScrollPane scrollPaneList = new JScrollPane(tableList);
     scrollPaneList.setOpaque(true);
 
-    tableExpl=new JTable(tableExplModel);
+    tableExpl=new JTable(tableExplModel) {
+      public String getToolTipText(MouseEvent e) {
+        String s = "";
+        java.awt.Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p);
+        if (rowIndex>=0) {
+          int realRowIndex = convertRowIndexToModel(rowIndex);
+          s="<html><body style=background-color:rgb(255,255,204)><p align=center><b>"+tableExplModel.eItems[realRowIndex].attr+"</b></p>\n";
+          s+="<table>\n";
+          s+="<tr><td>Value</td><td>"+tableExplModel.eItems[realRowIndex].value+"</td></tr>\n";
+          s+="<tr><td>Condition min..max</td><td>["+tableExplModel.eItems[realRowIndex].interval[0]+".."+tableExplModel.eItems[realRowIndex].interval[1]+"]</td></tr>\n";
+          int minmax[]=attrsInExpl.get(tableExplModel.eItems[realRowIndex].attr);
+          s+="<tr><td>Global min..max</td><td>["+minmax[0]+".."+minmax[1]+"]</td></tr>\n";
+          s+="</table>\n";
+          s+="</body></html>";
+        }
+        return s;
+      }
+    };
     tableExpl.setPreferredScrollableViewportSize(new Dimension(400, 300));
     tableExpl.setFillsViewportHeight(true);
     tableExpl.setAutoCreateRowSorter(true);
     tableExpl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     tableExpl.setRowSelectionAllowed(true);
     tableExpl.setColumnSelectionAllowed(false);
-    tableExpl.getColumnModel().getColumn(7).setCellRenderer(new RenderLabel_ValueInSubinterval());
+    tableExpl.getColumnModel().getColumn(2).setCellRenderer(new RenderLabel_ValueInSubinterval());
     //DefaultTableCellRenderer centerRenderer=new DefaultTableCellRenderer();
     //centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
     //tableList.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(minStep,maxStep));
@@ -178,7 +197,7 @@ public class FlightsExplanationsPanel extends JPanel {
 
   class FlightsSingleExplTableModel extends AbstractTableModel {
     Hashtable<String,int[]> attrsInExpl=null;
-    ExplanationItem eItems[]=null;
+    public ExplanationItem eItems[]=null;
     public FlightsSingleExplTableModel (Hashtable<String,int[]> attrsInExpl) {
       this.attrsInExpl=attrsInExpl;
     }
@@ -186,7 +205,7 @@ public class FlightsExplanationsPanel extends JPanel {
       this.eItems=eItems;
       fireTableDataChanged();
     }
-    private String columnNames[] = {"Level", "Feature", "Value", "min", "max", "interval_min", "interval-max","magic"};
+    private String columnNames[] = {"Level", "Feature", /* "Value", "min", "max", "interval_min", "interval-max",*/ "Value"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -205,6 +224,7 @@ public class FlightsExplanationsPanel extends JPanel {
           return row;
         case 1:
           return eItems[row].attr;
+/*
         case 2:
           return eItems[row].value;
         case 3:
@@ -217,7 +237,8 @@ public class FlightsExplanationsPanel extends JPanel {
           return eItems[row].interval[0];
         case 6:
           return eItems[row].interval[1];
-        case 7:
+*/
+        case 2:
           float v1=attrsInExpl.get(eItems[row].attr)[0], v2=attrsInExpl.get(eItems[row].attr)[1],
                 v3=(float)eItems[row].interval[0], v4=(float)eItems[row].interval[1];
           if (v3==Float.NEGATIVE_INFINITY)
