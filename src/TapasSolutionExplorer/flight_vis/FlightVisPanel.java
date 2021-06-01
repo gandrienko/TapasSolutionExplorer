@@ -2,7 +2,6 @@ package TapasSolutionExplorer.flight_vis;
 
 import TapasDataReader.ExTreeNode;
 import TapasDataReader.Record;
-import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
 
 import TapasUtilities.RangeSlider;
@@ -16,7 +15,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.TreeSet;
 import java.util.Vector;
 
 public class FlightVisPanel extends JPanel implements ChangeListener, ActionListener, ItemListener {
@@ -27,12 +28,17 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    * dimension 2: visited sectors
    */
   public FlightInSector flights[][][]=null;
+  /**
+   * Solution steps as labelled by the ML model
+   */
+  protected TreeSet<Integer> solutionSteps =null;
   
   public FlightVariantsShow flShow=null;
   
   public ExplanationsPanel exShow=null;
   
   protected JLabel flLabel=null;
+  protected MosaicLine mosaicLine=null;
   /**
    * Controls for selecting the time range to view
    */
@@ -75,13 +81,19 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   }
   
   protected void makeInterior(){
-    exShow=new ExplanationsPanel();
-    JSplitPane spl=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,flShow,exShow);
+    //exShow=new ExplanationsPanel();
+    //JSplitPane spl=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,flShow,exShow);
     
     setLayout(new BorderLayout());
-    add(spl,BorderLayout.CENTER);
+    //add(spl,BorderLayout.CENTER);
+    add(flShow,BorderLayout.CENTER);
+    
     flLabel=new JLabel("No flight selected",JLabel.CENTER);
-    add(flLabel,BorderLayout.NORTH);
+    JPanel p=new JPanel(new GridLayout(0,1));
+    p.add(flLabel);
+    mosaicLine=new MosaicLine(25,MosaicLine.HORIZONTAL);
+    p.add(mosaicLine);
+    add(p,BorderLayout.NORTH);
 
     timeFocuser=new RangeSlider();
     timeFocuser.setPreferredSize(new Dimension(240,timeFocuser.getPreferredSize().height));
@@ -98,7 +110,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     JPanel cp=new JPanel(new GridLayout(0,1));
     add(cp,BorderLayout.SOUTH);
     
-    JPanel p=new JPanel(new BorderLayout());
+    p=new JPanel(new BorderLayout());
     cp.add(p);
     JPanel pp=new JPanel(new FlowLayout(FlowLayout.LEFT,5,2));
     pp.add(new JLabel("Time range:"));
@@ -164,6 +176,18 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    * for showing histograms of sector loads.
    * The keys of the hashtable consist of sector identifiers and step numbers with underscore between them.
    */
+
+  public void setSolutionSteps(TreeSet<Integer> solutionSteps) {
+    this.solutionSteps = solutionSteps;
+    if (solutionSteps!=null) {
+      mosaicLine.setNTiles(solutionSteps.size());
+      ArrayList<Integer> steps=new ArrayList<Integer>(solutionSteps);
+      String labels[]=new String[steps.size()];
+      for (int i=0; i<steps.size(); i++)
+        labels[i]=String.valueOf(i)+" ("+((i==0)?"baseline":steps.get(i).toString())+")";
+      mosaicLine.setTileLabels(labels);
+    }
+  }
   
   public void setFlightPlans(Hashtable<String, Vector<Record>> flightPlans) {
     if (flShow!=null)
@@ -194,7 +218,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   }
   
   public boolean showFlightVariants(String flId) {
-    exShow.removeAll();
+    if (exShow!=null)
+      exShow.removeAll();
     if (flShow!=null && flShow.showFlightVariants(flId)) {
       //adjust the time range
       int fIdx=flShow.getShownFlightIdx();

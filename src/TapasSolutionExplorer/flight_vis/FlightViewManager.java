@@ -63,6 +63,8 @@ public class FlightViewManager {
   
   public void setSolutionSteps(TreeSet<Integer> solutionSteps) {
     this.solutionSteps = solutionSteps;
+    if (flShow!=null)
+      flShow.setSolutionSteps(solutionSteps);
   }
   
   public void setCapacities(Hashtable<String, Integer> capacities) {
@@ -127,6 +129,7 @@ public class FlightViewManager {
     flShow=new FlightVisPanel(flightVariants);
     flShow.setFlightPlans(flightPlans);
     flShow.setCapacities(capacities);
+    flShow.setSolutionSteps(solutionSteps);
     
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
