@@ -46,11 +46,11 @@ public class FlightsExplanationsPanel extends JPanel {
             for (int i=0; i<ee.length; i++)
               features.add(ee[i].attr);
           }
-    System.out.println("* N distinct features = "+features.size());
+    //System.out.println("* N distinct features = "+features.size());
     ArrayList<String> list = new ArrayList<>(features);
     Collections.sort(list);
-    for (String s:list)
-      System.out.println(s);
+    //for (String s:list)
+      //System.out.println(s);
 
     JFrame frame = new JFrame("Explanations for " + ((vf.size()==1) ? vf.elementAt(0).id : vf.size() + " flights") + " at steps ["+minStep+".."+maxStep+"]");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -85,8 +85,8 @@ public class FlightsExplanationsPanel extends JPanel {
     tableList.getColumnModel().getColumn(2).setCellRenderer(new RenderLabelBarChart(0,10));
     tableList.getColumnModel().getColumn(3).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
     tableList.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
-    //for (int i=0; i<list.size(); i++)
-      //tableList.getColumnModel().getColumn(5+i).setCellRenderer(new RenderLabel_ValueInSubinterval());
+    for (int i=0; i<list.size(); i++)
+      tableList.getColumnModel().getColumn(5+i).setCellRenderer(new RenderLabel_ValueInSubinterval());
     JScrollPane scrollPaneList = new JScrollPane(tableList);
     scrollPaneList.setOpaque(true);
 
@@ -211,7 +211,7 @@ public class FlightsExplanationsPanel extends JPanel {
       return ((col<columnNames.length) ? columnNames[col] : listOfFeatures.get(col-columnNames.length));
     }
     public int getColumnCount() {
-      return columnNames.length /*+ listOfFeatures.size()*/;
+      return columnNames.length + listOfFeatures.size();
     }
     public int getRowCount() {
       return rowFlNs.length;
@@ -236,7 +236,8 @@ public class FlightsExplanationsPanel extends JPanel {
             features.add(f.expl[rowFlSteps[row]].eItems[i].attr);
           return features.size();
         default:
-          ExplanationItem ee[]=f.expl[rowFlSteps[row]].getExplItemsCombined(f.expl[rowFlSteps[row]].eItems);
+          ExplanationItem e[]=f.expl[rowFlSteps[row]].eItems,
+                          ee[]=f.expl[rowFlSteps[row]].getExplItemsCombined(e);
           int n=-1;
           for (int i=0; n==-1 && i<ee.length; i++)
             if (ee[i].attr.equals(listOfFeatures.get(col-columnNames.length)))
@@ -244,13 +245,14 @@ public class FlightsExplanationsPanel extends JPanel {
           if (n==-1)
             return new float[]{-1,0,1,0,1};
           else {
-            float v1=attrsInExpl.get(f.expl[rowFlSteps[row]].eItems[n].attr)[0], v2=attrsInExpl.get(f.expl[rowFlSteps[row]].eItems[n].attr)[1],
-                  v3=(float)f.expl[rowFlSteps[row]].eItems[n].interval[0], v4=(float)f.expl[rowFlSteps[row]].eItems[n].interval[1];
+            //System.out.println("row="+row+", col="+col+", Ncond="+e.length+", Nfeatures="+ee.length+", featureN="+n+" "+ee[n].attr);
+            float v1=attrsInExpl.get(ee[n].attr)[0], v2=attrsInExpl.get(ee[n].attr)[1],
+                  v3=(float)ee[n].interval[0], v4=(float)ee[n].interval[1];
             if (v3==Float.NEGATIVE_INFINITY)
               v3=v1;
             if (v4==Float.POSITIVE_INFINITY)
               v4=v2;
-            return new float[]{f.expl[rowFlSteps[row]].eItems[n].value,v1,v2,v3,v4};
+            return new float[]{ee[n].value,v1,v2,v3,v4};
           }
       }
       //return 0;
