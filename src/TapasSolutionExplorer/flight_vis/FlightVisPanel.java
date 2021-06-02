@@ -4,6 +4,7 @@ import TapasDataReader.ExTreeNode;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightInSector;
 
+import TapasSolutionExplorer.UI.SingleHighlightManager;
 import TapasUtilities.RangeSlider;
 
 import javax.swing.*;
@@ -65,12 +66,16 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    */
   protected JCheckBox cbIgnoreReEntries =null;
   
+  protected SingleHighlightManager stepHighlighter=null;
+  
   public FlightVisPanel(FlightInSector flights[][][]) {
     if (flights==null)
       return;
     this.flights=flights;
     flShow=new FlightVariantsShow(flights);
     flShow.addChangeListener(this);
+    stepHighlighter=new SingleHighlightManager();
+    flShow.setStepHighlighter(stepHighlighter);
     makeInterior();
   }
   
@@ -79,6 +84,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       return;
     this.flShow = flShow;
     flShow.addChangeListener(this);
+    stepHighlighter=new SingleHighlightManager();
+    flShow.setStepHighlighter(stepHighlighter);
     makeInterior();
   }
   
@@ -95,6 +102,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     p.add(flLabel);
     mosaicLine=new MosaicLine(25,MosaicLine.HORIZONTAL);
     mosaicLine.addChangeListener(this);
+    mosaicLine.setStepHighlighter(stepHighlighter);
     p.add(mosaicLine);
     add(p,BorderLayout.NORTH);
 

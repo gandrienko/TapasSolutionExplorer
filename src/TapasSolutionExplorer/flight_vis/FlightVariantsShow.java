@@ -3,6 +3,7 @@ package TapasSolutionExplorer.flight_vis;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
+import TapasSolutionExplorer.UI.SingleHighlightManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -17,7 +18,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
-public class FlightVariantsShow extends JPanel implements MouseListener, MouseMotionListener {
+public class FlightVariantsShow extends JPanel
+    implements MouseListener, MouseMotionListener, ChangeListener {
   public static final int secondsInDay =86400, minutesInDay=1440;
   public static float dash1[] = {10.0f,5.0f};
   public static Stroke dashedStroke = new BasicStroke(1.0f,BasicStroke.CAP_BUTT,
@@ -119,6 +121,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   protected boolean off_Valid=false;
   
   protected ArrayList<ChangeListener> changeListeners=null;
+
+  protected SingleHighlightManager stepHighlighter=null;
   
   public FlightVariantsShow(FlightInSector flights[][][]) {
     super();
@@ -169,6 +173,37 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
    */
   public void setCapacities(Hashtable<String, Integer> capacities) {
     this.capacities = capacities;
+  }
+  
+  public SingleHighlightManager getStepHighlighter() {
+    return stepHighlighter;
+  }
+  
+  public void setStepHighlighter(SingleHighlightManager stepHighlighter) {
+    this.stepHighlighter = stepHighlighter;
+    if (stepHighlighter!=null)
+      stepHighlighter.addChangeListener(this);
+  }
+  
+  public void stateChanged(ChangeEvent e) {
+    if (e.getSource().equals(stepHighlighter))
+      if (stepHighlighter.getHighlighted()==null) {
+        if (hlIdx>=0) {
+          hlIdx=-1;
+          redraw();
+        }
+      }
+      else {
+        int idx=((Integer)stepHighlighter.getHighlighted()).intValue();
+        int flIdx=-1;
+        for (int v=0; v<flights[shownFlightIdx].length && flIdx<0; v++)
+          if (idx==flights[shownFlightIdx][v][0].step)
+            flIdx=v;
+        if (flIdx!=hlIdx) {
+          hlIdx=flIdx;
+          redraw();
+        }
+      }
   }
   
   public boolean showFlightVariants(String flId) {
@@ -458,7 +493,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       }
       else {
         gr.drawImage(getImageWithSelection(off_Image),0,0,null);
-        if (hlIdx>=0)
+        if (hlIdx>=0 && hlIdx<flightDrawers.length)
           flightDrawers[hlIdx].drawHighlighted(gr);
         return;
       }
@@ -529,7 +564,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     
     off_Valid=true;
     gr.drawImage(getImageWithSelection(off_Image),0,0,null);
-    if (hlIdx>=0)
+    if (hlIdx>=0 && hlIdx<flightDrawers.length)
       flightDrawers[hlIdx].drawHighlighted(gr);
   }
   
@@ -1039,16 +1074,27 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return null;
   }
   
+  protected void highlightVariant(int fIdx){
+    if (fIdx==hlIdx)
+      return;
+    if (stepHighlighter!=null) {
+      if (fIdx<0)
+        stepHighlighter.clearHighlighting();
+      else
+        stepHighlighter.highlight(new Integer(flights[shownFlightIdx][fIdx][0].step));
+    }
+    else {
+      hlIdx = fIdx;
+      redraw();
+    }
+  }
+  
   public void mouseMoved(MouseEvent me) {
     if (!isShowing())
       return;
     if (me.getButton()!=MouseEvent.NOBUTTON)
       return;
-    int fIdx= getFlightIdxAtPosition(me.getX(),me.getY());
-    if (fIdx==hlIdx)
-      return;
-    hlIdx=fIdx;
-    redraw();
+    highlightVariant(getFlightIdxAtPosition(me.getX(),me.getY()));
   }
   
   public void mouseClicked(MouseEvent e) {
@@ -1066,16 +1112,10 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
   public void mousePressed(MouseEvent e) {}
   public void mouseReleased(MouseEvent e) {}
   public void mouseEntered(MouseEvent e) {
-    if (hlIdx>=0) {
-      hlIdx=-1;
-      redraw();
-    }
+    highlightVariant(-1);
   }
   public void mouseExited(MouseEvent e) {
-    if (hlIdx>=0) {
-      hlIdx=-1;
-      redraw();
-    }
+    highlightVariant(-1);
   }
   public void mouseDragged(MouseEvent e) {}
 }

@@ -1,5 +1,7 @@
 package TapasSolutionExplorer.flight_vis;
 
+import TapasSolutionExplorer.UI.SingleHighlightManager;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -16,12 +18,14 @@ import java.util.ArrayList;
  * Notifies listeners (implementing ChangeListener interface) about selections.
  */
 
-public class MosaicLine extends JPanel {
+public class MosaicLine extends JPanel implements ChangeListener {
   public static final int HORIZONTAL=0, VERTICAL=1;
   public static final float mm=((float)Toolkit.getDefaultToolkit().getScreenResolution())/25.4f;
   public static Color TileBorderColor=Color.gray,
       markColor=new Color(255,255,255,160),
-      markBorderColor=new Color(255,255,255,192);
+      markBorderColor=new Color(255,255,255,192),
+      highlightColor=new Color(255,255,0,160),
+      highlightBorderColor=new Color(255,255,0,192);
   public static float dash[]={2f,1.0f};
   public static Stroke thickStroke=new BasicStroke(1.5f);
   public static Stroke thickDashedStroke = new BasicStroke(1.5f,BasicStroke.CAP_BUTT,
@@ -49,6 +53,8 @@ public class MosaicLine extends JPanel {
   protected boolean off_Valid=false;
   
   protected ArrayList<ChangeListener> changeListeners=null;
+  
+  protected SingleHighlightManager stepHighlighter=null;
   
   public MosaicLine(int nTiles, int orientation) {
     this.nTiles=nTiles; this.orientation=orientation;
@@ -82,12 +88,18 @@ public class MosaicLine extends JPanel {
   
       @Override
       public void mouseExited(MouseEvent e) {
-        super.mouseExited(e);
+        clearHighlighting();
       }
-  
+    });
+    
+    addMouseMotionListener(new MouseAdapter() {
       @Override
       public void mouseMoved(MouseEvent e) {
-        super.mouseMoved(e);
+        int idx=getTileIdxAtPosition(e.getX(),e.getY());
+        if (idx<0)
+          clearHighlighting();
+        else
+          highightStep(idx);
       }
     });
   }
@@ -163,6 +175,53 @@ public class MosaicLine extends JPanel {
         tileLabels[i]=Integer.toString(i);
     }
     tileLabels[idx]=label;
+  }
+  
+  public SingleHighlightManager getStepHighlighter() {
+    return stepHighlighter;
+  }
+  
+  public void setStepHighlighter(SingleHighlightManager stepHighlighter) {
+    this.stepHighlighter = stepHighlighter;
+    if (stepHighlighter!=null)
+      stepHighlighter.addChangeListener(this);
+  }
+  
+  public void highightStep(int idx){
+    if (stepHighlighter!=null)
+      stepHighlighter.highlight(new Integer(idx));
+    else
+      if (hlIdx!=idx) {
+        hlIdx=idx;
+        redraw();
+      }
+  }
+  
+  public void clearHighlighting(){
+    if (stepHighlighter!=null)
+      stepHighlighter.clearHighlighting();
+    else
+      if (hlIdx>=0) {
+        hlIdx=-1;
+        redraw();
+      }
+  }
+  
+  public void stateChanged(ChangeEvent e) {
+    if (e.getSource().equals(stepHighlighter))
+      if (stepHighlighter.getHighlighted()==null) {
+        if (hlIdx>=0) {
+          hlIdx=-1;
+          redraw();
+        }
+      }
+      else {
+        int idx=((Integer)stepHighlighter.getHighlighted()).intValue();
+        if (idx>=0 && idx<nTiles && idx!=hlIdx) {
+          hlIdx=idx;
+          redraw();
+        }
+      }
   }
   
   public void setMarkedIdx(int idx) {
@@ -258,6 +317,17 @@ public class MosaicLine extends JPanel {
     g2d.setStroke(stroke);
   }
   
+  protected void drawHighlighted(Graphics g) {
+    if (hlIdx<0)
+      return;
+    int x=getXPosForTile(hlIdx), y=getYPosForTile(hlIdx);
+    Graphics2D g2d=(Graphics2D)g;
+    g2d.setColor(highlightColor);
+    g2d.fillRect(x,y,tileW,tileH);
+    g2d.setColor(highlightBorderColor);
+    g2d.drawRect(x,y,tileW,tileH);
+  }
+  
   public void paintComponent(Graphics gr) {
     if (nTiles<1)
       return;
@@ -272,6 +342,7 @@ public class MosaicLine extends JPanel {
         gr.drawImage(off_Image,0,0,null);
         drawMarked(gr);
         drawSelected(gr);
+        drawHighlighted(gr);
         return;
       }
     }
@@ -309,5 +380,6 @@ public class MosaicLine extends JPanel {
     gr.drawImage(off_Image,0,0,null);
     drawMarked(gr);
     drawSelected(gr);
+    drawHighlighted(gr);
   }
 }
