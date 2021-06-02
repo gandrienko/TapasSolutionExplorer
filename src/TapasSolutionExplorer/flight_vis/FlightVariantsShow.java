@@ -3,6 +3,7 @@ package TapasSolutionExplorer.flight_vis;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
+import TapasSolutionExplorer.UI.ChangeNotifier;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
 
 import javax.swing.*;
@@ -121,7 +122,10 @@ public class FlightVariantsShow extends JPanel
   protected boolean off_Valid=false;
   
   protected ArrayList<ChangeListener> changeListeners=null;
-
+  /**
+   * Supports simultaneous highlighting of flight versions and/or corresponding steps
+   * in this component and other components
+   */
   protected SingleHighlightManager stepHighlighter=null;
   
   public FlightVariantsShow(FlightInSector flights[][][]) {
@@ -185,6 +189,15 @@ public class FlightVariantsShow extends JPanel
       stepHighlighter.addChangeListener(this);
   }
   
+  public int getFlightVersionIdxForStep(int stepIdx) {
+    if (stepIdx<0)
+      return -1;
+    for (int v=0; v<flights[shownFlightIdx].length; v++)
+      if (stepIdx==flights[shownFlightIdx][v][0].step)
+        return v;
+    return -1;
+  }
+  
   public void stateChanged(ChangeEvent e) {
     if (e.getSource().equals(stepHighlighter))
       if (stepHighlighter.getHighlighted()==null) {
@@ -195,10 +208,7 @@ public class FlightVariantsShow extends JPanel
       }
       else {
         int idx=((Integer)stepHighlighter.getHighlighted()).intValue();
-        int flIdx=-1;
-        for (int v=0; v<flights[shownFlightIdx].length && flIdx<0; v++)
-          if (idx==flights[shownFlightIdx][v][0].step)
-            flIdx=v;
+        int flIdx= getFlightVersionIdxForStep(idx);
         if (flIdx!=hlIdx) {
           hlIdx=flIdx;
           redraw();
@@ -308,8 +318,8 @@ public class FlightVariantsShow extends JPanel
       tLengthMinutes =minuteEnd-minuteStart;
       tLengthSeconds=tLengthMinutes*60;
       off_Valid = false;
-      //redraw();
-      repaint();
+      redraw();
+      //repaint();
     }
   }
   
@@ -462,6 +472,13 @@ public class FlightVariantsShow extends JPanel
             isCriticalCapacityExcess(fSeq[j].maxHourlyDemandPrevStep, cap));
       }
     }
+  }
+  
+  public Point getPathOriginForFlightVersion(int fIdx) {
+    if (fIdx>=0 && flightDrawers!=null && fIdx<flightDrawers.length)
+      return (flightDrawers[fIdx].screenPath==null || flightDrawers[fIdx].screenPath.isEmpty())?null:
+                 flightDrawers[fIdx].screenPath.get(0);
+    return null;
   }
   
   public int getFlightIdxAtPosition(int x, int y){
@@ -710,7 +727,7 @@ public class FlightVariantsShow extends JPanel
       @Override
       protected void done() {
         off_Valid=false;
-        repaint();
+        redraw();
       }
     };
     worker.execute();
@@ -849,8 +866,6 @@ public class FlightVariantsShow extends JPanel
     if (selVariantIdx >=0 ) {
       selVariantIdx =-1;
       notifyChange();
-      hourlyCounts=hourlyCounts2=null;
-      off_Valid=false;
       redraw();
     }
   }

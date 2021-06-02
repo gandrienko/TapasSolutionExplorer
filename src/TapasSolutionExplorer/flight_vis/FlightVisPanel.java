@@ -4,6 +4,7 @@ import TapasDataReader.ExTreeNode;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightInSector;
 
+import TapasSolutionExplorer.UI.ChangeNotifier;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
 import TapasUtilities.RangeSlider;
 
@@ -23,7 +24,8 @@ import java.util.Vector;
 
 public class FlightVisPanel extends JPanel implements ChangeListener, ActionListener, ItemListener {
   public static final Color apricot=new Color(255,182,115),
-    denim=new Color(21,96,189);
+    denim=new Color(21,96,189),
+    linkColor=new Color(230,230,255);
   /**
    * Sector sequences for all variants of all flights
    * dimension 0: flights
@@ -102,6 +104,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     p.add(flLabel);
     mosaicLine=new MosaicLine(25,MosaicLine.HORIZONTAL);
     mosaicLine.addChangeListener(this);
+    //mosaicLine.getRedrawNotifier().addChangeListener(this);
     mosaicLine.setStepHighlighter(stepHighlighter);
     p.add(mosaicLine);
     add(p,BorderLayout.NORTH);
@@ -261,6 +264,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       timeFocuser.setUpperValue(Math.min(t2.getHour() * 60 + t2.getMinute()+15,timeFocuser.getMaximum()));
       timeFocuser.addChangeListener(this);
       getTimeRange();
+      repaint();
       return true;
     }
     flLabel.setText("No flight selected");
@@ -278,6 +282,42 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     if (exShow!=null)
       exShow.setExplanationsTree(explTree);
   }
+  
+  public void drawLinks(Graphics g) {
+    if (g==null)
+      return;
+    if (mosaicLine!=null && mosaicLine.tileColors!=null &&
+            flShow!=null && flShow.getShownFlightId()!=null) {
+      Point locThis=this.getLocationOnScreen(),
+          locMosaic=mosaicLine.getLocationOnScreen(),
+          locFlShow=flShow.getLocationOnScreen();
+      int dxMosaic=locMosaic.x-locThis.x, dyMosaic=locMosaic.y-locThis.y;
+      int dxFlShow=locFlShow.x-locThis.x, dyFlShow=locFlShow.y-locThis.y;
+      g.setColor(linkColor);
+      for (int i = 0; i < mosaicLine.nTiles; i++)
+        if (mosaicLine.tileColors[i].equals(denim)) {
+          int fIdx=flShow.getFlightVersionIdxForStep(i);
+          if (fIdx<0)
+            continue;
+          Point pt=flShow.getPathOriginForFlightVersion(fIdx);
+          if (pt==null)
+            continue;;
+          int x1 = mosaicLine.getXPosForTile(i)+dxMosaic+mosaicLine.tileW/2,
+              y1 = mosaicLine.getYPosForTile(i)+dyMosaic+mosaicLine.tileH+1;
+          int x2=pt.x+dxFlShow, y2=pt.y+dyFlShow;
+          g.drawLine(x1,y1,x2,y2);
+        }
+    }
+  }
+  /*
+  // To paint over sub-components, it is necessary to redefine method paint(Graphics)
+  // rather than paintComponent(Graphics).
+  
+  public void paint(Graphics g) {
+    super.paint(g);
+    drawLinks(g);
+  }
+  */
   
   public void actionPerformed (ActionEvent ae) {
     if (ae.getSource() instanceof JTextField) {
