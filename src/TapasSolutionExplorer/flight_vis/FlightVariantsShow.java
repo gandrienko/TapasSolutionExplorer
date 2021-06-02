@@ -765,22 +765,19 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return true;
   }
   
-  public void selectSolutionStep(int sIdx, boolean primary) {
-    if (primary)
-      if (sIdx==selStepIdx) return;
-      else {
-        selStepIdx=sIdx;
-        if (selStepIdx<0)
-          hourlyCounts=null;
-        else
-          hourlyCounts=aggregateFlights(selStepIdx);
-      }
-    else
-    if (sIdx==selStepIdx2)
+  public void selectSolutionSteps(int sIdx1, int sIdx2) {
+    if (sIdx1==selStepIdx && sIdx2==selStepIdx2)
       return;
-    else {
-      selStepIdx2=sIdx;
-      if (selStepIdx2 <0)
+    if (sIdx1!=selStepIdx) {
+      selStepIdx=sIdx1;
+      if (selStepIdx<0)
+        hourlyCounts=null;
+      else
+        hourlyCounts=aggregateFlights(selStepIdx);
+    }
+    if (sIdx2!=selStepIdx2) {
+      selStepIdx2=sIdx2;
+      if (selStepIdx2<0)
         hourlyCounts2=null;
       else
         hourlyCounts2=aggregateFlights(selStepIdx2);
@@ -975,14 +972,12 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
       int idx=getMinuteOfDayBinIndex(m,tStepAggregates);
       LocalTime tt[]=getTimeBinRange(idx,tStepAggregates);
       if (tt!=null) {
-        FlightInSector fSel1[] = (selVariantIdx >= 0) ? flights[shownFlightIdx][selVariantIdx] : null;
-  
         txt += "<table border=0 cellmargin=3 cellpadding=3 cellspacing=3>";
         
         String aggrName=(toCountEntries)?"entries":"occupancy";
         if (hourlyCounts2 == null) {
           txt += "<tr><td>Time bin</td><td>#"+idx+"</td><td>"+tt[0]+":00</td><td>.."+tt[1]+"</td></tr>";
-          txt += "<tr><td>Solution step:</td><td>" + fSel1[0].step + "</td></tr>";
+          txt += "<tr><td>Solution step:</td><td>" + selStepIdx + "</td></tr>";
           txt += "<tr><td>Hourly sector "+aggrName+":</td><td>" + hourlyCounts[sectorIdx][idx]+"</td></tr>";
           if (capacity!=null && hourlyCounts[sectorIdx][idx]>capacity) {
             txt+="<tr><td>Excess of capacity:</td><td>"+

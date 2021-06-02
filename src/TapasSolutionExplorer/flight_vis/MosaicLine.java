@@ -20,7 +20,7 @@ public class MosaicLine extends JPanel {
   public static final int HORIZONTAL=0, VERTICAL=1;
   public static final float mm=((float)Toolkit.getDefaultToolkit().getScreenResolution())/25.4f;
   public static Color TileBorderColor=Color.gray, markColor=new Color(255,255,255,200);
-  public static float dash[]={2.0f,2.0f};
+  public static float dash[]={2f,1.0f};
   public static Stroke thickStroke=new BasicStroke(1.5f);
   public static Stroke thickDashedStroke = new BasicStroke(1.5f,BasicStroke.CAP_BUTT,
       BasicStroke.JOIN_MITER,10.0f, dash, 0.0f);
@@ -58,27 +58,20 @@ public class MosaicLine extends JPanel {
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount()>1) {
-          cancelSelection();
+        if (e.getClickCount()>1)
           return;
-        }
         int idx=getTileIdxAtPosition(e.getX(),e.getY());
         if (idx<0)
           return;
-        if (e.getButton()==MouseEvent.BUTTON1) {
-          if (idx!=selIdx) {
-            selIdx=idx;
-            notifyChange();
-            redraw();
-          }
+        if (e.getButton()==MouseEvent.BUTTON1)
+          selIdx=(idx==selIdx)?-1:idx;
+        else
+          selIdx2=(idx==selIdx2)?-1:idx;
+        if (selIdx<0) {
+          selIdx=selIdx2; selIdx2=-1;
         }
-        else {
-          if (idx!=selIdx2) {
-            selIdx2=idx;
-            notifyChange();
-            redraw();
-          }
-        }
+        notifyChange();
+        redraw();
       }
   
       @Override
@@ -268,8 +261,8 @@ public class MosaicLine extends JPanel {
       }
       else {
         gr.drawImage(off_Image,0,0,null);
-        drawSelected(gr);
         drawMarked(gr);
+        drawSelected(gr);
         return;
       }
     }
@@ -277,6 +270,9 @@ public class MosaicLine extends JPanel {
     if (off_Image==null || off_Image.getWidth()!=w || off_Image.getHeight()!=h)
       off_Image=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
     Graphics2D g = off_Image.createGraphics();
+    
+    g.setColor(getBackground());
+    g.fillRect(0,0,w+1,h+1);
     
     tileW=(orientation==HORIZONTAL)?Math.min(tileSize,w/nTiles):Math.min(tileSize,w);
     if (tileW<3) tileW=3;
@@ -302,7 +298,7 @@ public class MosaicLine extends JPanel {
     }
     off_Valid=true;
     gr.drawImage(off_Image,0,0,null);
-    drawSelected(gr);
     drawMarked(gr);
+    drawSelected(gr);
   }
 }

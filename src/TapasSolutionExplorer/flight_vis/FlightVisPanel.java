@@ -366,7 +366,9 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       }
       else
         if (e.getSource().equals(mosaicLine)) {
-          //
+          if (flShow!=null)
+            flShow.selectSolutionSteps(mosaicLine.getSelectedIndex(true),
+                mosaicLine.getSelectedIndex(false));
         }
   }
   
