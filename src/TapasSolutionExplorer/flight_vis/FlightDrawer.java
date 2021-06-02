@@ -13,13 +13,13 @@ public class FlightDrawer {
   public static Color
       lineColour =new Color(0,48,192,150),
       connectLineColor=new Color(0,48,192,80),
-      criticalColor=new Color(196,0,0,196),
-      highlightColor=Color.yellow,
+      criticalColor=new Color(160,0,0,196),
+      highlightColor=new Color(255,255,0,160),
       highlightBorderColor=new Color(255,255,0,192),
       secondSelectColor=new Color(0,0,0,70),
       secondSelectBorderColor=new Color(0,0,0,192),
-      selectColor=new Color(255,255,255,200),
-      selectBorderColor=new Color(255,255,255,225);
+      selectColor=new Color(255,255,255,160),
+      selectBorderColor=new Color(255,255,255,192);
   /**
    * Flight identifier
    */
@@ -146,17 +146,10 @@ public class FlightDrawer {
         RenderingHints.VALUE_ANTIALIAS_ON);
     Graphics2D g2d=(Graphics2D)g;
     g2d.setRenderingHints(rh);
-    if (variant==0) {
-      g.setColor(highlightColor);
-      g.fillPolygon(poly);
-    }
-    Stroke origStroke=g2d.getStroke();
-    if (variant>0)
-      g2d.setStroke(thinDashedStroke);
+    g.setColor(highlightColor);
+    g.fillPolygon(poly);
     g.setColor(highlightBorderColor);
     g.drawPolygon(poly);
-    if (variant>0)
-      g2d.setStroke(origStroke);
   }
   
   public void drawSelected(Graphics g, boolean isSecondSelection) {
@@ -167,16 +160,9 @@ public class FlightDrawer {
         RenderingHints.VALUE_ANTIALIAS_ON);
     Graphics2D g2d=(Graphics2D)g;
     g2d.setRenderingHints(rh);
-    if (variant==0) {
-      g.setColor((isSecondSelection)?secondSelectColor:selectColor);
-      g.fillPolygon(poly);
-    }
-    Stroke origStroke=g2d.getStroke();
-    if (variant>0)
-      g2d.setStroke(thinDashedStroke);
+    g.setColor((isSecondSelection)?secondSelectColor:selectColor);
+    g.fillPolygon(poly);
     g.setColor((isSecondSelection)?secondSelectBorderColor:selectBorderColor);
     g.drawPolygon(poly);
-    if (variant>0)
-      g2d.setStroke(origStroke);
   }
 }

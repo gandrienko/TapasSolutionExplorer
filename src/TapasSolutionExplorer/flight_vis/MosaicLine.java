@@ -19,7 +19,9 @@ import java.util.ArrayList;
 public class MosaicLine extends JPanel {
   public static final int HORIZONTAL=0, VERTICAL=1;
   public static final float mm=((float)Toolkit.getDefaultToolkit().getScreenResolution())/25.4f;
-  public static Color TileBorderColor=Color.gray, markColor=new Color(255,255,255,200);
+  public static Color TileBorderColor=Color.gray,
+      markColor=new Color(255,255,255,160),
+      markBorderColor=new Color(255,255,255,192);
   public static float dash[]={2f,1.0f};
   public static Stroke thickStroke=new BasicStroke(1.5f);
   public static Stroke thickDashedStroke = new BasicStroke(1.5f,BasicStroke.CAP_BUTT,
@@ -50,8 +52,11 @@ public class MosaicLine extends JPanel {
   
   public MosaicLine(int nTiles, int orientation) {
     this.nTiles=nTiles; this.orientation=orientation;
-    Dimension prefSize=(orientation==HORIZONTAL)?new Dimension(tileSize*nTiles,tileSize):
-                           new Dimension(tileSize,tileSize*nTiles);
+    Dimension prefSize=(orientation==HORIZONTAL)?new Dimension(tileSize*nTiles+6,tileSize+6):
+                           new Dimension(tileSize+6,tileSize*nTiles+6);
+    setPreferredSize(prefSize);
+    setBackground(Color.lightGray);
+    
     ToolTipManager.sharedInstance().registerComponent(this);
     ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     
@@ -67,9 +72,10 @@ public class MosaicLine extends JPanel {
           selIdx=(idx==selIdx)?-1:idx;
         else
           selIdx2=(idx==selIdx2)?-1:idx;
-        if (selIdx<0) {
-          selIdx=selIdx2; selIdx2=-1;
-        }
+        if (selIdx<0)
+          selIdx=selIdx2;
+        if (selIdx2==selIdx)
+          selIdx2=-1;
         notifyChange();
         redraw();
       }
@@ -223,11 +229,14 @@ public class MosaicLine extends JPanel {
   protected void drawMarked(Graphics g) {
     if (markedIdx<0)
       return;
+    int x=getXPosForTile(markedIdx), y=getYPosForTile(markedIdx);
     Graphics2D g2d=(Graphics2D)g;
+    g2d.setColor(markColor);
+    g2d.fillRect(x,y,tileW,tileH);
     Stroke stroke=g2d.getStroke();
     g2d.setStroke(thickStroke);
-    g2d.setColor(markColor);
-    g2d.drawRect(getXPosForTile(markedIdx),getYPosForTile(markedIdx),tileW,tileH);
+    g2d.setColor(markBorderColor);
+    g2d.drawRect(x,y,tileW,tileH);
     g2d.setStroke(stroke);
   }
   
