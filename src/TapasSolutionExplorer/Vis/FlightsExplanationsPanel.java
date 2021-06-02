@@ -1,8 +1,10 @@
 package TapasSolutionExplorer.Vis;
 
+import TapasDataReader.ExTreeReconstructor;
 import TapasDataReader.Explanation;
 import TapasDataReader.ExplanationItem;
 import TapasDataReader.Flight;
+import TapasExplTreeViewer.ui.ExTreePanel;
 import TapasUtilities.RenderLabelBarChart;
 import TapasUtilities.RenderLabel_ValueInSubinterval;
 
@@ -25,6 +27,8 @@ public class FlightsExplanationsPanel extends JPanel {
   JLabel lblExplTitle=null;
   FlightsSingleExplTableModel tableExplModel=null;
   int selectedRow=-1;
+
+  ExTreeReconstructor exTreeReconstructor=null;
 
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf, int minStep, int maxStep, boolean bShowZeroActions) {
     super();
@@ -56,6 +60,16 @@ public class FlightsExplanationsPanel extends JPanel {
     JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
     JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
     lblExplTitle=new JLabel("",JLabel.CENTER);
+
+    Hashtable<String, Flight> hFlights=new Hashtable<>(vf.size());
+    for (Flight f:vf)
+      hFlights.put(f.id,f);
+    exTreeReconstructor=new ExTreeReconstructor();
+    exTreeReconstructor.setAttrMinMaxValues(attrsInExpl);
+    if (!exTreeReconstructor.reconstructExTree(hFlights))
+      System.out.println("Failed to reconstruct the explanation tree!");
+    ExTreePanel exTreePanel=new ExTreePanel(exTreeReconstructor.topNodes);
+
     FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
 
@@ -122,9 +136,14 @@ public class FlightsExplanationsPanel extends JPanel {
     JPanel pExpl=new JPanel(new BorderLayout());
     pExpl.add(scrollPaneExpl,BorderLayout.CENTER);
     pExpl.add(lblExplTitle,BorderLayout.NORTH);
-    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPaneList,pExpl);
+
+    JSplitPane splitPaneV=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
+    splitPaneV.setOneTouchExpandable(true);
+    splitPaneV.setDividerLocation(500);
+
+    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPaneList,splitPaneV);
     splitPane.setOneTouchExpandable(true);
-    splitPane.setDividerLocation(500);
+    splitPane.setDividerLocation(800);
     Dimension minimumSize = new Dimension(100, 50);
     scrollPaneList.setMinimumSize(minimumSize);
     scrollPaneExpl.setMinimumSize(minimumSize);
