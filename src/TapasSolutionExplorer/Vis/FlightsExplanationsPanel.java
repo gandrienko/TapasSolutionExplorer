@@ -13,7 +13,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -99,10 +98,11 @@ public class FlightsExplanationsPanel extends JPanel {
           int realRowIndex = convertRowIndexToModel(rowIndex);
           s="<html><body style=background-color:rgb(255,255,204)><p align=center><b>"+tableExplModel.eItems[realRowIndex].attr+"</b></p>\n";
           s+="<table>\n";
-          s+="<tr><td>Value</td><td>"+tableExplModel.eItems[realRowIndex].value+"</td></tr>\n";
-          s+="<tr><td>Condition min..max</td><td>["+tableExplModel.eItems[realRowIndex].interval[0]+".."+tableExplModel.eItems[realRowIndex].interval[1]+"]</td></tr>\n";
+          s+="<tr><td>Value</td><td>"+getFloatAsString(tableExplModel.eItems[realRowIndex].value)+"</td></tr>\n";
+          s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)tableExplModel.eItems[realRowIndex].interval[0])+
+                  " .. "+getFloatAsString((float)tableExplModel.eItems[realRowIndex].interval[1])+"]</td></tr>\n";
           int minmax[]=attrsInExpl.get(tableExplModel.eItems[realRowIndex].attr);
-          s+="<tr><td>Global min..max</td><td>["+minmax[0]+".."+minmax[1]+"]</td></tr>\n";
+          s+="<tr><td>Global min..max</td><td>["+minmax[0]+" .. "+minmax[1]+"]</td></tr>\n";
           s+="</table>\n";
           s+="</body></html>";
         }
@@ -142,6 +142,7 @@ public class FlightsExplanationsPanel extends JPanel {
     cbExplAsInt.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        tableListModel.setbValuesAreInteger(cbExplAsInt.isSelected());
         if (selectedRow>=0) {
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
@@ -159,6 +160,12 @@ public class FlightsExplanationsPanel extends JPanel {
     frame.setVisible(true);
   }
 
+  public String getFloatAsString (float f) {
+    if (f==Math.round(f))
+      return ""+(int)f;
+    else
+      return ""+f;
+  }
   protected void setExpl (Hashtable<String,int[]> attrsInExpl, Explanation expl, boolean bCombine, boolean bInt) {
     lblExplTitle.setText(expl.FlightID+" @ "+expl.step+", action="+expl.action);
     ExplanationItem eItems[]=expl.eItems;
@@ -174,7 +181,7 @@ public class FlightsExplanationsPanel extends JPanel {
     ArrayList<String> listOfFeatures=null;
     Hashtable<String,int[]> attrsInExpl=null;
     int minStep, maxStep;
-    boolean bShowZeroActions;
+    boolean bShowZeroActions, bValuesAreInteger=false;
     public int rowFlNs[] = null;
     public int rowFlSteps[] = null;
 
@@ -186,6 +193,13 @@ public class FlightsExplanationsPanel extends JPanel {
       this.maxStep = maxStep;
       this.bShowZeroActions = bShowZeroActions;
       calcNexpl();
+    }
+    public void setbValuesAreInteger (boolean bValuesAreInteger) {
+      this.bValuesAreInteger=bValuesAreInteger;
+      int selRow=tableList.getSelectedRow();
+      fireTableDataChanged();
+      if (selRow>=0)
+        tableList.setRowSelectionInterval(selRow,selRow);
     }
     protected void calcNexpl() {
       int n = 0;
@@ -238,6 +252,8 @@ public class FlightsExplanationsPanel extends JPanel {
         default:
           ExplanationItem e[]=f.expl[rowFlSteps[row]].eItems,
                           ee[]=f.expl[rowFlSteps[row]].getExplItemsCombined(e);
+          if (bValuesAreInteger)
+            ee=f.expl[rowFlSteps[row]].getExplItemsAsIntegeres(ee,attrsInExpl);
           int n=-1;
           for (int i=0; n==-1 && i<ee.length; i++)
             if (ee[i].attr.equals(listOfFeatures.get(col-columnNames.length)))
