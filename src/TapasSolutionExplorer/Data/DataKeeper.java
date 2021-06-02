@@ -629,23 +629,26 @@ public class DataKeeper {
     worker.execute();
 
   }
+  
+  protected TreeSet<Integer> decisionSteps=null;
+  
   public DataKeeper (String fnCapacities, String fnDecisions, String fnFlightPlans) {
     capacities=TapasDataReader.Readers.readCapacities(fnCapacities);
-    TreeSet<Integer> steps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
-    Nsteps=steps.size();
-    stepLabels=new String[steps.size()];
+    decisionSteps=TapasDataReader.Readers.readStepsFromDecisions(fnDecisions);
+    Nsteps=decisionSteps.size();
+    stepLabels=new String[decisionSteps.size()];
     int n=-1;
-    for (Integer i:steps) {
+    for (Integer i:decisionSteps) {
       n++;
       stepLabels[n] = (i.intValue() == -1) ? "baseline" : "" + i.intValue();
     }
-    allFlights=TapasDataReader.Readers.readFlightDelaysFromDecisions(fnDecisions,steps);
+    allFlights=TapasDataReader.Readers.readFlightDelaysFromDecisions(fnDecisions,decisionSteps);
     records=TapasDataReader.Readers.readFlightPlans(fnFlightPlans,allFlights);
     for (String s:records.keySet())
       sectors.add(s.substring(0,s.indexOf("_")));
     aggregateAll();
     calcFeaturesOfSteps();
-    loadExplanations(steps,fnFlightPlans);
+    loadExplanations(decisionSteps,fnFlightPlans);
   }
 
   public DataKeeper (String fnCapacities, String fnFlightPlans, String fnSolutions[]) {
@@ -691,6 +694,8 @@ public class DataKeeper {
     }
     flightViewManager=new FlightViewManager(getAllFlights(),getFlightPlans());
     flightViewManager.setCapacities(capacities);
+    if (decisionSteps!=null && !decisionSteps.isEmpty())
+      flightViewManager.setSolutionSteps(decisionSteps);
     flightViewManager.setIncludeOnlyModifiedFlights(false);
     flightViewManager.showFlightVariants(flId);
   }
