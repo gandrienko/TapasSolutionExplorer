@@ -14,6 +14,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -73,7 +75,9 @@ public class FlightsExplanationsPanel extends JPanel {
     FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
 
-    tableList=new JTable(tableListModel);
+    tableList=new JTable(tableListModel){};
+    tableList.setTableHeader(new FlightsListOfExplTableHeader(tableList.getColumnModel(),list));
+
     tableList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
       public void valueChanged(ListSelectionEvent e) {
@@ -86,7 +90,7 @@ public class FlightsExplanationsPanel extends JPanel {
         }
       }
     });
-    tableList.setPreferredScrollableViewportSize(new Dimension(400, 300));
+    tableList.setPreferredScrollableViewportSize(new Dimension(1200, 500));
     tableList.setFillsViewportHeight(true);
     tableList.setAutoCreateRowSorter(true);
     tableList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -123,7 +127,7 @@ public class FlightsExplanationsPanel extends JPanel {
         return s;
       }
     };
-    tableExpl.setPreferredScrollableViewportSize(new Dimension(400, 300));
+    tableExpl.setPreferredScrollableViewportSize(new Dimension(200, 500));
     tableExpl.setFillsViewportHeight(true);
     tableExpl.setAutoCreateRowSorter(true);
     tableExpl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -139,12 +143,14 @@ public class FlightsExplanationsPanel extends JPanel {
 
     JSplitPane splitPaneV=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
     splitPaneV.setOneTouchExpandable(true);
-    splitPaneV.setDividerLocation(300);
+    splitPaneV.setDividerLocation(500);
+    Dimension minimumSize = new Dimension(100, 300);
+    pExpl.setMinimumSize(minimumSize);
 
     JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPaneList,splitPaneV);
     splitPane.setOneTouchExpandable(true);
     splitPane.setDividerLocation(1000);
-    Dimension minimumSize = new Dimension(100, 50);
+    minimumSize = new Dimension(100, 300);
     scrollPaneList.setMinimumSize(minimumSize);
     scrollPaneExpl.setMinimumSize(minimumSize);
 
@@ -210,6 +216,41 @@ public class FlightsExplanationsPanel extends JPanel {
     tableExplModel.setExpl(eItems);
   }
 
+  class FlightsListOfExplTableHeader extends JTableHeader {
+    ArrayList<String> list=null;
+    public FlightsListOfExplTableHeader(TableColumnModel model, ArrayList<String> list) {
+      super(model);
+      this.list=list;
+    }
+    public String getToolTipText(MouseEvent e) {
+      String tip = null;
+      java.awt.Point p = e.getPoint();
+      int index = columnModel.getColumnIndexAtX(p.x);
+      int realIndex = columnModel.getColumn(index).getModelIndex();
+      if (realIndex>=5) {
+        String fea=list.get(realIndex - 5);
+        String s="<html><body style=background-color:rgb(255,255,204)>";
+        s+="<p align=center><b>"+fea+"</b></p>\n<p style=\"margin: 10px\">";
+        if (fea.startsWith("NumberOfDe"))
+          s+="Delay the flight has accumulated<br>up to this step.";
+        if (fea.startsWith("NumberOfH"))
+          s+="Total number of hotspots the flight participates in.";
+        if (fea.startsWith("PeriodOfH"))
+          s+="The period in which the corresponding sector has hotspot.";
+        if (fea.startsWith("SectorOfH"))
+          s+="The Nth hotspot the flight participates in.<br>Sectors here are presented with an id subjective to the flight, <br>corresponding to the sequence of sectors crossed by the trajectory. <br>Specifically, number 0 in this list means that this flight participates in <br>a hotspot on the first sector it crosses, 1 at the second sector of its flight plan etc.";
+        if (fea.startsWith("DurationInS"))
+          s+="Duration (in minutes) the flight remains in Nth sector it crosses, <br>with respect to the sequence of sectors crossed by the trajectory.";
+        if (fea.startsWith("TakeOffM"))
+          s+="The minute of day the flight takes off given the delay (CTOT).";
+        s+="</p></body></html>";
+        return s; //list.get(realIndex - 5);
+      }
+      else
+        return "";
+      //return "p="+p.toString()+", idx="+index+", "+realIndex;
+    }
+  }
   class FlightsListOfExplTableModel extends AbstractTableModel {
     Vector<Flight> vf = null;
     ArrayList<String> listOfFeatures=null;
