@@ -438,6 +438,16 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     return -1;
   }
   
+  protected BufferedImage getImageWithSelection(BufferedImage bkgImage) {
+    if (selVariantIdx<0)
+      return bkgImage;
+    BufferedImage selImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g = selImage.createGraphics();
+    g.drawImage(bkgImage,0,0,null);
+    flightDrawers[selVariantIdx].drawSelected(g,false);
+    return selImage;
+  }
+  
   public void paintComponent(Graphics gr) {
     int w=getWidth(), h=getHeight();
     if (w<10 || h<10)
@@ -447,9 +457,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         off_Image = null; off_Valid=false;
       }
       else {
-        gr.drawImage(off_Image,0,0,null);
-        if (selVariantIdx >=0)
-          flightDrawers[selVariantIdx].drawSelected(gr,false);
+        gr.drawImage(getImageWithSelection(off_Image),0,0,null);
         if (hlIdx>=0)
           flightDrawers[hlIdx].drawHighlighted(gr);
         return;
@@ -520,9 +528,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         flightDrawers[i].draw(g);
     
     off_Valid=true;
-    gr.drawImage(off_Image,0,0,null);
-    if (selVariantIdx >=0)
-      flightDrawers[selVariantIdx].drawSelected(gr,false);
+    gr.drawImage(getImageWithSelection(off_Image),0,0,null);
     if (hlIdx>=0)
       flightDrawers[hlIdx].drawHighlighted(gr);
   }
@@ -611,8 +617,6 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
     int maxBH=secH-2;
     int yAxis=(maxDiff<=0)?1:(minDiff>=0)?maxBH+1:Math.round(((float)maxBH)/(maxDiff-minDiff)*maxDiff);
     yAxis+=y0;
-    g.setColor(new Color(255,255,255,128));
-    g.drawLine(0,yAxis,tWidth,yAxis);
 
     for (int j = 0; j < diff.length; j++)
       if (diff[j] != 0) {
@@ -620,7 +624,7 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         int x1 = tMarg+getXPos(t, tWidth), x2 = tMarg+getXPos(t +60, tWidth);
         int bh=Math.round(((float) diff[j]) / (maxDiff-minDiff) * maxBH);
         if (!Float.isNaN(capToHighlight) && counts2[j] > capToHighlight) {
-          float ratio=((float) diff[j]) / capacity, rAbs=Math.min(1f,Math.abs(ratio));
+          float ratio=((float) counts2[j]) / capacity, rAbs=Math.min(1f,Math.abs(ratio));
           g.setColor(new Color(rAbs, 0, 0, alpha));
         }
         else {
@@ -630,6 +634,8 @@ public class FlightVariantsShow extends JPanel implements MouseListener, MouseMo
         g.fillRect(x1, (bh>0)?yAxis - bh:yAxis, x2 - x1 + 1, Math.abs(bh));
         g.drawRect(x1, (bh>0)?yAxis - bh:yAxis, x2 - x1 + 1, Math.abs(bh));
       }
+    g.setColor(new Color(255,255,255,192));
+    g.drawLine(0,yAxis,tWidth,yAxis);
   }
   
   public void redraw() {
