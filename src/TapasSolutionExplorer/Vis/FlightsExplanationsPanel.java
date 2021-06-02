@@ -139,11 +139,11 @@ public class FlightsExplanationsPanel extends JPanel {
 
     JSplitPane splitPaneV=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
     splitPaneV.setOneTouchExpandable(true);
-    splitPaneV.setDividerLocation(500);
+    splitPaneV.setDividerLocation(300);
 
     JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPaneList,splitPaneV);
     splitPane.setOneTouchExpandable(true);
-    splitPane.setDividerLocation(800);
+    splitPane.setDividerLocation(1000);
     Dimension minimumSize = new Dimension(100, 50);
     scrollPaneList.setMinimumSize(minimumSize);
     scrollPaneExpl.setMinimumSize(minimumSize);
@@ -155,6 +155,7 @@ public class FlightsExplanationsPanel extends JPanel {
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          updateExTreePanel(splitPaneV,exTreePanel,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
     });
@@ -166,6 +167,7 @@ public class FlightsExplanationsPanel extends JPanel {
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          updateExTreePanel(splitPaneV,exTreePanel,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
     });
@@ -177,6 +179,19 @@ public class FlightsExplanationsPanel extends JPanel {
     frame.getContentPane().add(controlPanel, BorderLayout.SOUTH);
     frame.pack();
     frame.setVisible(true);
+  }
+
+  public void updateExTreePanel (JSplitPane splitPaneV, ExTreePanel exTreePanel, boolean bCombine, boolean bInt) {
+    if (bCombine)
+      if (bInt)
+        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodesIntExCombined));
+      else
+        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodesExCombined));
+    else
+      if (bInt)
+        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodesInt));
+      else
+        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodes));
   }
 
   public String getFloatAsString (float f) {
