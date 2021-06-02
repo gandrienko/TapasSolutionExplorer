@@ -23,6 +23,7 @@ public class FlightsExplanationsPanel extends JPanel {
 
   JTable tableList=null,
          tableExpl=null;
+  JLabel lblExplTitle=null;
   FlightsSingleExplTableModel tableExplModel=null;
   int selectedRow=-1;
 
@@ -55,6 +56,7 @@ public class FlightsExplanationsPanel extends JPanel {
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
     JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
+    lblExplTitle=new JLabel("",JLabel.CENTER);
     FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
 
@@ -64,7 +66,8 @@ public class FlightsExplanationsPanel extends JPanel {
       public void valueChanged(ListSelectionEvent e) {
         selectedRow=tableList.getSelectedRow();
         if (selectedRow>=0) {
-          Explanation expl = vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+          int row=tableList.convertRowIndexToModel(selectedRow);
+          Explanation expl = vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0, expl.eItems.length));
           setExpl(attrsInExpl, expl, cbExplCombine.isSelected(), cbExplAsInt.isSelected());
         }
@@ -82,8 +85,8 @@ public class FlightsExplanationsPanel extends JPanel {
     tableList.getColumnModel().getColumn(2).setCellRenderer(new RenderLabelBarChart(0,10));
     tableList.getColumnModel().getColumn(3).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
     tableList.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
-    for (int i=0; i<list.size(); i++)
-      tableList.getColumnModel().getColumn(5+i).setCellRenderer(new RenderLabel_ValueInSubinterval());
+    //for (int i=0; i<list.size(); i++)
+      //tableList.getColumnModel().getColumn(5+i).setCellRenderer(new RenderLabel_ValueInSubinterval());
     JScrollPane scrollPaneList = new JScrollPane(tableList);
     scrollPaneList.setOpaque(true);
 
@@ -116,7 +119,10 @@ public class FlightsExplanationsPanel extends JPanel {
     JScrollPane scrollPaneExpl = new JScrollPane(tableExpl);
     scrollPaneExpl.setOpaque(true);
 
-    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPaneList,scrollPaneExpl);
+    JPanel pExpl=new JPanel(new BorderLayout());
+    pExpl.add(scrollPaneExpl,BorderLayout.CENTER);
+    pExpl.add(lblExplTitle,BorderLayout.NORTH);
+    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPaneList,pExpl);
     splitPane.setOneTouchExpandable(true);
     splitPane.setDividerLocation(500);
     Dimension minimumSize = new Dimension(100, 50);
@@ -127,7 +133,8 @@ public class FlightsExplanationsPanel extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (selectedRow>=0) {
-          Explanation expl=vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+          int row=tableList.convertRowIndexToModel(selectedRow);
+          Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
@@ -136,7 +143,8 @@ public class FlightsExplanationsPanel extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (selectedRow>=0) {
-          Explanation expl=vf.elementAt(tableListModel.rowFlNs[selectedRow]).expl[tableListModel.rowFlSteps[selectedRow]];
+          int row=tableList.convertRowIndexToModel(selectedRow);
+          Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
@@ -152,6 +160,7 @@ public class FlightsExplanationsPanel extends JPanel {
   }
 
   protected void setExpl (Hashtable<String,int[]> attrsInExpl, Explanation expl, boolean bCombine, boolean bInt) {
+    lblExplTitle.setText(expl.FlightID+" @ "+expl.step+", action="+expl.action);
     ExplanationItem eItems[]=expl.eItems;
     if (bCombine)
       eItems=expl.getExplItemsCombined(eItems);
@@ -202,7 +211,7 @@ public class FlightsExplanationsPanel extends JPanel {
       return ((col<columnNames.length) ? columnNames[col] : listOfFeatures.get(col-columnNames.length));
     }
     public int getColumnCount() {
-      return columnNames.length+listOfFeatures.size();
+      return columnNames.length /*+ listOfFeatures.size()*/;
     }
     public int getRowCount() {
       return rowFlNs.length;
