@@ -287,6 +287,10 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       g2.drawRect(xx,yy[0],compW-lblw-1,yy[yy.length-1]-yy[0]);
       int nShownSectors=0;
       for (String sector : dk.getSectorsSorted()) { // new TreeSet<String>(dk.sectors)
+        if (nShownSectors==maxNsectorsToDisplay) {
+          g2.setColor(Color.black);
+          drawCenteredString("...",xx,2+strh,10,strh,g2);
+        }
         if (nShownSectors>=maxNsectorsToDisplay)
           continue;
         nShownSectors++;
