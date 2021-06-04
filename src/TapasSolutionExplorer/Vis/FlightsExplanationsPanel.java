@@ -211,10 +211,10 @@ public class FlightsExplanationsPanel extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (selectedRow>=0) {
+          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
-          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
     });
@@ -223,10 +223,10 @@ public class FlightsExplanationsPanel extends JPanel {
       public void actionPerformed(ActionEvent e) {
         tableListModel.setbValuesAreInteger(cbExplAsInt.isSelected());
         if (selectedRow>=0) {
+          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
-          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
     });
