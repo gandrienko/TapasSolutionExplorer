@@ -192,6 +192,19 @@ public class FlightsExplanationsPanel extends JPanel {
     tableExpl.getColumnModel().getColumn(2).setCellRenderer(new RenderLabel_ValueInSubinterval());
     JScrollPane scrollPaneExpl = new JScrollPane(tableExpl);
     scrollPaneExpl.setOpaque(true);
+    
+    tableExpl.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+      @Override
+      public void valueChanged(ListSelectionEvent e) {
+        if (exTreePanel!=null) {
+          selectedRow = tableExpl.getSelectedRow();
+          if (selectedRow >= 0) {
+            int row = tableExpl.convertRowIndexToModel(selectedRow);
+            exTreePanel.highlightExplanationItem(tableExplModel.action,tableExplModel.eItems,row);
+          }
+        }
+      }
+    });
 
     JPanel pExpl=new JPanel(new BorderLayout());
     pExpl.add(scrollPaneExpl,BorderLayout.CENTER);
@@ -270,6 +283,7 @@ public class FlightsExplanationsPanel extends JPanel {
     if (bInt)
       eItems=expl.getExplItemsAsIntegeres(eItems,attrsInExpl);
     tableExplModel.setExpl(eItems);
+    tableExplModel.action=expl.action;
     if (exTreePanel!=null)
       exTreePanel.expandExplanation(expl.action,eItems);
   }
@@ -414,7 +428,8 @@ public class FlightsExplanationsPanel extends JPanel {
   }
 
   class FlightsSingleExplTableModel extends AbstractTableModel {
-    Hashtable<String,int[]> attrsInExpl=null;
+    protected Hashtable<String,int[]> attrsInExpl=null;
+    public int action=-1;
     public ExplanationItem eItems[]=null;
     public FlightsSingleExplTableModel (Hashtable<String,int[]> attrsInExpl) {
       this.attrsInExpl=attrsInExpl;
