@@ -124,9 +124,11 @@ public class FlightsTable extends JPanel {
       @Override
       public void mouseReleased(MouseEvent e) {
         Point p = table.getTableHeader().getMousePosition();
-        int col = table.columnAtPoint(p), col1=-1;
-        if (col>=0)
-          col1=table.convertColumnIndexToModel(col);  // table.columnAtPoint(new Point(e.getX(),e.getY()))
+        if (p!=null) {
+          int col = table.columnAtPoint(p), col1 = -1;
+          if (col >= 0)
+            col1 = table.convertColumnIndexToModel(col);  // table.columnAtPoint(new Point(e.getX(),e.getY()))
+        }
         //System.out.println("* "+col+", "+col1);
         super.mouseReleased(e);
       }

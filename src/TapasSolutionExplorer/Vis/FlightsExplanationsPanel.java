@@ -24,13 +24,14 @@ import java.util.*;
 
 public class FlightsExplanationsPanel extends JPanel {
 
-  JTable tableList=null,
+  protected JTable tableList=null,
          tableExpl=null;
-  JLabel lblExplTitle=null;
-  FlightsSingleExplTableModel tableExplModel=null;
-  int selectedRow=-1;
+  protected JLabel lblExplTitle=null;
+  protected FlightsSingleExplTableModel tableExplModel=null;
+  protected int selectedRow=-1;
 
-  ExTreeReconstructor exTreeReconstructor=null;
+  protected ExTreeReconstructor exTreeReconstructor=null;
+  protected ExTreePanel exTreePanel=null;
 
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf,
                                    int decisionSteps[], int minStep, int maxStep,
@@ -85,7 +86,7 @@ public class FlightsExplanationsPanel extends JPanel {
     }
     if (!exTreeReconstructor.reconstructExTree(hFlights,actionMinMax,stepMinMax))
       System.out.println("Failed to reconstruct the explanation tree!");
-    ExTreePanel exTreePanel=new ExTreePanel(exTreeReconstructor.topNodes);
+    exTreePanel=new ExTreePanel(exTreeReconstructor.topNodes);
 
     FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
@@ -176,7 +177,7 @@ public class FlightsExplanationsPanel extends JPanel {
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
-          updateExTreePanel(splitPaneV,exTreePanel,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
     });
@@ -188,7 +189,7 @@ public class FlightsExplanationsPanel extends JPanel {
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
-          updateExTreePanel(splitPaneV,exTreePanel,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
       }
     });
@@ -202,17 +203,17 @@ public class FlightsExplanationsPanel extends JPanel {
     frame.setVisible(true);
   }
 
-  public void updateExTreePanel (JSplitPane splitPaneV, ExTreePanel exTreePanel, boolean bCombine, boolean bInt) {
+  public void updateExTreePanel (JSplitPane splitPaneV, boolean bCombine, boolean bInt) {
     if (bCombine)
       if (bInt)
-        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodesIntExCombined));
+        splitPaneV.setBottomComponent(exTreePanel=new ExTreePanel(exTreeReconstructor.topNodesIntExCombined));
       else
-        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodesExCombined));
+        splitPaneV.setBottomComponent(exTreePanel=new ExTreePanel(exTreeReconstructor.topNodesExCombined));
     else
       if (bInt)
-        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodesInt));
+        splitPaneV.setBottomComponent(exTreePanel=new ExTreePanel(exTreeReconstructor.topNodesInt));
       else
-        splitPaneV.setBottomComponent(new ExTreePanel(exTreeReconstructor.topNodes));
+        splitPaneV.setBottomComponent(exTreePanel=new ExTreePanel(exTreeReconstructor.topNodes));
   }
 
   public String getFloatAsString (float f) {
@@ -229,6 +230,8 @@ public class FlightsExplanationsPanel extends JPanel {
     if (bInt)
       eItems=expl.getExplItemsAsIntegeres(eItems,attrsInExpl);
     tableExplModel.setExpl(eItems);
+    if (exTreePanel!=null)
+      exTreePanel.expandExplanation(expl.action,eItems);
   }
 
   class FlightsListOfExplTableHeader extends JTableHeader {
