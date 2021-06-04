@@ -91,7 +91,44 @@ public class FlightsExplanationsPanel extends JPanel {
     FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
 
-    tableList=new JTable(tableListModel){};
+    tableList=new JTable(tableListModel){
+      public String getToolTipText(MouseEvent e) {
+        String s = "";
+        java.awt.Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p), colIndex = columnAtPoint(p);
+        if (rowIndex>=0) {
+          int realRowIndex = convertRowIndexToModel(rowIndex), realColIndex=convertColumnIndexToModel(colIndex);
+          if (realColIndex<5)
+            return "";
+          String fea=list.get(realColIndex-5);
+          //Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
+          s="<html><body style=background-color:rgb(255,255,204)><p align=center><b>"+fea+"</b></p>\n";
+          s+="<table>\n";
+          Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
+          ExplanationItem eItems[]=expl.eItems;
+          if (cbExplCombine.isSelected())
+            eItems=expl.getExplItemsCombined(eItems);
+          if (cbExplAsInt.isSelected())
+            eItems=expl.getExplItemsAsIntegeres(eItems,attrsInExpl);
+          int n=-1;
+          for (int i=0; n==-1 && i<eItems.length; i++)
+            if (fea.equals(eItems[i].attr))
+              n=i;
+          if (n==-1)
+            s += "<tr><td>feature "+fea+" is not used in this explanation</td></tr>\n";
+          else {
+            s += "<tr><td>Value</td><td>" + getFloatAsString(eItems[n].value) + "</td></tr>\n";
+            s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)eItems[n].interval[0])+
+                  " .. "+getFloatAsString((float)eItems[n].interval[1])+"]</td></tr>\n";
+            int minmax[]=attrsInExpl.get(eItems[n].attr);
+            s+="<tr><td>Global min..max</td><td>["+minmax[0]+" .. "+minmax[1]+"]</td></tr>\n";
+          }
+          s+="</table>\n";
+          s+="</body></html>";
+        }
+        return s;
+      }
+    };
     tableList.setTableHeader(new FlightsListOfExplTableHeader(tableList.getColumnModel(),list));
 
     tableList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
