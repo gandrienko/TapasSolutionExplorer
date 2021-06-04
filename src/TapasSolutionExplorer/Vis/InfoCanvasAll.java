@@ -513,57 +513,60 @@ public class InfoCanvasAll extends InfoCanvasBasics implements MouseListener, Mo
       menu.add(item);
       menu.add(new JPopupMenu.Separator());
       CellInfo ci=findCellInfoByPoint(me.getPoint());
-      for (int k=0; k<((ci==null)?2:3); k++) {
-        String s=(k==0)?"all flights" : "flights";
-        if (k>0)
-          s+=" in " + sector +  " at step #" + si.step + " (" + getStepLabel(si.step) + ")";
-        if (k>1 && ci!=null)
-          s+=", interval " + String.format("%02d", ci.interval / 3) + ":" + String.format("%02d", (ci.interval % 3) * 20) + ".." +
-                  String.format("%02d", ci.interval / 3 + 1) + ":" + String.format("%02d", (ci.interval % 3) * 20);
-        final String ss=s;
-        final int kk=k;
-        item = new JMenuItem("Show "+s);
-        item.addActionListener(new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            Hashtable<String,int[]> flightsTimesInSector=new Hashtable<>();
-            Vector<Flight> vf = ((kk==0)?dk.getFlights():((kk==1)?dk.getFlights(sector,si.step,flightsTimesInSector):dk.getFlights(sector,ci.interval,ci.step,flightsTimesInSector)));
-            JFrame frame = new JFrame("TAPAS Solution Explorer: " + vf.size() + " " + ss);
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            if (flightsTimesInSector.size()==0)
-              flightsTimesInSector=null;
-            FlightsTable ft = new FlightsTable(dk, vf, flightsTimesInSector, si.step, dk.isExplanationsLoaded());
-/*
-            JTable table = ft.getTable();
-            if (table != null) {
-              JPopupMenu menu = table.getComponentPopupMenu();
-              if (menu == null)
-                menu = new JPopupMenu();
-              JMenuItem mit = new JMenuItem("Show flight plan variants");
-              menu.add(mit);
-              mit.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                  Point p = table.getMousePosition();
-                  int selectedRow =table.rowAtPoint(p)-1;
-                  if (selectedRow<0)
-                    return;
-                  selectedRow =table.convertRowIndexToModel(selectedRow);
-                  String flId = vf.elementAt(selectedRow).id;
-                  dk.showFlightVariants(flId);
-                }
-              });
-              table.setComponentPopupMenu(menu);
+      if (dk.getFlights()!=null && dk.getFlights().size()>0)
+        for (int k=0; k<((ci==null)?2:3); k++) {
+          String s=(k==0)?"all flights" : "flights";
+          if (k>0)
+            s+=" in " + sector +  " at step #" + si.step + " (" + getStepLabel(si.step) + ")";
+          if (k>1 && ci!=null)
+            s+=", interval " + String.format("%02d", ci.interval / 3) + ":" + String.format("%02d", (ci.interval % 3) * 20) + ".." +
+                    String.format("%02d", ci.interval / 3 + 1) + ":" + String.format("%02d", (ci.interval % 3) * 20);
+          final String ss=s;
+          final int kk=k;
+          item = new JMenuItem("Show "+s);
+          item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              Hashtable<String,int[]> flightsTimesInSector=new Hashtable<>();
+              Vector<Flight> vf = ((kk==0)?dk.getFlights():((kk==1)?dk.getFlights(sector,si.step,flightsTimesInSector):dk.getFlights(sector,ci.interval,ci.step,flightsTimesInSector)));
+              if (vf==null || vf.size()==0)
+                return;
+              JFrame frame = new JFrame("TAPAS Solution Explorer: " + vf.size() + " " + ss);
+              frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+              if (flightsTimesInSector.size()==0)
+                flightsTimesInSector=null;
+              FlightsTable ft = new FlightsTable(dk, vf, flightsTimesInSector, si.step, dk.isExplanationsLoaded());
+  /*
+              JTable table = ft.getTable();
+              if (table != null) {
+                JPopupMenu menu = table.getComponentPopupMenu();
+                if (menu == null)
+                  menu = new JPopupMenu();
+                JMenuItem mit = new JMenuItem("Show flight plan variants");
+                menu.add(mit);
+                mit.addActionListener(new ActionListener() {
+                  @Override
+                  public void actionPerformed(ActionEvent e) {
+                    Point p = table.getMousePosition();
+                    int selectedRow =table.rowAtPoint(p)-1;
+                    if (selectedRow<0)
+                      return;
+                    selectedRow =table.convertRowIndexToModel(selectedRow);
+                    String flId = vf.elementAt(selectedRow).id;
+                    dk.showFlightVariants(flId);
+                  }
+                });
+                table.setComponentPopupMenu(menu);
+              }
+  */
+              frame.getContentPane().add(ft, BorderLayout.CENTER);
+              frame.pack();
+              frame.setVisible(true);
+              children.add(frame);
             }
-*/
-            frame.getContentPane().add(ft, BorderLayout.CENTER);
-            frame.pack();
-            frame.setVisible(true);
-            children.add(frame);
-          }
-        });
-        menu.add(item);
-      }
+          });
+          menu.add(item);
+        }
       menu.add(new JPopupMenu.Separator());
       item=new JMenuItem("Show full history for "+sector);
       item.addActionListener(new ActionListener() {
