@@ -652,6 +652,22 @@ public class DataKeeper {
     calcFeaturesOfSteps();
     loadExplanations(decisionSteps,fnFlightPlans);
   }
+  
+  public TreeSet<Integer> getDecisionSteps(){
+    return decisionSteps;
+  }
+  
+  public int[] getDecisionStepsAsArray() {
+    if (decisionSteps==null || decisionSteps.isEmpty())
+      return null;
+    ArrayList<Integer> stepList=new ArrayList<Integer>(decisionSteps);
+    if (stepList==null)
+      return null;
+    int steps[]=new int[stepList.size()];
+    for (int i=0; i<stepList.size(); i++)
+      steps[i]=stepList.get(i);
+    return steps;
+  }
 
   public DataKeeper (String fnCapacities, String fnFlightPlans, String fnSolutions[]) {
     capacities=TapasDataReader.Readers.readCapacities(fnCapacities);

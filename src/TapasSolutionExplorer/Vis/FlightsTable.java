@@ -159,7 +159,8 @@ public class FlightsTable extends JPanel {
               public void actionPerformed(ActionEvent e) {
                 Vector<Flight> vfl=new Vector<>(1);
                 vfl.add(vf.elementAt(finalSelectedRow));
-                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),true);
+                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,dk.getDecisionStepsAsArray(),
+                    stepFocuser.getValue(), stepFocuser.getUpperValue(),true);
               }
             });
             menu.add(mit);
@@ -170,7 +171,8 @@ public class FlightsTable extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                   Vector<Flight> vfl=new Vector<>(1);
                   vfl.add(vf.elementAt(finalSelectedRow));
-                  new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),false);
+                  new FlightsExplanationsPanel(dk.attrsInExpl, vfl,dk.getDecisionStepsAsArray(),
+                      stepFocuser.getValue(), stepFocuser.getUpperValue(),false);
                 }
               });
               menu.add(mit);
@@ -187,7 +189,8 @@ public class FlightsTable extends JPanel {
                 int r[]=table.getSelectedRows();
                 for (int i=0; i<r.length; i++)
                   vfl.add(vf.elementAt(table.convertRowIndexToModel(r[i])));
-                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),true);
+                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,dk.getDecisionStepsAsArray(),
+                    stepFocuser.getValue(), stepFocuser.getUpperValue(),true);
               }
             });
             menu.add(mit);
@@ -199,7 +202,8 @@ public class FlightsTable extends JPanel {
                 int r[]=table.getSelectedRows();
                 for (int i=0; i<r.length; i++)
                   vfl.add(vf.elementAt(table.convertRowIndexToModel(r[i])));
-                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,stepFocuser.getValue(), stepFocuser.getUpperValue(),false);
+                new FlightsExplanationsPanel(dk.attrsInExpl, vfl,dk.getDecisionStepsAsArray(),
+                    stepFocuser.getValue(), stepFocuser.getUpperValue(),false);
               }
             });
             menu.add(mit);

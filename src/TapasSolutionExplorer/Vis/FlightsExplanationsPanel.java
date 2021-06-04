@@ -32,7 +32,9 @@ public class FlightsExplanationsPanel extends JPanel {
 
   ExTreeReconstructor exTreeReconstructor=null;
 
-  public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf, int minStep, int maxStep, boolean bShowZeroActions) {
+  public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf,
+                                   int decisionSteps[], int minStep, int maxStep,
+                                   boolean bShowZeroActions) {
     super();
 
     // compute table statistics
@@ -57,7 +59,9 @@ public class FlightsExplanationsPanel extends JPanel {
     //for (String s:list)
       //System.out.println(s);
 
-    JFrame frame = new JFrame("Explanations for " + ((vf.size()==1) ? vf.elementAt(0).id : vf.size() + " flights") + " at steps ["+minStep+".."+maxStep+"]");
+    JFrame frame = new JFrame("Explanations for " + ((vf.size()==1) ?
+                                                         vf.elementAt(0).id :
+                                                         vf.size() + " flights") + " at steps ["+minStep+".."+maxStep+"]");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
     JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
@@ -68,7 +72,18 @@ public class FlightsExplanationsPanel extends JPanel {
       hFlights.put(f.id,f);
     exTreeReconstructor=new ExTreeReconstructor();
     exTreeReconstructor.setAttrMinMaxValues(attrsInExpl);
-    if (!exTreeReconstructor.reconstructExTree(hFlights))
+    int stepMinMax[]=null, actionMinMax[]=null;
+    if (decisionSteps!=null && (minStep>0 || maxStep<decisionSteps.length-1)) {
+      stepMinMax=new int[2];
+      stepMinMax[0]=decisionSteps[minStep];
+      stepMinMax[1]=decisionSteps[maxStep];
+    }
+    if (!bShowZeroActions) {
+      actionMinMax=new int[2];
+      actionMinMax[0]=1;
+      actionMinMax[1]=Integer.MAX_VALUE;
+    }
+    if (!exTreeReconstructor.reconstructExTree(hFlights,actionMinMax,stepMinMax))
       System.out.println("Failed to reconstruct the explanation tree!");
     ExTreePanel exTreePanel=new ExTreePanel(exTreeReconstructor.topNodes);
 
