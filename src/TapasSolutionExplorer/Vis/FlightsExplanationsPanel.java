@@ -102,7 +102,8 @@ public class FlightsExplanationsPanel extends JPanel {
             return "";
           String fea=list.get(realColIndex-5);
           //Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
-          s="<html><body style=background-color:rgb(255,255,204)><p align=center><b>"+fea+"</b></p>\n";
+          s="<html><body style=background-color:rgb(255,255,204)>"; //"<p align=center><b>"+fea+"</b></p>\n";
+          s+=tableListModel.getFeatureExplanation(fea)+"\n";
           s+="<table>\n";
           Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
           ExplanationItem eItems[]=expl.eItems;
@@ -115,7 +116,8 @@ public class FlightsExplanationsPanel extends JPanel {
             if (fea.equals(eItems[i].attr))
               n=i;
           if (n==-1)
-            s += "<tr><td>feature "+fea+" is not used in this explanation</td></tr>\n";
+            return "";
+            //s += "<tr><td>feature "+fea+" is not used in this explanation</td></tr>\n";
           else {
             s += "<tr><td>Value</td><td>" + getFloatAsString(eItems[n].value) + "</td></tr>\n";
             s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)eItems[n].interval[0])+
@@ -129,7 +131,7 @@ public class FlightsExplanationsPanel extends JPanel {
         return s;
       }
     };
-    tableList.setTableHeader(new FlightsListOfExplTableHeader(tableList.getColumnModel(),list));
+    tableList.setTableHeader(new FlightsListOfExplTableHeader(tableList.getColumnModel(),tableListModel,list));
 
     tableList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
@@ -167,7 +169,8 @@ public class FlightsExplanationsPanel extends JPanel {
         int rowIndex = rowAtPoint(p);
         if (rowIndex>=0) {
           int realRowIndex = convertRowIndexToModel(rowIndex);
-          s="<html><body style=background-color:rgb(255,255,204)><p align=center><b>"+tableExplModel.eItems[realRowIndex].attr+"</b></p>\n";
+          s="<html><body style=background-color:rgb(255,255,204)>\n"; //"<p align=center><b>"+tableExplModel.eItems[realRowIndex].attr+"</b></p>\n";
+          s+=tableListModel.getFeatureExplanation(tableExplModel.eItems[realRowIndex].attr)+"\n";
           s+="<table>\n";
           s+="<tr><td>Value</td><td>"+getFloatAsString(tableExplModel.eItems[realRowIndex].value)+"</td></tr>\n";
           s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)tableExplModel.eItems[realRowIndex].interval[0])+
@@ -272,38 +275,26 @@ public class FlightsExplanationsPanel extends JPanel {
   }
 
   class FlightsListOfExplTableHeader extends JTableHeader {
+    FlightsListOfExplTableModel dataModel=null;
     ArrayList<String> list=null;
-    public FlightsListOfExplTableHeader(TableColumnModel model, ArrayList<String> list) {
+    public FlightsListOfExplTableHeader(TableColumnModel model, FlightsListOfExplTableModel dataModel, ArrayList<String> list) {
       super(model);
+      this.dataModel=dataModel;
       this.list=list;
     }
     public String getToolTipText(MouseEvent e) {
-      String tip = null;
       java.awt.Point p = e.getPoint();
       int index = columnModel.getColumnIndexAtX(p.x);
       int realIndex = columnModel.getColumn(index).getModelIndex();
       if (realIndex>=5) {
         String fea=list.get(realIndex - 5);
         String s="<html><body style=background-color:rgb(255,255,204)>";
-        s+="<p align=center><b>"+fea+"</b></p>\n<p style=\"margin: 10px\">";
-        if (fea.startsWith("NumberOfDe"))
-          s+="Delay the flight has accumulated<br>up to this step.";
-        if (fea.startsWith("NumberOfH"))
-          s+="Total number of hotspots the flight participates in.";
-        if (fea.startsWith("PeriodOfH"))
-          s+="The period in which the corresponding sector has hotspot.";
-        if (fea.startsWith("SectorOfH"))
-          s+="The Nth hotspot the flight participates in.<br>Sectors here are presented with an id subjective to the flight, <br>corresponding to the sequence of sectors crossed by the trajectory. <br>Specifically, number 0 in this list means that this flight participates in <br>a hotspot on the first sector it crosses, 1 at the second sector of its flight plan etc.";
-        if (fea.startsWith("DurationInS"))
-          s+="Duration (in minutes) the flight remains in Nth sector it crosses, <br>with respect to the sequence of sectors crossed by the trajectory.";
-        if (fea.startsWith("TakeOffM"))
-          s+="The minute of day the flight takes off given the delay (CTOT).";
-        s+="</p></body></html>";
-        return s; //list.get(realIndex - 5);
+        s+=dataModel.getFeatureExplanation(fea);
+        s+="</body></html>";
+        return s;
       }
       else
         return "";
-      //return "p="+p.toString()+", idx="+index+", "+realIndex;
     }
   }
   class FlightsListOfExplTableModel extends AbstractTableModel {
@@ -402,6 +393,23 @@ public class FlightsExplanationsPanel extends JPanel {
           }
       }
       //return 0;
+    }
+    public String getFeatureExplanation (String fea) {
+      String s="<p align=center><b>"+fea+"</b></p>\n<p style=\"margin: 10px\">";
+      if (fea.startsWith("NumberOfDe"))
+        s+="Delay the flight has accumulated<br>up to this step.";
+      if (fea.startsWith("NumberOfH"))
+        s+="Total number of hotspots the flight participates in.";
+      if (fea.startsWith("PeriodOfH"))
+        s+="The period in which the corresponding sector has hotspot.";
+      if (fea.startsWith("SectorOfH"))
+        s+="The Nth hotspot the flight participates in.<br>Sectors here are presented with an id subjective to the flight, <br>corresponding to the sequence of sectors crossed by the trajectory. <br>Specifically, number 0 in this list means that this flight participates in <br>a hotspot on the first sector it crosses, 1 at the second sector of its flight plan etc.";
+      if (fea.startsWith("DurationInS"))
+        s+="Duration (in minutes) the flight remains in Nth sector it crosses, <br>with respect to the sequence of sectors crossed by the trajectory.";
+      if (fea.startsWith("TakeOffM"))
+        s+="The minute of day the flight takes off given the delay (CTOT).";
+      s+="</p>";
+      return s;
     }
   }
 
