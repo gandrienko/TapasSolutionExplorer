@@ -221,13 +221,16 @@ public class FlightsExplanationsPanel extends JPanel {
     pExpl.add(scrollPaneExpl,BorderLayout.CENTER);
     pExpl.add(lblExplTitle,BorderLayout.NORTH);
 
-    JSplitPane splitPaneV=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
-    splitPaneV.setOneTouchExpandable(true);
-    splitPaneV.setDividerLocation(500);
+    JSplitPane splitPaneVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,scrollPaneList,new DynamicQueryPanel(tableListModel,new int[]{0,1,2,3,4}));
+    splitPaneVleft.setOneTouchExpandable(true);
+    splitPaneVleft.setDividerLocation(500);
+    JSplitPane splitPaneVright=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
+    splitPaneVright.setOneTouchExpandable(true);
+    splitPaneVright.setDividerLocation(500);
     Dimension minimumSize = new Dimension(100, 300);
     pExpl.setMinimumSize(minimumSize);
 
-    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,scrollPaneList,splitPaneV);
+    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitPaneVleft,splitPaneVright);
     splitPane.setOneTouchExpandable(true);
     splitPane.setDividerLocation(1000);
     minimumSize = new Dimension(100, 300);
@@ -238,7 +241,7 @@ public class FlightsExplanationsPanel extends JPanel {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (selectedRow>=0) {
-          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
@@ -250,7 +253,7 @@ public class FlightsExplanationsPanel extends JPanel {
       public void actionPerformed(ActionEvent e) {
         tableListModel.setbValuesAreInteger(cbExplAsInt.isSelected());
         if (selectedRow>=0) {
-          updateExTreePanel(splitPaneV,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
