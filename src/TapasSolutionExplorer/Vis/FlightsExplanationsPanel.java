@@ -200,7 +200,7 @@ public class FlightsExplanationsPanel extends JPanel {
     tableExpl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     tableExpl.setRowSelectionAllowed(true);
     tableExpl.setColumnSelectionAllowed(false);
-    tableExpl.getColumnModel().getColumn(2).setCellRenderer(new RenderLabel_ValueInSubinterval());
+    tableExpl.getColumnModel().getColumn(3).setCellRenderer(new RenderLabel_ValueInSubinterval());
     JScrollPane scrollPaneExpl = new JScrollPane(tableExpl);
     scrollPaneExpl.setOpaque(true);
     
@@ -455,7 +455,7 @@ public class FlightsExplanationsPanel extends JPanel {
       this.eItems=eItems;
       fireTableDataChanged();
     }
-    private String columnNames[] = {"Level", "Feature", /* "Value", "min", "max", "interval_min", "interval-max",*/ "Value"};
+    private String columnNames[] = {"Level", "Feature", /* "Value", "min", "max", "interval_min", "interval-max",*/ "Sector", "Value"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -488,7 +488,7 @@ public class FlightsExplanationsPanel extends JPanel {
         case 6:
           return eItems[row].interval[1];
 */
-        case 2:
+        case 3:
           float v1=attrsInExpl.get(eItems[row].attr)[0], v2=attrsInExpl.get(eItems[row].attr)[1],
                 v3=(float)eItems[row].interval[0], v4=(float)eItems[row].interval[1];
           if (v3==Float.NEGATIVE_INFINITY)
@@ -496,6 +496,8 @@ public class FlightsExplanationsPanel extends JPanel {
           if (v4==Float.POSITIVE_INFINITY)
             v4=v2;
           return new float[]{eItems[row].value,v1,v2,v3,v4};
+        case 2:
+          return ("null".equals(eItems[row].sector))?"":eItems[row].sector;
       }
       return 0;
     }
