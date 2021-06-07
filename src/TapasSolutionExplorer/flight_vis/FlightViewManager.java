@@ -5,6 +5,7 @@ import TapasDataReader.Flight;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
+import TapasSolutionExplorer.Vis.FlightsExplanationsPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,6 +36,10 @@ public class FlightViewManager {
    */
   protected TreeSet<Integer> solutionSteps =null;
   /**
+   * The steps converted into an array
+   */
+  protected int steps[]=null;
+  /**
    * Capacities of the sectors (max acceptable N of flights per hour)
    */
   protected Hashtable<String,Integer> capacities=null;
@@ -49,7 +54,11 @@ public class FlightViewManager {
    * what flight is shown.
    */
   public FlightVisPanel flShow=null;
-  public JFrame showFrame=null;
+  public JFrame frameFlightShow =null;
+  /**
+   * Contains explanations of the decisions concerning the shown flight
+   */
+  public FlightsExplanationsPanel flExplain=null;
   
   public FlightViewManager(Hashtable<String, Flight> flights,
                            Hashtable<String, Vector<Record>> flightPlans) {
@@ -65,6 +74,14 @@ public class FlightViewManager {
     this.solutionSteps = solutionSteps;
     if (flShow!=null)
       flShow.setSolutionSteps(solutionSteps);
+    if (solutionSteps!=null && !solutionSteps.isEmpty()) {
+      ArrayList<Integer> stepList=new ArrayList<Integer>(solutionSteps);
+      if (stepList!=null) {
+        steps = new int[stepList.size()];
+        for (int i = 0; i < stepList.size(); i++)
+          steps[i] = stepList.get(i);
+      }
+    }
   }
   
   public void setCapacities(Hashtable<String, Integer> capacities) {
@@ -79,6 +96,9 @@ public class FlightViewManager {
     if (flShow!=null) {
       if (!flShow.showFlightVariants(flId))
         return false;
+      if (flExplain!=null)
+        flExplain.getFrame().dispose();
+      flExplain=null;
       showExplanationsForCurrentFlight();
       return true;
     }
@@ -133,12 +153,12 @@ public class FlightViewManager {
     
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
   
-    showFrame=new JFrame("Flight variants");
-    showFrame.getContentPane().add(flShow, BorderLayout.CENTER);
-    showFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    showFrame.pack();
-    showFrame.setLocation(size.width-showFrame.getWidth()-30,size.height-showFrame.getHeight()-50);
-    showFrame.setVisible(true);
+    frameFlightShow =new JFrame("Flight variants");
+    frameFlightShow.getContentPane().add(flShow, BorderLayout.CENTER);
+    frameFlightShow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    frameFlightShow.pack();
+    frameFlightShow.setLocation(size.width- frameFlightShow.getWidth()-30,size.height- frameFlightShow.getHeight()-50);
+    frameFlightShow.setVisible(true);
     
     if (!flShow.showFlightVariants(flId))
       return false;
@@ -151,13 +171,19 @@ public class FlightViewManager {
       return;
     if (explAttrMinMaxValues==null || explAttrMinMaxValues.isEmpty())
       return;
+    if (steps==null)
+      return;
     String flId=flShow.getShownFlightId();
     if (flId==null)
       return;
-    Hashtable<Integer, ExTreeNode> explTree=
-        FlightConstructor.reconstructExplTreeForFlight(flId,flights,solutionSteps);
-    if (explTree!=null)
-      flShow.setExplanations(explTree);
+    Flight f=flights.get(flId);
+    if (f==null || f.expl==null || f.expl.length<1 || !flId.equals(f.id))
+      return;
+    Vector<Flight> vfl=new Vector<>(1);
+    vfl.addElement(f);
+    flExplain=new FlightsExplanationsPanel(explAttrMinMaxValues,vfl,steps,
+        0,steps.length-1,true);
+    frameFlightShow.toFront();
   }
   
   /**

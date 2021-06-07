@@ -32,6 +32,7 @@ public class FlightsExplanationsPanel extends JPanel {
 
   protected ExTreeReconstructor exTreeReconstructor=null;
   protected ExTreePanel exTreePanel=null;
+  protected JFrame frame=null;
 
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf,
                                    int decisionSteps[], int minStep, int maxStep,
@@ -41,8 +42,14 @@ public class FlightsExplanationsPanel extends JPanel {
     // compute table statistics
     HashSet<String> features=new HashSet<>(10);
     int maxNcond=0, maxNfeatures=0;
+    
+    if (minStep<0)
+      minStep=0;
+    if (maxStep<0 || maxStep>=decisionSteps.length)
+      maxStep=decisionSteps.length-1;
+    
     for (Flight f:vf)
-      for (int step=minStep; step<=maxStep; step++)
+      for (int step=minStep; step<=maxStep && step<f.expl.length; step++)
         if (f.expl==null || f.expl[step]==null)
           ; //System.out.println("* no explanation: flight "+f.id+", step="+step);
         else
@@ -60,7 +67,7 @@ public class FlightsExplanationsPanel extends JPanel {
     //for (String s:list)
       //System.out.println(s);
 
-    JFrame frame = new JFrame("Explanations for " + ((vf.size()==1) ?
+    frame = new JFrame("Explanations for " + ((vf.size()==1) ?
                                                          vf.elementAt(0).id :
                                                          vf.size() + " flights") + " at steps ["+minStep+".."+maxStep+"]");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -257,7 +264,13 @@ public class FlightsExplanationsPanel extends JPanel {
     controlPanel.add(cbExplAsInt);
     frame.getContentPane().add(controlPanel, BorderLayout.SOUTH);
     frame.pack();
+    Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
+    frame.setLocation((size.width-frame.getWidth())/2,(size.height-frame.getHeight())/2);
     frame.setVisible(true);
+  }
+  
+  public JFrame getFrame() {
+    return frame;
   }
 
   public void updateExTreePanel (JSplitPane splitPaneV, boolean bCombine, boolean bInt) {

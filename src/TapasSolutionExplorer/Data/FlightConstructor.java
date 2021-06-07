@@ -2,6 +2,7 @@ package TapasSolutionExplorer.Data;
 
 import TapasDataReader.ExTreeNode;
 import TapasDataReader.ExplanationItem;
+import TapasDataReader.Explanation;
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
 
@@ -245,7 +246,7 @@ public class FlightConstructor {
                                     new ArrayList<Integer>(solutionSteps);
     for (int i=0; i<f.expl.length; i++)
       if (f.expl[i] != null && f.expl[i].action>0 && f.expl[i].eItems != null) {
-        ExplanationItem combItems[] = f.expl[i].getExplItemsCombined(f.expl[i].eItems);
+        ExplanationItem combItems[] = Explanation.getExplItemsCombined(f.expl[i].eItems);
         if (combItems != null) {
           if (topNodes==null)
             topNodes=new Hashtable<Integer,ExTreeNode>(20);

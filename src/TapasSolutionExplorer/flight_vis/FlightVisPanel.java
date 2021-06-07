@@ -222,7 +222,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       int delay = flights[fIdx][0][0].delay;
       for (int i = 1; i < flights[fIdx].length; i++) {
         FlightInSector fSeq[] = flights[fIdx][i];
-        if (fSeq[0].delay > delay) delay = fSeq[0].delay;
+        if (fSeq!=null && fSeq[0].delay > delay)
+          delay = fSeq[0].delay;
       }
       str += "; max delay = " + delay;
       return str;
@@ -244,13 +245,16 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
         for (int i=0; i<colors.length; i++)
           colors[i]=apricot;
         for (int i=0; i<flights[fIdx].length; i++)
-          colors[flights[fIdx][i][0].step]=denim;
+          if (flights[fIdx][i]!=null)
+            colors[flights[fIdx][i][0].step]=denim;
         mosaicLine.setTileColors(colors);
       }
       //adjust the time range
       LocalTime t1=flights[fIdx][0][0].entryTime, t2=flights[fIdx][0][flights[fIdx][0].length-1].exitTime;
       for (int i=1; i<flights[fIdx].length; i++) {
         FlightInSector fSeq[]=flights[fIdx][i];
+        if (fSeq==null)
+          continue;
         if (t1.compareTo(fSeq[0].entryTime)>0)
           t1=fSeq[0].entryTime;
         if (t2.compareTo(fSeq[fSeq.length-1].exitTime)<0)

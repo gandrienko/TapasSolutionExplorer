@@ -193,7 +193,7 @@ public class FlightVariantsShow extends JPanel
     if (stepIdx<0)
       return -1;
     for (int v=0; v<flights[shownFlightIdx].length; v++)
-      if (stepIdx==flights[shownFlightIdx][v][0].step)
+      if (flights[shownFlightIdx][v]!=null && stepIdx==flights[shownFlightIdx][v][0].step)
         return v;
     return -1;
   }
@@ -222,7 +222,7 @@ public class FlightVariantsShow extends JPanel
     if (flId==null || flightIndex==null)
       return  false;
     Integer ii=flightIndex.get(flId);
-    if (ii==null)
+    if (ii==null || flights[ii]==null)
       return false;
     shownFlightIdx=ii;
     System.out.println("Show flight #"+shownFlightIdx+", id="+flId+", "+flights[shownFlightIdx].length+" variants");
@@ -232,12 +232,16 @@ public class FlightVariantsShow extends JPanel
       sectorSequence.clear();
     //take the sector sequence from the first variant
     FlightInSector fSeq[]=flights[shownFlightIdx][0];
+    if (fSeq==null)
+      return false;
     for (int i=0; i<fSeq.length; i++)
       if (!sectorSequence.contains(fSeq[i].sectorId))
         sectorSequence.add(fSeq[i].sectorId);
     //now go through the remaining variants and try to merge their sequences
     for (int v=1; v<flights[shownFlightIdx].length; v++) {
       fSeq=flights[shownFlightIdx][v];
+      if (fSeq==null || fSeq.length<1)
+        continue;
       int idxs[]=new int[fSeq.length]; //indexes of the sectors present in the existing sequence or -1 if absent
       int currIdx=0, nMatch=0;
       for (int i=0; i<fSeq.length; i++) {
@@ -307,7 +311,8 @@ public class FlightVariantsShow extends JPanel
   }
   
   public String getShownFlightId(){
-    if (flights==null || shownFlightIdx<0)
+    if (flights==null || shownFlightIdx<0 ||
+            flights[shownFlightIdx]==null || flights[shownFlightIdx][0]==null)
       return null;
     return flights[shownFlightIdx][0][0].flightId;
   }
@@ -438,9 +443,11 @@ public class FlightVariantsShow extends JPanel
       for (int i=0; i<flightDrawers.length; i++) {
         flightDrawers[i] = new FlightDrawer();
         FlightInSector fSeq[]=flights[shownFlightIdx][i];
-        flightDrawers[i].flightId = fSeq[0].flightId;
-        flightDrawers[i].variant=i;
-        flightDrawers[i].step=fSeq[0].step;
+        if (fSeq!=null) {
+          flightDrawers[i].flightId = fSeq[0].flightId;
+          flightDrawers[i].variant = i;
+          flightDrawers[i].step = fSeq[0].step;
+        }
       }
     }
   }
@@ -456,6 +463,8 @@ public class FlightVariantsShow extends JPanel
     for (int i=0; i<flights[shownFlightIdx].length; i++) {
       flightDrawers[i].clearPath();
       FlightInSector fSeq[]=flights[shownFlightIdx][i];
+      if (fSeq==null)
+        continue;
       for (int j=0; j<fSeq.length; j++) {
         int sIdx=sectorSequence.indexOf(fSeq[j].sectorId);
         if (sIdx<0)  //must not happen!
@@ -760,7 +769,7 @@ public class FlightVariantsShow extends JPanel
       String sectorId=sectorSequence.get(s);
       for (int fv = 0; fv < flights[shownFlightIdx].length; fv++) {
         FlightInSector fSeq[] = flights[shownFlightIdx][fv];
-        if (!FlightInSector.doesCrossSector(sectorId,fSeq))
+        if (fSeq==null || !FlightInSector.doesCrossSector(sectorId,fSeq))
           continue;
         int counts[] = (toCountEntries) ?
                            FlightConstructor.getHourlyCountsOfSectorEntries(flightPlans,
@@ -857,7 +866,8 @@ public class FlightVariantsShow extends JPanel
   }
   
   public int getStepOfSelectedVariant() {
-    if (selVariantIdx <0)
+    if (selVariantIdx <0 || flights[shownFlightIdx]==null ||
+            flights[shownFlightIdx][selVariantIdx]==null)
       return -1;
     return flights[shownFlightIdx][selVariantIdx][0].step;
   }
@@ -900,6 +910,8 @@ public class FlightVariantsShow extends JPanel
     if (fIdx<0)
       return null;
     FlightInSector fSeq[]=flights[shownFlightIdx][fIdx];
+    if (fSeq==null)
+      return null;
     int sIdx=getSectorIdx(yPos), sIdxInFlight=-1;
     if (sIdx>=0) { //check if this flight variant goes through this sector
       String sectorId=sectorSequence.get(sIdx);
@@ -917,8 +929,7 @@ public class FlightVariantsShow extends JPanel
     
     if (fSel!=null) {
       str+="<tr><td> </td><td>At cursor</td>";
-      if (fSel!=null)
-        str+="<td>Selection</td><td>Difference</td>";
+      str+="<td>Selection</td><td>Difference</td>";
       str+="</tr>";
     }
 
@@ -1093,7 +1104,7 @@ public class FlightVariantsShow extends JPanel
     if (fIdx==hlIdx)
       return;
     if (stepHighlighter!=null) {
-      if (fIdx<0)
+      if (fIdx<0 || flights[shownFlightIdx]==null || flights[shownFlightIdx][fIdx]==null)
         stepHighlighter.clearHighlighting();
       else
         stepHighlighter.highlight(new Integer(flights[shownFlightIdx][fIdx][0].step));

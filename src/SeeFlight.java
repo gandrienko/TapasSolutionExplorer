@@ -243,10 +243,10 @@ public class SeeFlight {
         Point p = table.getMousePosition();
         if (p==null)
           return;
-        int selectedRow =table.rowAtPoint(p)-1;
-        if (selectedRow<0)
+        int selectedRow = table.rowAtPoint(p)-1;
+        if (selectedRow < 0)
           return;
-        selectedRow =table.convertRowIndexToModel(selectedRow);
+        selectedRow = table.convertRowIndexToModel(selectedRow);
         String flId=tModel.flightIds[selectedRow];
         flightViewManager.showFlightVariants(flId);
       }
