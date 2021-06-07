@@ -183,6 +183,8 @@ public class FlightViewManager {
     vfl.addElement(f);
     flExplain=new FlightsExplanationsPanel(explAttrMinMaxValues,vfl,steps,
         0,steps.length-1,true);
+    flExplain.setStepHighlighter(flShow.getStepHighlighter());
+    flExplain.setStepSelector(flShow.getStepSelector());
     frameFlightShow.toFront();
   }
   

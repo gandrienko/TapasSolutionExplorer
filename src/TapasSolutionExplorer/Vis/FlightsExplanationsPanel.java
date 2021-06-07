@@ -5,27 +5,34 @@ import TapasDataReader.Explanation;
 import TapasDataReader.ExplanationItem;
 import TapasDataReader.Flight;
 import TapasExplTreeViewer.ui.ExTreePanel;
+import TapasSolutionExplorer.UI.ItemSelectionManager;
+import TapasSolutionExplorer.UI.SingleHighlightManager;
 import TapasUtilities.RenderLabelBarChart;
 import TapasUtilities.RenderLabel_ValueInSubinterval;
 
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.*;
 
-public class FlightsExplanationsPanel extends JPanel {
+public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
+  public Border outsideBorder = new MatteBorder(1, 0, 1, 0, Color.RED);
+  public Border insideBorder = new EmptyBorder(0, 1, 0, 1);
+  public Border highlightBorder = new CompoundBorder(outsideBorder, insideBorder);
 
   protected JTable tableList=null,
          tableExpl=null;
+  protected FlightsListOfExplTableModel tableListModel=null;
   protected JLabel lblExplTitle=null;
   protected FlightsSingleExplTableModel tableExplModel=null;
   protected int selectedRow=-1;
@@ -33,6 +40,16 @@ public class FlightsExplanationsPanel extends JPanel {
   protected ExTreeReconstructor exTreeReconstructor=null;
   protected ExTreePanel exTreePanel=null;
   protected JFrame frame=null;
+  
+  /**
+   * Supports simultaneous highlighting of flight versions and/or corresponding steps
+   * in this component and other components
+   */
+  protected SingleHighlightManager stepHighlighter=null;
+  /**
+   * Used for passing information about selection of solution steps and/or flight variants
+   */
+  protected ItemSelectionManager stepSelector=null;
 
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf,
                                    int decisionSteps[], int minStep, int maxStep,
@@ -71,6 +88,17 @@ public class FlightsExplanationsPanel extends JPanel {
                                                          vf.elementAt(0).id :
                                                          vf.size() + " flights") + " at steps ["+minStep+".."+maxStep+"]");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    FlightsExplanationsPanel flExPanel=this;
+    frame.addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        super.windowClosing(e);
+        if (stepHighlighter!=null)
+          stepHighlighter.removeChangeListener(flExPanel);
+        if (stepSelector!=null)
+          stepSelector.removeChangeListener(flExPanel);
+      }
+    });
     JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
     JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
     lblExplTitle=new JLabel("",JLabel.CENTER);
@@ -95,7 +123,7 @@ public class FlightsExplanationsPanel extends JPanel {
       System.out.println("Failed to reconstruct the explanation tree!");
     exTreePanel=new ExTreePanel(exTreeReconstructor.topNodes);
 
-    FlightsListOfExplTableModel tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
+    tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
 
     tableList=new JTable(tableListModel){
@@ -139,6 +167,17 @@ public class FlightsExplanationsPanel extends JPanel {
         }
         return s;
       }
+      public Component prepareRenderer(TableCellRenderer renderer, int row, int column)
+      {
+        Component c = super.prepareRenderer(renderer, row, column);
+        boolean toHighlight=false;
+        if (c!=null && stepSelector!=null && stepSelector.hasSelection()) {
+          int step=tableListModel.rowFlSteps[row];
+          toHighlight=stepSelector.isSelected(new Integer(step));
+        }
+        ((JComponent) c).setBorder((toHighlight)? highlightBorder :null);
+        return c;
+      }
     };
     tableList.setTableHeader(new FlightsListOfExplTableHeader(tableList.getColumnModel(),tableListModel,list));
 
@@ -148,9 +187,12 @@ public class FlightsExplanationsPanel extends JPanel {
         selectedRow=tableList.getSelectedRow();
         if (selectedRow>=0) {
           int row=tableList.convertRowIndexToModel(selectedRow);
-          Explanation expl = vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
+          int step=tableListModel.rowFlSteps[row];
+          Explanation expl = vf.elementAt(tableListModel.rowFlNs[row]).expl[step];
           tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0, expl.eItems.length));
           setExpl(attrsInExpl, expl, cbExplCombine.isSelected(), cbExplAsInt.isSelected());
+          if (stepHighlighter!=null)
+            stepHighlighter.highlight(new Integer(step));
         }
       }
     });
@@ -275,7 +317,37 @@ public class FlightsExplanationsPanel extends JPanel {
   public JFrame getFrame() {
     return frame;
   }
-
+  
+  public void setStepHighlighter(SingleHighlightManager stepHighlighter) {
+    this.stepHighlighter = stepHighlighter;
+    if (stepHighlighter!=null)
+      stepHighlighter.addChangeListener(this);
+  }
+  
+  public void setStepSelector(ItemSelectionManager stepSelector) {
+    this.stepSelector = stepSelector;
+    if (stepSelector!=null)
+      stepSelector.addChangeListener(this);
+  }
+  
+  public void stateChanged(ChangeEvent e) {
+    if (e.getSource().equals(stepHighlighter)) {
+      if (stepHighlighter.getHighlighted() == null) {
+        tableList.getSelectionModel().clearSelection();
+      }
+      else {
+        int idx = ((Integer) stepHighlighter.getHighlighted()).intValue();
+        int row=tableListModel.getRowForStep(idx);
+        if (row>=0)
+          tableList.getSelectionModel().setSelectionInterval(row, row);
+      }
+    }
+    else
+      if (e.getSource().equals(stepSelector)) {
+        tableList.repaint();
+      }
+  }
+  
   public void updateExTreePanel (JSplitPane splitPaneV, boolean bCombine, boolean bInt) {
     if (bCombine)
       if (bInt)
@@ -428,6 +500,16 @@ public class FlightsExplanationsPanel extends JPanel {
       }
       //return 0;
     }
+    
+    public int getRowForStep(int stepN){
+      if (rowFlSteps==null)
+        return -1;
+      for (int i=0; i<rowFlSteps.length; i++)
+        if (rowFlSteps[i]==stepN)
+          return i;
+      return -1;
+    }
+    
     public String getFeatureExplanation (String fea) {
       String s="<p align=center><b>"+fea+"</b></p>\n<p style=\"margin: 10px\">";
       if (fea.startsWith("NumberOfDe"))

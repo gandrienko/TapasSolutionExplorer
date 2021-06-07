@@ -4,6 +4,7 @@ import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
 import TapasSolutionExplorer.UI.ChangeNotifier;
+import TapasSolutionExplorer.UI.ItemSelectionManager;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
 
 import javax.swing.*;
@@ -127,6 +128,10 @@ public class FlightVariantsShow extends JPanel
    * in this component and other components
    */
   protected SingleHighlightManager stepHighlighter=null;
+  /**
+   * Used for passing information about selection of solution steps and/or flight variants
+   */
+  protected ItemSelectionManager stepSelector=null;
   
   public FlightVariantsShow(FlightInSector flights[][][]) {
     super();
@@ -216,8 +221,32 @@ public class FlightVariantsShow extends JPanel
       }
   }
   
+  public ItemSelectionManager getStepSelector() {
+    return stepSelector;
+  }
+  
+  public void setStepSelector(ItemSelectionManager stepSelector) {
+    this.stepSelector = stepSelector;
+  }
+  
+  public void clearFlightVariantSelection() {
+    if (stepSelector!=null && selVariantIdx>=0) {
+      int stepIdx=flights[shownFlightIdx][selVariantIdx][0].step;
+      stepSelector.deselect(new Integer(stepIdx));
+    }
+    selVariantIdx =-1;
+  }
+  
+  public void transmitFlightVariantSelection() {
+    if (stepSelector!=null && selVariantIdx>=0) {
+      int stepIdx=flights[shownFlightIdx][selVariantIdx][0].step;
+      stepSelector.select(new Integer(stepIdx));
+    }
+  }
+  
   public boolean showFlightVariants(String flId) {
-    hlIdx=-1; selVariantIdx =-1;
+    hlIdx=-1;
+    clearFlightVariantSelection();
     hourlyCounts=null; hourlyCounts2=null;
     if (flId==null || flightIndex==null)
       return  false;
@@ -434,11 +463,13 @@ public class FlightVariantsShow extends JPanel
   protected void createFlightDrawers(){
     if (flights==null || shownFlightIdx<0 || sectorSequence==null || sectorSequence.isEmpty()) {
       flightDrawers=null;
-      hlIdx=-1; selVariantIdx =-1;
+      hlIdx=-1;
+      clearFlightVariantSelection();
       return;
     }
     if (flightDrawers==null || flightDrawers.length!=flights[shownFlightIdx].length) {
-      hlIdx=-1; selVariantIdx =-1;
+      hlIdx=-1;
+      clearFlightVariantSelection();
       flightDrawers=new FlightDrawer[flights[shownFlightIdx].length];
       for (int i=0; i<flightDrawers.length; i++) {
         flightDrawers[i] = new FlightDrawer();
@@ -858,9 +889,11 @@ public class FlightVariantsShow extends JPanel
   protected void selectFlightVariant(int vIdx) {
     if (selVariantIdx ==vIdx)
       return;
+    clearFlightVariantSelection();
     selVariantIdx =vIdx;
     notifyChange();
     redraw();
+    transmitFlightVariantSelection();
   }
   
   public int getSelectedVariant() {
@@ -876,7 +909,7 @@ public class FlightVariantsShow extends JPanel
   
   protected void cancelFlightSelection() {
     if (selVariantIdx >=0 ) {
-      selVariantIdx =-1;
+      clearFlightVariantSelection();
       notifyChange();
       redraw();
     }

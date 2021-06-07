@@ -5,6 +5,7 @@ import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightInSector;
 
 import TapasSolutionExplorer.UI.ChangeNotifier;
+import TapasSolutionExplorer.UI.ItemSelectionManager;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
 import TapasUtilities.RangeSlider;
 
@@ -40,8 +41,6 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   
   public FlightVariantsShow flShow=null;
   
-  public ExplanationsPanel exShow=null;
-  
   protected JLabel flLabel=null;
   protected MosaicLine mosaicLine=null;
   /**
@@ -67,8 +66,15 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    * Whether to ignore repeated entries
    */
   protected JCheckBox cbIgnoreReEntries =null;
-  
+  /**
+   * Supports simultaneous highlighting of flight versions and/or corresponding steps
+   * in this component and other components
+   */
   protected SingleHighlightManager stepHighlighter=null;
+  /**
+   * Used for passing information about selection of solution steps and/or flight variants
+   */
+  protected ItemSelectionManager stepSelector=null;
   
   public FlightVisPanel(FlightInSector flights[][][]) {
     if (flights==null)
@@ -78,6 +84,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     flShow.addChangeListener(this);
     stepHighlighter=new SingleHighlightManager();
     flShow.setStepHighlighter(stepHighlighter);
+    stepSelector=new ItemSelectionManager();
+    flShow.setStepSelector(stepSelector);
     makeInterior();
   }
   
@@ -88,6 +96,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     flShow.addChangeListener(this);
     stepHighlighter=new SingleHighlightManager();
     flShow.setStepHighlighter(stepHighlighter);
+    stepSelector=new ItemSelectionManager();
+    flShow.setStepSelector(stepSelector);
     makeInterior();
   }
   
@@ -233,8 +243,6 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
   }
   
   public boolean showFlightVariants(String flId) {
-    if (exShow!=null)
-      exShow.removeAll();
     mosaicLine.setMarkedIdx(-1);
     mosaicLine.cancelSelection();
     if (flShow!=null && flShow.showFlightVariants(flId)) {
@@ -288,9 +296,12 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     return flShow.getShownFlightId();
   }
   
-  public void setExplanations(Hashtable<Integer, ExTreeNode> explTree) {
-    if (exShow!=null)
-      exShow.setExplanationsTree(explTree);
+  public SingleHighlightManager getStepHighlighter() {
+    return stepHighlighter;
+  }
+  
+  public ItemSelectionManager getStepSelector() {
+    return stepSelector;
   }
   
   public void drawLinks(Graphics g) {
