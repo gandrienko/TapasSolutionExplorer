@@ -171,6 +171,8 @@ public class FlightsExplanationsPanel extends JPanel {
           int realRowIndex = convertRowIndexToModel(rowIndex);
           s="<html><body style=background-color:rgb(255,255,204)>\n"; //"<p align=center><b>"+tableExplModel.eItems[realRowIndex].attr+"</b></p>\n";
           s+=tableListModel.getFeatureExplanation(tableExplModel.eItems[realRowIndex].attr)+"\n";
+          if (tableExplModel.eItems[realRowIndex].sector!=null && !tableExplModel.eItems[realRowIndex].sector.equals("null"))
+            s+="<p align=center style=\"margin: 10px\">Sector = <b>"+tableExplModel.eItems[realRowIndex].sector+"</b></p>\n";
           s+="<table>\n";
           s+="<tr><td>Value</td><td>"+getFloatAsString(tableExplModel.eItems[realRowIndex].value)+"</td></tr>\n";
           s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)tableExplModel.eItems[realRowIndex].interval[0])+
