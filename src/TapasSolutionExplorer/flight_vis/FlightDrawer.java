@@ -71,7 +71,7 @@ public class FlightDrawer {
         wasCriticalBefore.add(false);
       }
     }
-    if (isSegmentCritical!=null) {
+    if (isSegmentCritical!=null && segmIdx<isSegmentCritical.size()) {
       isSegmentCritical.set(segmIdx, critical);
       wasCriticalBefore.set(segmIdx,criticalBefore);
     }

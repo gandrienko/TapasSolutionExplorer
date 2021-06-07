@@ -249,23 +249,29 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
             colors[flights[fIdx][i][0].step]=denim;
         mosaicLine.setTileColors(colors);
       }
-      //adjust the time range
-      LocalTime t1=flights[fIdx][0][0].entryTime, t2=flights[fIdx][0][flights[fIdx][0].length-1].exitTime;
-      for (int i=1; i<flights[fIdx].length; i++) {
-        FlightInSector fSeq[]=flights[fIdx][i];
-        if (fSeq==null)
-          continue;
-        if (t1.compareTo(fSeq[0].entryTime)>0)
-          t1=fSeq[0].entryTime;
-        if (t2.compareTo(fSeq[fSeq.length-1].exitTime)<0)
-          t2=fSeq[fSeq.length-1].exitTime;
+      LocalTime t1=null, t2=null;
+      if (!flights[fIdx][0][0].entryNextDay) {
+        //adjust the time range
+        t1 = flights[fIdx][0][0].entryTime;
+        t2 = (flights[fIdx][0][0].exitNextDay)?t1:flights[fIdx][0][flights[fIdx][0].length - 1].exitTime;
+        for (int i = 1; i < flights[fIdx].length; i++) {
+          FlightInSector fSeq[] = flights[fIdx][i];
+          if (fSeq == null)
+            continue;
+          if (!fSeq[0].entryNextDay && t1.compareTo(fSeq[0].entryTime) > 0)
+            t1 = fSeq[0].entryTime;
+          if (!fSeq[0].exitNextDay && t2.compareTo(fSeq[fSeq.length - 1].exitTime) < 0)
+            t2 = fSeq[fSeq.length - 1].exitTime;
+        }
       }
       flLabel.setText(getCurrentFlightText());
       flLabel.setSize(flLabel.getPreferredSize());
       timeFocuser.removeChangeListener(this);
       timeFocuser.setFullRange();
-      timeFocuser.setValue(Math.max(t1.getHour() * 60 + t1.getMinute()-15,timeFocuser.getMinimum()));
-      timeFocuser.setUpperValue(Math.min(t2.getHour() * 60 + t2.getMinute()+15,timeFocuser.getMaximum()));
+      if (t1!=null && t2!=null) {
+        timeFocuser.setValue(Math.max(t1.getHour() * 60 + t1.getMinute() - 15, timeFocuser.getMinimum()));
+        timeFocuser.setUpperValue(Math.min(t2.getHour() * 60 + t2.getMinute() + 15, timeFocuser.getMaximum()));
+      }
       timeFocuser.addChangeListener(this);
       getTimeRange();
       repaint();

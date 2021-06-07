@@ -466,6 +466,8 @@ public class FlightVariantsShow extends JPanel
       if (fSeq==null)
         continue;
       for (int j=0; j<fSeq.length; j++) {
+        if (fSeq[j].entryNextDay || fSeq[j].exitNextDay)
+          continue;
         int sIdx=sectorSequence.indexOf(fSeq[j].sectorId);
         if (sIdx<0)  //must not happen!
           continue;
@@ -790,7 +792,7 @@ public class FlightVariantsShow extends JPanel
         for (int i=0; i<fSeq.length; i++)
           if (sectorId.equals(fSeq[i].sectorId)) {
             FlightInSector f=fSeq[i];
-            if (f.entryTime==null || f.exitTime==null)
+            if (f.entryTime==null || f.exitTime==null || f.entryNextDay)
               continue;
             int idx1=-1, idx2=-1;
             if (toCountEntries) {
@@ -799,7 +801,7 @@ public class FlightVariantsShow extends JPanel
             }
             else {
               int m1 = f.entryTime.getHour() * 60 + f.entryTime.getMinute();
-              int m2 = f.exitTime.getHour() * 60 + f.exitTime.getMinute();
+              int m2 = (f.exitNextDay)? minutesInDay: f.exitTime.getHour() * 60 + f.exitTime.getMinute();
               idx1 = m1/tStepAggregates;
               idx2 = m2/tStepAggregates;
             }
@@ -918,7 +920,7 @@ public class FlightVariantsShow extends JPanel
       LocalTime t=getTimeForXPos(xPos-tMarg,tWidth);
       if (t!=null)
         for (int i=0; i<fSeq.length && sIdxInFlight<0; i++)
-          if (sectorId.equals(fSeq[i].sectorId) &&
+          if (sectorId.equals(fSeq[i].sectorId) && !fSeq[i].entryNextDay && !fSeq[i].exitNextDay &&
                   t.compareTo(fSeq[i].entryTime)>=0 && t.compareTo(fSeq[i].exitTime)<=0)
             sIdxInFlight=i;
     }

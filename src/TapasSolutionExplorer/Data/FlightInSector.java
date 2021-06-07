@@ -20,6 +20,10 @@ public class FlightInSector implements Comparable<FlightInSector>{
    */
   public LocalTime entryTime =null, exitTime=null;
   /**
+   * Whether the times are in the next day
+   */
+  public boolean entryNextDay=false, exitNextDay=false;
+  /**
    * Minutes of the day of the entry and exit
    */
   public int entryMinute=0, exitMinute=0;
@@ -49,6 +53,8 @@ public class FlightInSector implements Comparable<FlightInSector>{
     if (this==obj)
       return true;
     FlightInSector f=(FlightInSector)obj;
+    if (this.entryNextDay !=f.entryNextDay) return false;
+    if (this.exitNextDay !=f.exitNextDay) return false;
     if (!this.flightId.equals(f.flightId)) return false;
     if (!this.sectorId.equals(f.sectorId)) return false;
     if (!this.entryTime.equals(f.entryTime)) return false;
@@ -62,9 +68,13 @@ public class FlightInSector implements Comparable<FlightInSector>{
       return (f2==null || f2.entryTime==null)?0:1;
     if (f2==null || f2.entryTime==null)
       return -1;
+    if (this.entryNextDay!=f2.entryNextDay)
+      return (this.entryNextDay)?1:-1;
     int c=this.entryTime.compareTo(f2.entryTime);
     if (c!=0)
       return c;
+    if (this.exitNextDay!=f2.exitNextDay)
+      return (this.exitNextDay)?1:-1;
     c=this.exitTime.compareTo(f2.exitTime);
     if (c!=0)
       return c;
@@ -76,7 +86,9 @@ public class FlightInSector implements Comparable<FlightInSector>{
     f.flightId=flightId;
     f.sectorId=sectorId;
     f.entryTime=entryTime;
+    f.entryNextDay=entryNextDay;
     f.exitTime=exitTime;
+    f.exitNextDay=exitNextDay;
     f.delay=delay;
     f.prevSectorId=prevSectorId;
     f.nextSectorId=nextSectorId;

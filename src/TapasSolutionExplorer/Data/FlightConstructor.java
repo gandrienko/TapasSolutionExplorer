@@ -6,6 +6,7 @@ import TapasDataReader.Explanation;
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -98,9 +99,33 @@ public class FlightConstructor {
     FlightInSector f=new FlightInSector();
     try {
       f.entryTime = LocalTime.parse(r.FromT);
+    } catch (Exception ex) {
+      int idx=r.FromT.indexOf(":");
+      if (idx>0)
+        try {
+          int h=Integer.parseInt(r.FromT.substring(0,idx)),
+              m=Integer.parseInt(r.FromT.substring(idx+1));
+          if (h>23) {
+            h=h%24;
+            f.entryNextDay=true;
+          }
+          f.entryTime= LocalTime.of(h,m);
+        } catch (Exception exNum) {}
+    }
+    try {
       f.exitTime=LocalTime.parse(r.ToT);
     } catch (Exception ex) {
-      return null;
+      int idx=r.ToT.indexOf(":");
+      if (idx>0)
+        try {
+          int h=Integer.parseInt(r.ToT.substring(0,idx)),
+              m=Integer.parseInt(r.ToT.substring(idx+1));
+          if (h>23) {
+            h=h%24;
+            f.exitNextDay=true;
+          }
+          f.exitTime= LocalTime.of(h,m);
+        } catch (Exception exNum) {}
     }
     f.flightId=r.flight;
     f.sectorId=r.sector;
