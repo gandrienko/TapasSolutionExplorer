@@ -48,7 +48,7 @@ public class FlightsExplanationsPanel extends JPanel {
         else
           if (f.expl[step].action>0 || bShowZeroActions) {
             ExplanationItem[] e=f.expl[step].eItems,
-                              ee=f.expl[step].getExplItemsCombined(e);
+                              ee=Explanation.getExplItemsCombined(e);
             maxNcond=Math.max(maxNcond,e.length);
             maxNfeatures=Math.max(maxNfeatures,ee.length);
             for (int i=0; i<ee.length; i++)
@@ -108,9 +108,9 @@ public class FlightsExplanationsPanel extends JPanel {
           Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
           ExplanationItem eItems[]=expl.eItems;
           if (cbExplCombine.isSelected())
-            eItems=expl.getExplItemsCombined(eItems);
+            eItems=Explanation.getExplItemsCombined(eItems);
           if (cbExplAsInt.isSelected())
-            eItems=expl.getExplItemsAsIntegeres(eItems,attrsInExpl);
+            eItems=Explanation.getExplItemsAsIntegeres(eItems,attrsInExpl);
           int n=-1;
           for (int i=0; n==-1 && i<eItems.length; i++)
             if (fea.equals(eItems[i].attr))
@@ -279,9 +279,9 @@ public class FlightsExplanationsPanel extends JPanel {
     lblExplTitle.setText(expl.FlightID+" @ "+expl.step+", action="+expl.action);
     ExplanationItem eItems[]=expl.eItems;
     if (bCombine)
-      eItems=expl.getExplItemsCombined(eItems);
+      eItems=Explanation.getExplItemsCombined(eItems);
     if (bInt)
-      eItems=expl.getExplItemsAsIntegeres(eItems,attrsInExpl);
+      eItems=Explanation.getExplItemsAsIntegeres(eItems,attrsInExpl);
     tableExplModel.setExpl(eItems);
     tableExplModel.action=expl.action;
     if (exTreePanel!=null)
@@ -386,9 +386,9 @@ public class FlightsExplanationsPanel extends JPanel {
           return features.size();
         default:
           ExplanationItem e[]=f.expl[rowFlSteps[row]].eItems,
-                          ee[]=f.expl[rowFlSteps[row]].getExplItemsCombined(e);
+                          ee[]=Explanation.getExplItemsCombined(e);
           if (bValuesAreInteger)
-            ee=f.expl[rowFlSteps[row]].getExplItemsAsIntegeres(ee,attrsInExpl);
+            ee=Explanation.getExplItemsAsIntegeres(ee,attrsInExpl);
           int n=-1;
           for (int i=0; n==-1 && i<ee.length; i++)
             if (ee[i].attr.equals(listOfFeatures.get(col-columnNames.length)))
