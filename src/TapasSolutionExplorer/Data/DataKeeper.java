@@ -624,8 +624,11 @@ public class DataKeeper {
       }
       @Override
       protected void done() {
-        if (!attrsInExpl.isEmpty())
-          explanationsLoaded=true;
+        if (!attrsInExpl.isEmpty()) {
+          explanationsLoaded = true;
+          if (flightViewManager!=null)
+            flightViewManager.explanationsReady(attrsInExpl);
+        }
       }
     };
     worker.execute();
@@ -716,5 +719,7 @@ public class DataKeeper {
       flightViewManager.setSolutionSteps(decisionSteps);
     flightViewManager.setIncludeOnlyModifiedFlights(false);
     flightViewManager.showFlightVariants(flId);
+    if (explanationsLoaded)
+      flightViewManager.explanationsReady(attrsInExpl);
   }
 }
