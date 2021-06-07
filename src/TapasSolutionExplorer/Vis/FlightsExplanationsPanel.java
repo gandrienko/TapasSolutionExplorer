@@ -104,7 +104,6 @@ public class FlightsExplanationsPanel extends JPanel {
           //Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
           s="<html><body style=background-color:rgb(255,255,204)>"; //"<p align=center><b>"+fea+"</b></p>\n";
           s+=tableListModel.getFeatureExplanation(fea)+"\n";
-          s+="<table>\n";
           Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
           ExplanationItem eItems[]=expl.eItems;
           if (cbExplCombine.isSelected())
@@ -119,13 +118,16 @@ public class FlightsExplanationsPanel extends JPanel {
             return "";
             //s += "<tr><td>feature "+fea+" is not used in this explanation</td></tr>\n";
           else {
-            s += "<tr><td>Value</td><td>" + getFloatAsString(eItems[n].value) + "</td></tr>\n";
+            if (eItems[n].sector!=null && !eItems[n].sector.equals("null"))
+              s+="<p align=center style=\"margin: 10px\">Sector = <b>"+eItems[n].sector+"</b></p>\n";
+            s+="<table>\n";
+            s+="<tr><td>Value</td><td>" + getFloatAsString(eItems[n].value) + "</td></tr>\n";
             s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)eItems[n].interval[0])+
                   " .. "+getFloatAsString((float)eItems[n].interval[1])+"]</td></tr>\n";
             int minmax[]=attrsInExpl.get(eItems[n].attr);
             s+="<tr><td>Global min..max</td><td>["+minmax[0]+" .. "+minmax[1]+"]</td></tr>\n";
+            s+="</table>\n";
           }
-          s+="</table>\n";
           s+="</body></html>";
         }
         return s;
