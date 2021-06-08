@@ -176,6 +176,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
           toHighlight=stepSelector.isSelected(new Integer(step));
         }
         ((JComponent) c).setBorder((toHighlight)? highlightBorder :null);
+        c.setBackground((isRowSelected(row))?Color.yellow:getBackground());
         return c;
       }
     };
@@ -338,8 +339,11 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
       else {
         int idx = ((Integer) stepHighlighter.getHighlighted()).intValue();
         int row=tableListModel.getRowForStep(idx);
-        if (row>=0)
+        if (row>=0) {
           tableList.getSelectionModel().setSelectionInterval(row, row);
+          Rectangle rect=tableList.getCellRect(row,0,true);
+          tableList.scrollRectToVisible(rect);
+        }
       }
     }
     else
