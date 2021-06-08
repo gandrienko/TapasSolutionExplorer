@@ -1,5 +1,7 @@
 package TapasSolutionExplorer.Vis;
 
+import TapasUtilities.RenderLabelBarChart;
+
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -32,6 +34,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
     for (int i=2; i<=3; i++)
       DQtbl.getColumnModel().getColumn(i).setCellRenderer(rightRenderer);
+    DQtbl.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,tblModel.getRowCount()));
 
     JScrollPane scrollPane = new JScrollPane(DQtbl);
     scrollPane.setOpaque(true);
@@ -52,6 +55,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
         bQuery[r][row] = v >= query[row][0] && v <= query[row][1];
       }
       dqTblModel.fireTableCellUpdated(row,4);
+      dqTblModel.fireTableCellUpdated(minmax.length,4);
     }
   }
 
@@ -124,15 +128,24 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
       return columnNames.length;
     }
     public int getRowCount() {
-      return cols.length;
+      return 1+cols.length;
     }
     public Class getColumnClass(int c) {
       return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
     public boolean isCellEditable(int row, int col) {
-      return (minmax[row]!=null && (col==2 || col==3));
+      return (row<minmax.length && minmax[row]!=null && (col==2 || col==3));
     }
     public Object getValueAt (int row, int col) {
+      if (row==minmax.length)
+        switch (col) {
+          case 0:
+            return "All conditions";
+          case 4:
+            return getCountBQtrue();
+          default:
+            return "";
+        }
       switch (col) {
         case 0: return tblModel.getColumnName(cols[row]);
         case 1:
