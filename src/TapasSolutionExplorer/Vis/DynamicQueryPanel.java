@@ -8,6 +8,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
 public class DynamicQueryPanel extends JPanel implements TableModelListener {
@@ -20,7 +22,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
 
   JTable DQtbl=null;
   DQtblModel dqTblModel=null;
-
+  final int columnMin=2, columnCount=4, columnRS=5;
 
   public DynamicQueryPanel (AbstractTableModel tblModel, int cols[]) {
     super();
@@ -32,9 +34,12 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     //DQtbl.setAutoCreateRowSorter(true);
     DefaultTableCellRenderer rightRenderer=new DefaultTableCellRenderer();
     rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
-    for (int i=2; i<=3; i++)
+    for (int i=columnMin; i<=columnMin+1; i++)
       DQtbl.getColumnModel().getColumn(i).setCellRenderer(rightRenderer);
-    DQtbl.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,tblModel.getRowCount()));
+    DQtbl.getColumnModel().getColumn(columnCount).setCellRenderer(new RenderLabelBarChart(0,tblModel.getRowCount()));
+    RendererRangeSlider rrs=new RendererRangeSlider();
+    //rrs.getUI().trackListener
+    DQtbl.getColumnModel().getColumn(columnRS).setCellRenderer(rrs);
 
     JScrollPane scrollPane = new JScrollPane(DQtbl);
     scrollPane.setOpaque(true);
@@ -48,14 +53,15 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
   public void tableChanged(TableModelEvent e) {
     int row = e.getFirstRow();
     int column = e.getColumn();
-    System.out.println("* changed: row "+row+", col="+column);
-    if ((column==2 || column==3) && row>=0 && row<minmax.length && minmax[row]!=null) {
+    //System.out.println("* changed: row "+row+", col="+column);
+    if ((column==columnMin || column==columnMin+1) && row>=0 && row<minmax.length && minmax[row]!=null) {
       for (int r = 0; r < tblModel.getRowCount(); r++) {
         int v = (int) tblModel.getValueAt(r, cols[row]);
         bQuery[r][row] = v >= query[row][0] && v <= query[row][1];
       }
-      dqTblModel.fireTableCellUpdated(row,4);
-      dqTblModel.fireTableCellUpdated(minmax.length,4);
+      dqTblModel.fireTableCellUpdated(row,columnCount);
+      dqTblModel.fireTableCellUpdated(row,columnRS);
+      dqTblModel.fireTableCellUpdated(minmax.length,columnCount);
     }
   }
 
@@ -120,7 +126,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     public DQtblModel () {
       super();
     }
-    String columnNames[]={"Feature","class","min","max","count"};
+    String columnNames[]={"Feature","class","min","max","count","UI"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -134,15 +140,17 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
       return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
     public boolean isCellEditable(int row, int col) {
-      return (row<minmax.length && minmax[row]!=null && (col==2 || col==3));
+      return (row<minmax.length && minmax[row]!=null && (col==columnMin || col==columnMin+1 || col==columnRS));
     }
     public Object getValueAt (int row, int col) {
       if (row==minmax.length)
         switch (col) {
           case 0:
             return "All conditions";
-          case 4:
+          case columnCount:
             return getCountBQtrue();
+          case columnRS:
+            return null;
           default:
             return "";
         }
@@ -151,39 +159,39 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
         case 1:
           return tblModel.getColumnClass(cols[row])+
                   ((tblModel.getColumnClass(cols[row]).equals(Integer.class))?" ["+minmax[row][0]+" .. "+minmax[row][1]+"]":" Nvals="+lists[row].size());
-        case 2:
+        case columnMin:
           if (minmax[row]==null)
             return "";
           else
             return query[row][0];
-        case 3:
+        case columnMin+1:
           if (minmax[row]==null)
             return "";
           else
             return query[row][1];
-        case 4:
+        case columnCount:
           return getCountBQtrue(row);
+        case columnRS:
+          return (minmax[row]==null) ? null : new int[]{minmax[row][0],minmax[row][1],query[row][0],query[row][1]};
       }
       return 0;
     }
     public void setValueAt (Object value, int row, int col) {
-      if (col==2)
+      if (col==columnMin)
         try {
           int v = Integer.valueOf((String) value).intValue();
           if (v >= minmax[row][0] && v <= query[row][1]) {
             query[row][0] = v;
             fireTableCellUpdated(row, col);
-            //fireTableDataChanged();
           }
         }
         catch (NumberFormatException nfe) {}
-      if (col==3)
+      if (col==columnMin+1)
         try {
           int v=Integer.valueOf((String)value).intValue();
           if (v>=query[row][0] && v<=minmax[row][1]) {
             query[row][1] = v;
             fireTableCellUpdated(row,col);
-            //fireTableDataChanged();
           }
         } catch (NumberFormatException nfe) {}
     }
