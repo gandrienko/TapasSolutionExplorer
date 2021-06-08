@@ -1,25 +1,32 @@
 package TapasSolutionExplorer.Vis;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.HashSet;
 
-public class DynamicQueryPanel extends JPanel {
+public class DynamicQueryPanel extends JPanel implements TableModelListener {
 
   AbstractTableModel tblModel=null;
   int cols[]=null;
   int minmax[][], query[][]=null;
   HashSet<String> lists[]=null;
+  boolean bQuery[][]=null;
 
   JTable DQtbl=null;
+  DQtblModel dqTblModel=null;
+
 
   public DynamicQueryPanel (AbstractTableModel tblModel, int cols[]) {
     super();
     this.tblModel=tblModel;
     this.cols=cols;
-    DQtbl=new JTable(new DQtblModel());
+    dqTblModel=new DQtblModel();
+    DQtbl=new JTable(dqTblModel);
+    DQtbl.getModel().addTableModelListener(this);
     //DQtbl.setAutoCreateRowSorter(true);
     DefaultTableCellRenderer rightRenderer=new DefaultTableCellRenderer();
     rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -31,9 +38,51 @@ public class DynamicQueryPanel extends JPanel {
     setLayout(new BorderLayout());
     add(new JLabel("Dynamic Query",JLabel.CENTER),BorderLayout.NORTH);
     add(scrollPane,BorderLayout.CENTER);
+    createBquery();
     calcMinMax();
   }
 
+  public void tableChanged(TableModelEvent e) {
+    int row = e.getFirstRow();
+    int column = e.getColumn();
+    System.out.println("* changed: row "+row+", col="+column);
+    if ((column==2 || column==3) && row>=0 && row<minmax.length && minmax[row]!=null) {
+      for (int r = 0; r < tblModel.getRowCount(); r++) {
+        int v = (int) tblModel.getValueAt(r, cols[row]);
+        bQuery[r][row] = v >= query[row][0] && v <= query[row][1];
+      }
+      dqTblModel.fireTableCellUpdated(row,4);
+    }
+  }
+
+  private void createBquery() {
+    bQuery=new boolean[tblModel.getRowCount()][];
+    for (int r=0; r<bQuery.length; r++) {
+      bQuery[r] = new boolean[cols.length];
+      for (int c=0; c<bQuery[r].length; c++)
+        bQuery[r][c]=true;
+    }
+  }
+  private boolean isBQtrue (int r) {
+    for (int c=0; c<bQuery[r].length; c++)
+      if (!bQuery[r][c])
+        return false;
+    return true;
+  }
+  private int getCountBQtrue (int c) {
+    int n=0;
+    for (int r=0; r<tblModel.getRowCount(); r++)
+      if (bQuery[r][c])
+        n++;
+    return n;
+  }
+  private int getCountBQtrue () {
+    int n=0;
+    for (int r=0; r<tblModel.getRowCount(); r++)
+      if (isBQtrue(r))
+        n++;
+    return n;
+  }
   private void calcMinMax() {
     minmax=new int[cols.length][];
     query=new int[cols.length][];
@@ -60,7 +109,6 @@ public class DynamicQueryPanel extends JPanel {
           String v=(String)tblModel.getValueAt(r,c);
           lists[c].add(v);
         }
-
       }
   }
 
@@ -68,7 +116,7 @@ public class DynamicQueryPanel extends JPanel {
     public DQtblModel () {
       super();
     }
-    String columnNames[]={"Feature","class","min","max"};
+    String columnNames[]={"Feature","class","min","max","count"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -100,6 +148,8 @@ public class DynamicQueryPanel extends JPanel {
             return "";
           else
             return query[row][1];
+        case 4:
+          return getCountBQtrue(row);
       }
       return 0;
     }
@@ -110,6 +160,7 @@ public class DynamicQueryPanel extends JPanel {
           if (v >= minmax[row][0] && v <= query[row][1]) {
             query[row][0] = v;
             fireTableCellUpdated(row, col);
+            //fireTableDataChanged();
           }
         }
         catch (NumberFormatException nfe) {}
@@ -119,6 +170,7 @@ public class DynamicQueryPanel extends JPanel {
           if (v>=query[row][0] && v<=minmax[row][1]) {
             query[row][1] = v;
             fireTableCellUpdated(row,col);
+            //fireTableDataChanged();
           }
         } catch (NumberFormatException nfe) {}
     }
