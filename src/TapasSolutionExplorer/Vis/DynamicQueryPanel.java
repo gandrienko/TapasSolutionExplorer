@@ -1,5 +1,7 @@
 package TapasSolutionExplorer.Vis;
 
+import TapasSolutionExplorer.UI.IntRangeCell;
+import TapasSolutionExplorer.UI.IntSubRange;
 import TapasUtilities.RenderLabelBarChart;
 
 import javax.swing.*;
@@ -37,9 +39,10 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     for (int i=columnMin; i<=columnMin+1; i++)
       DQtbl.getColumnModel().getColumn(i).setCellRenderer(rightRenderer);
     DQtbl.getColumnModel().getColumn(columnCount).setCellRenderer(new RenderLabelBarChart(0,tblModel.getRowCount()));
-    RendererRangeSlider rrs=new RendererRangeSlider();
+    //RendererRangeSlider rrs=new RendererRangeSlider();
     //rrs.getUI().trackListener
-    DQtbl.getColumnModel().getColumn(columnRS).setCellRenderer(rrs);
+    DQtbl.getColumnModel().getColumn(columnRS).setCellRenderer(new IntRangeCell());
+    DQtbl.getColumnModel().getColumn(columnRS).setCellEditor(new IntRangeCell());
 
     JScrollPane scrollPane = new JScrollPane(DQtbl);
     scrollPane.setOpaque(true);
@@ -172,7 +175,9 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
         case columnCount:
           return getCountBQtrue(row);
         case columnRS:
-          return (minmax[row]==null) ? null : new int[]{minmax[row][0],minmax[row][1],query[row][0],query[row][1]};
+          //return (minmax[row]==null) ? null : new int[]{minmax[row][0],minmax[row][1],query[row][0],query[row][1]};
+          return (minmax[row]==null) ? null :
+                     new IntSubRange(minmax[row][0],minmax[row][1],query[row][0],query[row][1]);
       }
       return 0;
     }
