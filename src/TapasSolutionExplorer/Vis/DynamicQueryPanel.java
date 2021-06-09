@@ -182,23 +182,39 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
       return 0;
     }
     public void setValueAt (Object value, int row, int col) {
+      if (value==null)
+        return;
       if (col==columnMin)
         try {
-          int v = Integer.valueOf((String) value).intValue();
+          int v = Integer.parseInt(value.toString());
           if (v >= minmax[row][0] && v <= query[row][1]) {
             query[row][0] = v;
             fireTableCellUpdated(row, col);
+            fireTableCellUpdated(row, columnRS);
           }
         }
         catch (NumberFormatException nfe) {}
+      else
       if (col==columnMin+1)
         try {
-          int v=Integer.valueOf((String)value).intValue();
+          int v=Integer.parseInt(value.toString());
           if (v>=query[row][0] && v<=minmax[row][1]) {
             query[row][1] = v;
             fireTableCellUpdated(row,col);
+            fireTableCellUpdated(row, columnRS);
           }
         } catch (NumberFormatException nfe) {}
+      else
+      if (col==columnRS && (value instanceof IntSubRange)) {
+        IntSubRange r = (IntSubRange) value;
+        if (query[row][0]==r.currMin && query[row][1]==r.currMax)
+          return;
+        query[row][0]=r.currMin;
+        query[row][1]=r.currMax;
+        fireTableCellUpdated(row,col);
+        fireTableCellUpdated(row, columnMin);
+        fireTableCellUpdated(row, columnMin+1);
+      }
     }
   }
 
