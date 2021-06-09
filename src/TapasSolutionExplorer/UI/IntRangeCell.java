@@ -12,7 +12,7 @@ import java.awt.*;
 public class IntRangeCell extends AbstractCellEditor
     implements TableCellRenderer, TableCellEditor, ChangeListener {
   
-  public RangeSlider rSlider=null;
+  public RangeSlider editSlider =null;
   
   protected JTable editTable=null;
   protected int editRow=-1, editColumn=-1;
@@ -25,12 +25,18 @@ public class IntRangeCell extends AbstractCellEditor
   
   public Component getTableCellEditorComponent(JTable table, Object value,
                                                boolean isSelected, int row, int column) {
+    if (editSlider!=null) {
+      editSlider.removeChangeListener(this);
+      editSlider=null;
+      editTable=null;
+      editColumn=editRow=0;
+    }
+    editSlider=getSliderForTableCell(table,value,isSelected,row,column);
     editTable=table;
     editRow=row;
     editColumn=column;
-    getSliderForTableCell(table,value,isSelected,row,column);
-    rSlider.addChangeListener(this);
-    return rSlider;
+    editSlider.addChangeListener(this);
+    return editSlider;
   }
   
   public RangeSlider getSliderForTableCell(JTable table, Object value,
@@ -38,10 +44,7 @@ public class IntRangeCell extends AbstractCellEditor
     if (value==null || !(value instanceof IntSubRange))
       return null;
     
-    if (rSlider==null)
-      rSlider = new RangeSlider();
-    
-    rSlider.removeChangeListener(this);
+    RangeSlider rSlider=new RangeSlider();
     
     IntSubRange r = (IntSubRange) value;
     rSlider.setMinimum(r.absMin);
@@ -50,23 +53,27 @@ public class IntRangeCell extends AbstractCellEditor
     rSlider.setUpperValue(r.currMax);
     
     rSlider.setBackground((isSelected)?table.getSelectionBackground():table.getBackground());
-    Rectangle rect=table.getCellRect(row,column,true);
-    rSlider.setSize(rect.width,rect.height);
+    Rectangle rect=table.getCellRect(row,column,false);
+    rSlider.setSize(rect.width, rect.height);
+    //System.out.println("Cell ("+row+","+column+") size = "+rect.width+" x "+rect.height+
+                           //"; slider size = "+rSlider.getWidth()+" x "+rSlider.getHeight());
     return rSlider;
   }
   
   public Object getCellEditorValue() {
+    if (editSlider==null)
+      return null;
     IntSubRange r=new IntSubRange();
-    r.absMin=rSlider.getMinimum();
-    r.absMax=rSlider.getMaximum();
-    r.currMin=rSlider.getValue();
-    r.currMax=rSlider.getUpperValue();
+    r.absMin= editSlider.getMinimum();
+    r.absMax= editSlider.getMaximum();
+    r.currMin= editSlider.getValue();
+    r.currMax= editSlider.getUpperValue();
     return r;
   }
   
   
   public void stateChanged(ChangeEvent e) {
-    if (e.getSource().equals(rSlider)) {
+    if (e.getSource().equals(editSlider)) {
       if (editTable!=null)
         editTable.setValueAt(getCellEditorValue(),editRow,editColumn);
     }
