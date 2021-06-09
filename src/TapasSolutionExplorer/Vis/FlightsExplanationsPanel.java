@@ -16,16 +16,13 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
-public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
+public class FlightsExplanationsPanel extends JPanel implements ChangeListener, TableModelListener {
   public Border outsideBorder = new MatteBorder(1, 0, 1, 0, Color.RED);
   public Border insideBorder = new EmptyBorder(0, 1, 0, 1);
   public Border highlightBorder = new CompoundBorder(outsideBorder, insideBorder);
@@ -39,6 +36,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
 
   protected ExTreeReconstructor exTreeReconstructor=null;
   protected ExTreePanel exTreePanel=null;
+  protected DynamicQueryPanel dqPanel=null;
   protected JFrame frame=null;
   
   /**
@@ -180,6 +178,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
         return c;
       }
     };
+    tableListModel.addTableModelListener(this);
     tableList.setTableHeader(new FlightsListOfExplTableHeader(tableList.getColumnModel(),tableListModel,list));
 
     tableList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -264,7 +263,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
     pExpl.add(scrollPaneExpl,BorderLayout.CENTER);
     pExpl.add(lblExplTitle,BorderLayout.NORTH);
 
-    JSplitPane splitPaneVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,scrollPaneList,new DynamicQueryPanel(tableListModel,new int[]{0,1,2,3,4}));
+    dqPanel=new DynamicQueryPanel(tableListModel,new int[]{0,1,2,3,4});
+    JSplitPane splitPaneVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,scrollPaneList,dqPanel);
     splitPaneVleft.setOneTouchExpandable(true);
     splitPaneVleft.setDividerLocation(500);
     JSplitPane splitPaneVright=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
@@ -314,7 +314,19 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener {
     frame.setLocation((size.width-frame.getWidth())/2,(size.height-frame.getHeight())/2);
     frame.setVisible(true);
   }
-  
+
+  public void tableChanged(TableModelEvent e) {
+    RowSorter<? extends TableModel> rs=tableList.getRowSorter();
+    TableRowSorter<? extends TableModel> rowSorter =
+            (rs instanceof TableRowSorter) ? (TableRowSorter<? extends TableModel>) rs : null;
+    rowSorter.setRowFilter(new RowFilter<Object,Object>(){
+      public boolean include (Entry entry) {
+        int r=(Integer)entry.getIdentifier();
+        return dqPanel.isBQtrue(r);
+      }
+    });
+  }
+
   public JFrame getFrame() {
     return frame;
   }

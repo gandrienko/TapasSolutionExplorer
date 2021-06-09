@@ -10,8 +10,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
 public class DynamicQueryPanel extends JPanel implements TableModelListener {
@@ -65,6 +63,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
       dqTblModel.fireTableCellUpdated(row,columnCount);
       dqTblModel.fireTableCellUpdated(row,columnRS);
       dqTblModel.fireTableCellUpdated(minmax.length,columnCount);
+      tblModel.fireTableDataChanged();
     }
   }
 
@@ -76,7 +75,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
         bQuery[r][c]=true;
     }
   }
-  private boolean isBQtrue (int r) {
+  public boolean isBQtrue (int r) {
     for (int c=0; c<bQuery[r].length; c++)
       if (!bQuery[r][c])
         return false;
