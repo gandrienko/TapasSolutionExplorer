@@ -23,7 +23,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
 
   JTable DQtbl=null;
   DQtblModel dqTblModel=null;
-  final int columnMin=2, columnCount=4, columnRS=5;
+  final int columnMin=2, columnMax=4, columnCount=5, columnRS=3;
 
   public DynamicQueryPanel (AbstractTableModel tblModel, int cols[]) {
     super();
@@ -35,8 +35,8 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     //DQtbl.setAutoCreateRowSorter(true);
     DefaultTableCellRenderer rightRenderer=new DefaultTableCellRenderer();
     rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
-    for (int i=columnMin; i<=columnMin+1; i++)
-      DQtbl.getColumnModel().getColumn(i).setCellRenderer(rightRenderer);
+    DQtbl.getColumnModel().getColumn(columnMin).setCellRenderer(rightRenderer);
+    DQtbl.getColumnModel().getColumn(columnMax).setCellRenderer(rightRenderer);
     DQtbl.getColumnModel().getColumn(columnCount).setCellRenderer(new RenderLabelBarChart(0,tblModel.getRowCount()));
     //RendererRangeSlider rrs=new RendererRangeSlider();
     //rrs.getUI().trackListener
@@ -56,7 +56,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     int row = e.getFirstRow();
     int column = e.getColumn();
     //System.out.println("* changed: row "+row+", col="+column);
-    if ((column==columnMin || column==columnMin+1) && row>=0 && row<minmax.length && minmax[row]!=null) {
+    if ((column==columnMin || column==columnMax) && row>=0 && row<minmax.length && minmax[row]!=null) {
       for (int r = 0; r < tblModel.getRowCount(); r++) {
         int v = (int) tblModel.getValueAt(r, cols[row]);
         bQuery[r][row] = v >= query[row][0] && v <= query[row][1];
@@ -131,7 +131,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     public DQtblModel () {
       super();
     }
-    String columnNames[]={"Feature","class","min","max","count","UI"};
+    String columnNames[]={"Feature","class","min","UI","max","count"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -145,7 +145,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
       return (getValueAt(0, c)==null) ? null: getValueAt(0, c).getClass();
     }
     public boolean isCellEditable(int row, int col) {
-      return (row<minmax.length && minmax[row]!=null && (col==columnMin || col==columnMin+1 || col==columnRS));
+      return (row<minmax.length && minmax[row]!=null && (col==columnMin || col==columnMax || col==columnRS));
     }
     public Object getValueAt (int row, int col) {
       if (row==minmax.length)
@@ -169,7 +169,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
             return "";
           else
             return query[row][0];
-        case columnMin+1:
+        case columnMax:
           if (minmax[row]==null)
             return "";
           else
@@ -197,7 +197,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
         }
         catch (NumberFormatException nfe) {}
       else
-      if (col==columnMin+1)
+      if (col==columnMax)
         try {
           int v=Integer.parseInt(value.toString());
           if (v>=query[row][0] && v<=minmax[row][1]) {
@@ -215,7 +215,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
         query[row][1]=r.currMax;
         fireTableCellUpdated(row,col);
         fireTableCellUpdated(row, columnMin);
-        fireTableCellUpdated(row, columnMin+1);
+        fireTableCellUpdated(row, columnMax);
       }
     }
   }
