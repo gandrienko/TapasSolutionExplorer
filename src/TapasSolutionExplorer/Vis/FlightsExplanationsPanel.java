@@ -170,10 +170,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         Component c = super.prepareRenderer(renderer, row, column);
         boolean toHighlight=false;
         if (c!=null && stepSelector!=null && stepSelector.hasSelection()) {
-          int rowInModel=row;
-          if (dqPanel!=null)
-            rowInModel=dqPanel.getRowIdxInFullTable(row);
-          int step=tableListModel.rowFlSteps[rowInModel];
+          int r=tableList.convertRowIndexToModel(row);
+          int step=tableListModel.rowFlSteps[r];
           toHighlight=stepSelector.isSelected(new Integer(step));
         }
         ((JComponent) c).setBorder((toHighlight)? highlightBorder :null);
@@ -363,8 +361,9 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
             tableList.getSelectionModel().clearSelection();
             return;
           }
-          if (dqPanel!=null)
-            row=dqPanel.countFilteredRowsBefore(row);
+          //if (dqPanel!=null)
+            //row=dqPanel.countFilteredRowsBefore(row);
+          row=tableList.convertRowIndexToView(row);
           tableList.getSelectionModel().setSelectionInterval(row, row);
           Rectangle rect=tableList.getCellRect(row,0,true);
           tableList.scrollRectToVisible(rect);

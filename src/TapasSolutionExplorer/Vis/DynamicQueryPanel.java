@@ -83,25 +83,6 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     return true;
   }
   
-  public int countFilteredRowsBefore(int row) {
-    int count=0;
-    for (int r=0; r<row && r<tblModel.getRowCount(); r++)
-      if (isBQtrue(r))
-        ++count;
-    return count;
-  }
-  
-  public int getRowIdxInFullTable(int rowIdxAfterFilter) {
-    int count=-1;
-    for (int r=0; r<tblModel.getRowCount(); r++)
-      if (isBQtrue(r)) {
-        ++count;
-        if (count==rowIdxAfterFilter)
-          return r;
-      }
-    return tblModel.getRowCount()-1;
-  }
-  
   private int getCountBQtrue (int c) {
     int n=0;
     for (int r=0; r<tblModel.getRowCount(); r++)
