@@ -170,7 +170,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         Component c = super.prepareRenderer(renderer, row, column);
         boolean toHighlight=false;
         if (c!=null && stepSelector!=null && stepSelector.hasSelection()) {
-          int step=tableListModel.rowFlSteps[row];
+          int rowInModel=row;
+          if (dqPanel!=null)
+            rowInModel=dqPanel.getRowIdxInFullTable(row);
+          int step=tableListModel.rowFlSteps[rowInModel];
           toHighlight=stepSelector.isSelected(new Integer(step));
         }
         ((JComponent) c).setBorder((toHighlight)? highlightBorder :null);
