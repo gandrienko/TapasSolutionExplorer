@@ -19,6 +19,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
   int minmax[][], query[][]=null;
   HashSet<String> lists[]=null;
   boolean bQuery[][]=null;
+  public boolean isAnyRowHiddenByQuery=false;
 
   JTable DQtbl=null;
   DQtblModel dqTblModel=null;
@@ -113,6 +114,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     for (int r=0; r<tblModel.getRowCount(); r++)
       if (isBQtrue(r))
         n++;
+    isAnyRowHiddenByQuery=n<tblModel.getRowCount();
     return n;
   }
   private void calcMinMax() {
