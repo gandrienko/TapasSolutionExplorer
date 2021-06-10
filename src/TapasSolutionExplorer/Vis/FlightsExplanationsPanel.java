@@ -181,6 +181,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     tableListModel.addTableModelListener(this);
     tableList.setTableHeader(new FlightsListOfExplTableHeader(tableList.getColumnModel(),tableListModel,list));
 
+    ChangeListener cl=this;
     tableList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       @Override
       public void valueChanged(ListSelectionEvent e) {
@@ -191,8 +192,11 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           Explanation expl = vf.elementAt(tableListModel.rowFlNs[row]).expl[step];
           tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0, expl.eItems.length));
           setExpl(attrsInExpl, expl, cbExplCombine.isSelected(), cbExplAsInt.isSelected());
-          if (stepHighlighter!=null)
+          if (stepHighlighter!=null) {
+            stepHighlighter.removeChangeListener(cl);
             stepHighlighter.highlight(new Integer(step));
+            stepHighlighter.addChangeListener(cl);
+          }
         }
       }
     });
