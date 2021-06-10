@@ -356,6 +356,12 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         int idx = ((Integer) stepHighlighter.getHighlighted()).intValue();
         int row=tableListModel.getRowForStep(idx);
         if (row>=0) {
+          if (dqPanel!=null && !dqPanel.isBQtrue(row)) {
+            tableList.getSelectionModel().clearSelection();
+            return;
+          }
+          if (dqPanel!=null)
+            row=dqPanel.countFilteredRowsBefore(row);
           tableList.getSelectionModel().setSelectionInterval(row, row);
           Rectangle rect=tableList.getCellRect(row,0,true);
           tableList.scrollRectToVisible(rect);
