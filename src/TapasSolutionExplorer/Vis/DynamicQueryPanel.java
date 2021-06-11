@@ -24,7 +24,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
 
   JTable DQtbl=null;
   DQtblModel dqTblModel=null;
-  final int columnMin=2, columnMax=4, columnCount=5, columnRS=3;
+  final int columnMin=1, columnMax=3, columnCount=4, columnRS=2;
 
   public DynamicQueryPanel (AbstractTableModel tblModel, int cols[]) {
     super();
@@ -186,9 +186,11 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
         }
       switch (col) {
         case 0: return tblModel.getColumnName(cols[row]);
+/*
         case 1:
           return tblModel.getColumnClass(cols[row])+
                   ((tblModel.getColumnClass(cols[row]).equals(Integer.class))?" ["+minmax[row][0]+" .. "+minmax[row][1]+"]":" Nvals="+lists[row].size());
+*/
         case columnMin:
           if (minmax[row]==null)
             return "";
