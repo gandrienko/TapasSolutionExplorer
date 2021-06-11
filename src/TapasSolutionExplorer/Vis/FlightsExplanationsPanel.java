@@ -28,16 +28,21 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   public Border highlightBorder = new CompoundBorder(outsideBorder, insideBorder);
 
   protected JTable tableList=null,
-         tableExpl=null;
+                   tableExpl=null;
   protected FlightsListOfExplTableModel tableListModel=null;
   protected JLabel lblExplTitle=null;
   protected FlightsSingleExplTableModel tableExplModel=null;
   protected int selectedRow=-1;
 
+  protected Vector<Flight> vf=null;
+  protected Hashtable<String,int[]> attrsInExpl=null;
+
   protected ExTreeReconstructor exTreeReconstructor=null;
   protected ExTreePanel exTreePanel=null;
   protected DynamicQueryPanel dqPanel=null;
   protected JFrame frame=null;
+  protected JSplitPane splitPaneVright=null;
+  protected JCheckBox cbExplCombine=null, cbExplAsInt=null;
   
   /**
    * Supports simultaneous highlighting of flight versions and/or corresponding steps
@@ -53,6 +58,9 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
                                    int decisionSteps[], int minStep, int maxStep,
                                    boolean bShowZeroActions) {
     super();
+
+    this.attrsInExpl=attrsInExpl;
+    this.vf=vf;
 
     // compute table statistics
     HashSet<String> features=new HashSet<>(10);
@@ -97,8 +105,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           stepSelector.removeChangeListener(flExPanel);
       }
     });
-    JCheckBox cbExplCombine=new JCheckBox("Combine intervals",false);
-    JCheckBox cbExplAsInt=new JCheckBox("Integer intervals",false);
+    cbExplCombine=new JCheckBox("Combine intervals",false);
+    cbExplAsInt=new JCheckBox("Integer intervals",false);
     lblExplTitle=new JLabel("",JLabel.CENTER);
 
     Hashtable<String, Flight> hFlights=new Hashtable<>(vf.size());
@@ -276,7 +284,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     JSplitPane splitPaneVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,scrollPaneList,dqPanel);
     splitPaneVleft.setOneTouchExpandable(true);
     splitPaneVleft.setDividerLocation(500);
-    JSplitPane splitPaneVright=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
+    splitPaneVright=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
     splitPaneVright.setOneTouchExpandable(true);
     splitPaneVright.setDividerLocation(500);
     Dimension minimumSize = new Dimension(100, 300);
@@ -345,7 +353,15 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       }
     });
     // Modify Tree ToDo
-
+    ArrayList<Explanation> ale=new ArrayList<>();
+    for (int i=0; i<tableListModel.getRowCount(); i++)
+      if (dqPanel.isBQtrue(i))
+        ale.add(vf.elementAt(tableListModel.rowFlNs[i]).expl[tableListModel.rowFlSteps[i]]);
+    exTreeReconstructor=new ExTreeReconstructor();
+    exTreeReconstructor.setAttrMinMaxValues(attrsInExpl);
+    exTreeReconstructor.reconstructExTree(ale);
+    //System.out.println("* N explanations for the tree: "+ale.size());
+    updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
   }
 
   public JFrame getFrame() {

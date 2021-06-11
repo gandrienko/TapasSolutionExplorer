@@ -156,7 +156,7 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     public DQtblModel () {
       super();
     }
-    String columnNames[]={"Feature","class","min","UI","max","count"};
+    String columnNames[]={"Feature","Min","Query device","Max","Count"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
