@@ -184,6 +184,7 @@ public class FlightViewManager {
         0,steps.length-1,true);
     flExplain.setStepHighlighter(flShow.getStepHighlighter());
     flExplain.setFlightVersionStepSelector(flShow.getFlightVersionStepSelector());
+    flExplain.setShowDemandsStepSelector(flShow.getShowDemandsStepSelector());
     frameFlightShow.toFront();
   }
   

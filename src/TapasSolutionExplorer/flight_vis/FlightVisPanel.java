@@ -78,7 +78,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    * Used for passing information about selection of solution steps for which the
    * FlightVariantsShow shows the dynamics of the demands by time histograms.
    */
-  protected ItemSelectionManager stepSelector=null;
+  protected ItemSelectionManager showDemandsStepSelector=null;
   
   public FlightVisPanel(FlightInSector flights[][][]) {
     if (flights==null)
@@ -90,6 +90,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     flShow.setStepHighlighter(stepHighlighter);
     flightVersionStepSelector =new ItemSelectionManager();
     flShow.setFlightVersionStepSelector(flightVersionStepSelector);
+    showDemandsStepSelector=new ItemSelectionManager();
     makeInterior();
   }
   
@@ -102,6 +103,7 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     flShow.setStepHighlighter(stepHighlighter);
     flightVersionStepSelector =new ItemSelectionManager();
     flShow.setFlightVersionStepSelector(flightVersionStepSelector);
+    showDemandsStepSelector=new ItemSelectionManager();
     makeInterior();
   }
   
@@ -308,6 +310,10 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     return flightVersionStepSelector;
   }
   
+  public ItemSelectionManager getShowDemandsStepSelector() {
+    return showDemandsStepSelector;
+  }
+  
   public void drawLinks(Graphics g) {
     if (g==null)
       return;
@@ -439,9 +445,21 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
       }
       else
         if (e.getSource().equals(mosaicLine)) {
+          Integer sel1=mosaicLine.getSelectedIndex(true),
+              sel2=mosaicLine.getSelectedIndex(false);
+          if (sel1==null)
+            showDemandsStepSelector.deselectAll();
+          else
+            if (sel2==null)
+              showDemandsStepSelector.select(sel1,true);
+            else {
+              ArrayList selList=new ArrayList(2);
+              selList.add(sel1);
+              selList.add(sel2);
+              showDemandsStepSelector.updateSelection(selList);
+            }
           if (flShow!=null)
-            flShow.selectSolutionSteps(mosaicLine.getSelectedIndex(true),
-                mosaicLine.getSelectedIndex(false));
+            flShow.selectSolutionSteps(sel1,sel2);
         }
   }
   

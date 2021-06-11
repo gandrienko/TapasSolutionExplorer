@@ -41,6 +41,19 @@ public class ItemSelectionManager {
     }
   }
   
+  
+  public void select(Object obj, boolean clearPreviousSelection) {
+    if (!clearPreviousSelection || selected==null || selected.isEmpty()) {
+      select(obj);
+      return;
+    }
+    if (selected.size()==1 && selected.get(0).equals(obj))
+      return;
+    selected.clear();
+    selected.add(obj);
+    notifyChange();
+  }
+  
   public void deselect(Object obj) {
     if (obj==null || selected==null || selected.isEmpty() || !selected.contains(obj))
       return;
@@ -63,8 +76,26 @@ public class ItemSelectionManager {
     return obj!=null && selected!=null && selected.contains(obj);
   }
   
+  public int indexOf(Object obj) {
+    if (selected!=null && obj!=null)
+      return selected.indexOf(obj);
+    return -1;
+  }
+  
   public ArrayList getSelected(){
     return selected;
+  }
+  
+  public void updateSelection(ArrayList newSelection) {
+    if (selected!=null)
+      selected.clear();
+    if (newSelection!=null) {
+      if (selected==null)
+        selected=new ArrayList(20);
+      for (int i = 0; i < newSelection.size(); i++)
+        selected.add(newSelection.get(i));
+    }
+    notifyChange();
   }
   
 }

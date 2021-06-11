@@ -24,8 +24,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   public Border insideBorder = new EmptyBorder(0, 1, 0, 1);
   public Border //highlightBorder = new CompoundBorder(outsideBorder, insideBorder),
       highlightBorder=BorderFactory.createDashedBorder(Color.BLUE,1f,4f,2f,false),
-     stepSelectBorder=new LineBorder(Color.darkGray,2),
-     step2SelectBorder=BorderFactory.createDashedBorder(Color.darkGray,1.5f,2f,1f,false);
+     stepSelectBorder=new LineBorder(Color.darkGray,1),
+     step2SelectBorder=BorderFactory.createDashedBorder(Color.darkGray,1.2f,2f,1f,false);
 
   protected JTable tableList=null,
                    tableExpl=null;
@@ -58,7 +58,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
    * Used for passing information about selection of solution steps for which the
    * FlightVariantsShow shows the dynamics of the demands by time histograms.
    */
-  protected ItemSelectionManager stepSelector=null;
+  protected ItemSelectionManager showDemandsStepSelector =null;
 
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf,
                                    int decisionSteps[], int minStep, int maxStep,
@@ -109,6 +109,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           stepHighlighter.removeChangeListener(flExPanel);
         if (flightVersionStepSelector !=null)
           flightVersionStepSelector.removeChangeListener(flExPanel);
+        if (showDemandsStepSelector!=null)
+          showDemandsStepSelector.removeChangeListener(flExPanel);
       }
     });
     cbExplCombine=new JCheckBox("Combine intervals",false);
@@ -182,13 +184,23 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       public Component prepareRenderer(TableCellRenderer renderer, int row, int column)
       {
         Component c = super.prepareRenderer(renderer, row, column);
-        boolean toHighlight=false;
-        if (c!=null && flightVersionStepSelector !=null && flightVersionStepSelector.hasSelection()) {
+        if (c==null)
+          return c;
+        Border b=null;
+        if ((flightVersionStepSelector !=null && flightVersionStepSelector.hasSelection()) ||
+                (showDemandsStepSelector!=null && showDemandsStepSelector.hasSelection())) {
           int r=tableList.convertRowIndexToModel(row);
-          int step=tableListModel.rowFlSteps[r];
-          toHighlight= flightVersionStepSelector.isSelected(new Integer(step));
+          Integer step=new Integer(tableListModel.rowFlSteps[r]);
+          if (flightVersionStepSelector!=null &&
+                                   flightVersionStepSelector.isSelected(step))
+            b=highlightBorder;
+          if (showDemandsStepSelector!=null && showDemandsStepSelector.isSelected(step)) {
+            int idx=showDemandsStepSelector.indexOf(step);
+            Border bSel=(idx==0)?stepSelectBorder:step2SelectBorder;
+            b=(b==null)?bSel:new CompoundBorder(bSel,b);
+          }
         }
-        ((JComponent) c).setBorder((toHighlight)? highlightBorder :null);
+        ((JComponent) c).setBorder(b);
         c.setBackground((isRowSelected(row))?Color.yellow:getBackground());
         return c;
       }
@@ -386,6 +398,12 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       flightVersionStepSelector.addChangeListener(this);
   }
   
+  public void setShowDemandsStepSelector(ItemSelectionManager showDemandsStepSelector) {
+    this.showDemandsStepSelector = showDemandsStepSelector;
+    if (showDemandsStepSelector!=null)
+      showDemandsStepSelector.addChangeListener(this);
+  }
+  
   public void stateChanged(ChangeEvent e) {
     if (e.getSource().equals(stepHighlighter)) {
       if (stepHighlighter.getHighlighted() == null) {
@@ -409,7 +427,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       }
     }
     else
-      if (e.getSource().equals(flightVersionStepSelector)) {
+      if (e.getSource().equals(flightVersionStepSelector) ||
+          e.getSource().equals(showDemandsStepSelector)) {
         tableList.repaint();
       }
   }
