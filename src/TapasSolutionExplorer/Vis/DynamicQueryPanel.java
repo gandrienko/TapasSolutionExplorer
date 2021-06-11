@@ -10,6 +10,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
 public class DynamicQueryPanel extends JPanel implements TableModelListener {
@@ -30,7 +31,29 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     this.tblModel=tblModel;
     this.cols=cols;
     dqTblModel=new DQtblModel();
-    DQtbl=new JTable(dqTblModel);
+    DQtbl=new JTable(dqTblModel){
+      public String getToolTipText(MouseEvent e) {
+        String s="";
+        java.awt.Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p);
+        if (rowIndex>=0) {
+          int row = convertRowIndexToModel(rowIndex);
+          if (row <cols.length) {
+            s="<html><body style=background-color:rgb(255,255,204)>\n";
+            s+="<p  align=center style=\"margin: 10px\"><b>"+tblModel.getColumnName(cols[row])+"</b></p>";
+            if (minmax[row]!=null) {
+              s += "<p align=center style=\"margin: 5px\">Query interval: <b>" + query[row][0] + " .. " + query[row][1] + "</b></p>";
+              s += "<p align=center style=\"margin: 5px\">Range of values: <b>" + minmax[row][0] + " .. " + minmax[row][1] + "</b></p>";
+              s += "<p align=center style=\"margin: 5px\">Selects <b>"+getCountBQtrue(row)+"</b> of <b>"+tblModel.getRowCount()+"</b> records</p>";
+            }
+            else
+              s += "<p align=center style=\"margin: 5px\">N distinct value(s): <b>"+lists[row].size()+"</b></p>";
+            s+="</body></html>";
+          }
+        }
+        return s;
+      }
+    };
     DQtbl.getModel().addTableModelListener(this);
     //DQtbl.setAutoCreateRowSorter(true);
     DefaultTableCellRenderer rightRenderer=new DefaultTableCellRenderer();
