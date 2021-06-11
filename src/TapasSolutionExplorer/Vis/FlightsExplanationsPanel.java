@@ -325,6 +325,16 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   }
 
   public void tableChanged(TableModelEvent e) {
+    // If a displayed explanation is filtered out, clear its window
+    selectedRow=tableList.getSelectedRow();
+    if (selectedRow>=0) {
+      int r = tableList.convertRowIndexToModel(selectedRow);
+      if (!dqPanel.isBQtrue(r)) {
+        selectedRow=-1;
+        tableExplModel.setExpl(new ExplanationItem[0]);
+      }
+    }
+    // setup RowSorter
     RowSorter<? extends TableModel> rs=tableList.getRowSorter();
     TableRowSorter<? extends TableModel> rowSorter =
             (rs instanceof TableRowSorter) ? (TableRowSorter<? extends TableModel>) rs : null;
@@ -334,6 +344,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         return dqPanel.isBQtrue(r);
       }
     });
+    // Modify Tree ToDo
+
   }
 
   public JFrame getFrame() {
@@ -400,16 +412,22 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       return ""+f;
   }
   protected void setExpl (Hashtable<String,int[]> attrsInExpl, Explanation expl, boolean bCombine, boolean bInt) {
-    lblExplTitle.setText(expl.FlightID+" @ "+expl.step+", action="+expl.action);
-    ExplanationItem eItems[]=expl.eItems;
-    if (bCombine)
-      eItems=Explanation.getExplItemsCombined(eItems);
-    if (bInt)
-      eItems=Explanation.getExplItemsAsIntegeres(eItems,attrsInExpl);
-    tableExplModel.setExpl(eItems);
-    tableExplModel.action=expl.action;
-    if (exTreePanel!=null)
-      exTreePanel.expandExplanation(expl.action,eItems);
+    if (expl==null) {
+      lblExplTitle.setText("");
+
+    }
+    else {
+      lblExplTitle.setText(expl.FlightID + " @ " + expl.step + ", action=" + expl.action);
+      ExplanationItem eItems[] = expl.eItems;
+      if (bCombine)
+        eItems = Explanation.getExplItemsCombined(eItems);
+      if (bInt)
+        eItems = Explanation.getExplItemsAsIntegeres(eItems, attrsInExpl);
+      tableExplModel.setExpl(eItems);
+      tableExplModel.action = expl.action;
+      if (exTreePanel != null)
+        exTreePanel.expandExplanation(expl.action, eItems);
+    }
   }
 
   class FlightsListOfExplTableHeader extends JTableHeader {
@@ -590,7 +608,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         case 0:
           return row;
         case 1:
-          return eItems[row].attr;
+          return (eItems.length==0)?"":eItems[row].attr;
 /*
         case 2:
           return eItems[row].value;
@@ -606,6 +624,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           return eItems[row].interval[1];
 */
         case 3:
+          if (eItems.length==0)
+            return new float[]{0,0,1,0,1};
           float v1=attrsInExpl.get(eItems[row].attr)[0], v2=attrsInExpl.get(eItems[row].attr)[1],
                 v3=(float)eItems[row].interval[0], v4=(float)eItems[row].interval[1];
           if (v3==Float.NEGATIVE_INFINITY)
@@ -614,7 +634,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
             v4=v2;
           return new float[]{eItems[row].value,v1,v2,v3,v4};
         case 2:
-          return ("null".equals(eItems[row].sector))?"":eItems[row].sector;
+          return (eItems.length==0 || "null".equals(eItems[row].sector))?"":eItems[row].sector;
       }
       return 0;
     }
