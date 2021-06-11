@@ -12,10 +12,7 @@ import TapasUtilities.RenderLabel_ValueInSubinterval;
 
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
+import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
@@ -23,9 +20,12 @@ import java.awt.event.*;
 import java.util.*;
 
 public class FlightsExplanationsPanel extends JPanel implements ChangeListener, TableModelListener {
-  public Border outsideBorder = new MatteBorder(1, 0, 1, 0, Color.RED);
+  public Border outsideBorder = new MatteBorder(1, 0, 1, 0, Color.BLUE);
   public Border insideBorder = new EmptyBorder(0, 1, 0, 1);
-  public Border highlightBorder = new CompoundBorder(outsideBorder, insideBorder);
+  public Border //highlightBorder = new CompoundBorder(outsideBorder, insideBorder),
+      highlightBorder=BorderFactory.createDashedBorder(Color.BLUE,1f,4f,2f,false),
+     stepSelectBorder=new LineBorder(Color.darkGray,2),
+     step2SelectBorder=BorderFactory.createDashedBorder(Color.darkGray,1.5f,2f,1f,false);
 
   protected JTable tableList=null,
                    tableExpl=null;
@@ -50,7 +50,13 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
    */
   protected SingleHighlightManager stepHighlighter=null;
   /**
-   * Used for passing information about selection of solution steps and/or flight variants
+   * Used for passing information about selection of solution steps corresponding to
+   * certain flight variants (i.e., steps in which flight plans were modified).
+   */
+  protected ItemSelectionManager flightVersionStepSelector =null;
+  /**
+   * Used for passing information about selection of solution steps for which the
+   * FlightVariantsShow shows the dynamics of the demands by time histograms.
    */
   protected ItemSelectionManager stepSelector=null;
 
@@ -101,8 +107,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         super.windowClosing(e);
         if (stepHighlighter!=null)
           stepHighlighter.removeChangeListener(flExPanel);
-        if (stepSelector!=null)
-          stepSelector.removeChangeListener(flExPanel);
+        if (flightVersionStepSelector !=null)
+          flightVersionStepSelector.removeChangeListener(flExPanel);
       }
     });
     cbExplCombine=new JCheckBox("Combine intervals",false);
@@ -177,10 +183,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       {
         Component c = super.prepareRenderer(renderer, row, column);
         boolean toHighlight=false;
-        if (c!=null && stepSelector!=null && stepSelector.hasSelection()) {
+        if (c!=null && flightVersionStepSelector !=null && flightVersionStepSelector.hasSelection()) {
           int r=tableList.convertRowIndexToModel(row);
           int step=tableListModel.rowFlSteps[r];
-          toHighlight=stepSelector.isSelected(new Integer(step));
+          toHighlight= flightVersionStepSelector.isSelected(new Integer(step));
         }
         ((JComponent) c).setBorder((toHighlight)? highlightBorder :null);
         c.setBackground((isRowSelected(row))?Color.yellow:getBackground());
@@ -374,10 +380,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       stepHighlighter.addChangeListener(this);
   }
   
-  public void setStepSelector(ItemSelectionManager stepSelector) {
-    this.stepSelector = stepSelector;
-    if (stepSelector!=null)
-      stepSelector.addChangeListener(this);
+  public void setFlightVersionStepSelector(ItemSelectionManager flightVersionStepSelector) {
+    this.flightVersionStepSelector = flightVersionStepSelector;
+    if (flightVersionStepSelector !=null)
+      flightVersionStepSelector.addChangeListener(this);
   }
   
   public void stateChanged(ChangeEvent e) {
@@ -403,7 +409,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       }
     }
     else
-      if (e.getSource().equals(stepSelector)) {
+      if (e.getSource().equals(flightVersionStepSelector)) {
         tableList.repaint();
       }
   }

@@ -1,10 +1,8 @@
 package TapasSolutionExplorer.flight_vis;
 
-import TapasDataReader.ExTreeNode;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightInSector;
 
-import TapasSolutionExplorer.UI.ChangeNotifier;
 import TapasSolutionExplorer.UI.ItemSelectionManager;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
 import TapasUtilities.RangeSlider;
@@ -72,7 +70,13 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
    */
   protected SingleHighlightManager stepHighlighter=null;
   /**
-   * Used for passing information about selection of solution steps and/or flight variants
+   * Used for passing information about selection of solution steps
+   * corresponding to different flight versions.
+   */
+  protected ItemSelectionManager flightVersionStepSelector =null;
+  /**
+   * Used for passing information about selection of solution steps for which the
+   * FlightVariantsShow shows the dynamics of the demands by time histograms.
    */
   protected ItemSelectionManager stepSelector=null;
   
@@ -84,8 +88,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     flShow.addChangeListener(this);
     stepHighlighter=new SingleHighlightManager();
     flShow.setStepHighlighter(stepHighlighter);
-    stepSelector=new ItemSelectionManager();
-    flShow.setStepSelector(stepSelector);
+    flightVersionStepSelector =new ItemSelectionManager();
+    flShow.setFlightVersionStepSelector(flightVersionStepSelector);
     makeInterior();
   }
   
@@ -96,8 +100,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     flShow.addChangeListener(this);
     stepHighlighter=new SingleHighlightManager();
     flShow.setStepHighlighter(stepHighlighter);
-    stepSelector=new ItemSelectionManager();
-    flShow.setStepSelector(stepSelector);
+    flightVersionStepSelector =new ItemSelectionManager();
+    flShow.setFlightVersionStepSelector(flightVersionStepSelector);
     makeInterior();
   }
   
@@ -300,8 +304,8 @@ public class FlightVisPanel extends JPanel implements ChangeListener, ActionList
     return stepHighlighter;
   }
   
-  public ItemSelectionManager getStepSelector() {
-    return stepSelector;
+  public ItemSelectionManager getFlightVersionStepSelector() {
+    return flightVersionStepSelector;
   }
   
   public void drawLinks(Graphics g) {

@@ -1,6 +1,5 @@
 package TapasSolutionExplorer.flight_vis;
 
-import TapasDataReader.ExTreeNode;
 import TapasDataReader.Flight;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
@@ -184,7 +183,7 @@ public class FlightViewManager {
     flExplain=new FlightsExplanationsPanel(explAttrMinMaxValues,vfl,steps,
         0,steps.length-1,true);
     flExplain.setStepHighlighter(flShow.getStepHighlighter());
-    flExplain.setStepSelector(flShow.getStepSelector());
+    flExplain.setFlightVersionStepSelector(flShow.getFlightVersionStepSelector());
     frameFlightShow.toFront();
   }
   

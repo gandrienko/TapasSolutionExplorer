@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 
 public class ItemSelectionManager {
-  public TreeSet selected=null;
+  public ArrayList selected=null;
   
   protected ArrayList<ChangeListener> changeListeners=null;
   
@@ -34,7 +34,7 @@ public class ItemSelectionManager {
     if (obj==null)
       return;
     if (selected==null)
-      selected=new TreeSet();
+      selected=new ArrayList(20);
     if (!selected.contains(obj)) {
       selected.add(obj);
       notifyChange();
@@ -63,7 +63,7 @@ public class ItemSelectionManager {
     return obj!=null && selected!=null && selected.contains(obj);
   }
   
-  public TreeSet getSelected(){
+  public ArrayList getSelected(){
     return selected;
   }
   

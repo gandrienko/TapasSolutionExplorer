@@ -3,7 +3,6 @@ package TapasSolutionExplorer.flight_vis;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
-import TapasSolutionExplorer.UI.ChangeNotifier;
 import TapasSolutionExplorer.UI.ItemSelectionManager;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
 
@@ -131,7 +130,7 @@ public class FlightVariantsShow extends JPanel
   /**
    * Used for passing information about selection of solution steps and/or flight variants
    */
-  protected ItemSelectionManager stepSelector=null;
+  protected ItemSelectionManager flightVersionStepSelector =null;
   
   public FlightVariantsShow(FlightInSector flights[][][]) {
     super();
@@ -221,32 +220,32 @@ public class FlightVariantsShow extends JPanel
       }
   }
   
-  public ItemSelectionManager getStepSelector() {
-    return stepSelector;
+  public ItemSelectionManager getFlightVersionStepSelector() {
+    return flightVersionStepSelector;
   }
   
-  public void setStepSelector(ItemSelectionManager stepSelector) {
-    this.stepSelector = stepSelector;
+  public void setFlightVersionStepSelector(ItemSelectionManager flightVersionStepSelector) {
+    this.flightVersionStepSelector = flightVersionStepSelector;
   }
   
-  public void clearFlightVariantSelection() {
-    if (stepSelector!=null && selVariantIdx>=0) {
+  public void clearFlightVersionStepSelection() {
+    if (flightVersionStepSelector !=null && selVariantIdx>=0) {
       int stepIdx=flights[shownFlightIdx][selVariantIdx][0].step;
-      stepSelector.deselect(new Integer(stepIdx));
+      flightVersionStepSelector.deselect(new Integer(stepIdx));
     }
     selVariantIdx =-1;
   }
   
-  public void transmitFlightVariantSelection() {
-    if (stepSelector!=null && selVariantIdx>=0) {
+  public void transmitFlightVersionStepSelection() {
+    if (flightVersionStepSelector !=null && selVariantIdx>=0) {
       int stepIdx=flights[shownFlightIdx][selVariantIdx][0].step;
-      stepSelector.select(new Integer(stepIdx));
+      flightVersionStepSelector.select(new Integer(stepIdx));
     }
   }
   
   public boolean showFlightVariants(String flId) {
     hlIdx=-1;
-    clearFlightVariantSelection();
+    clearFlightVersionStepSelection();
     hourlyCounts=null; hourlyCounts2=null;
     if (flId==null || flightIndex==null)
       return  false;
@@ -464,12 +463,12 @@ public class FlightVariantsShow extends JPanel
     if (flights==null || shownFlightIdx<0 || sectorSequence==null || sectorSequence.isEmpty()) {
       flightDrawers=null;
       hlIdx=-1;
-      clearFlightVariantSelection();
+      clearFlightVersionStepSelection();
       return;
     }
     if (flightDrawers==null || flightDrawers.length!=flights[shownFlightIdx].length) {
       hlIdx=-1;
-      clearFlightVariantSelection();
+      clearFlightVersionStepSelection();
       flightDrawers=new FlightDrawer[flights[shownFlightIdx].length];
       for (int i=0; i<flightDrawers.length; i++) {
         flightDrawers[i] = new FlightDrawer();
@@ -889,11 +888,11 @@ public class FlightVariantsShow extends JPanel
   protected void selectFlightVariant(int vIdx) {
     if (selVariantIdx ==vIdx)
       return;
-    clearFlightVariantSelection();
+    clearFlightVersionStepSelection();
     selVariantIdx =vIdx;
     notifyChange();
     redraw();
-    transmitFlightVariantSelection();
+    transmitFlightVersionStepSelection();
   }
   
   public int getSelectedVariant() {
@@ -909,7 +908,7 @@ public class FlightVariantsShow extends JPanel
   
   protected void cancelFlightSelection() {
     if (selVariantIdx >=0 ) {
-      clearFlightVariantSelection();
+      clearFlightVersionStepSelection();
       notifyChange();
       redraw();
     }
