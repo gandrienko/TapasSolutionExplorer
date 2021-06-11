@@ -139,8 +139,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           s+=tableListModel.getFeatureExplanation(fea)+"\n";
           Explanation expl = vf.elementAt(tableListModel.rowFlNs[realRowIndex]).expl[tableListModel.rowFlSteps[realRowIndex]];
           ExplanationItem eItems[]=expl.eItems;
-          if (cbExplCombine.isSelected())
-            eItems=Explanation.getExplItemsCombined(eItems);
+          //if (cbExplCombine.isSelected())
+          eItems=Explanation.getExplItemsCombined(eItems);
           if (cbExplAsInt.isSelected())
             eItems=Explanation.getExplItemsAsIntegeres(eItems,attrsInExpl);
           int n=-1;
@@ -248,6 +248,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     tableExpl.setRowSelectionAllowed(true);
     tableExpl.setColumnSelectionAllowed(false);
     tableExpl.getColumnModel().getColumn(3).setCellRenderer(new RenderLabel_ValueInSubinterval());
+    tableExpl.getColumnModel().getColumn(0).setPreferredWidth(30);
+    tableExpl.getColumnModel().getColumn(1).setPreferredWidth(50);
+    tableExpl.getColumnModel().getColumn(2).setPreferredWidth(50);
+    tableExpl.getColumnModel().getColumn(3).setPreferredWidth(200);
     JScrollPane scrollPaneExpl = new JScrollPane(tableExpl);
     scrollPaneExpl.setOpaque(true);
     

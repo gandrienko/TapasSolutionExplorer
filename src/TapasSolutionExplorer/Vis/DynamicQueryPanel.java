@@ -36,12 +36,14 @@ public class DynamicQueryPanel extends JPanel implements TableModelListener {
     DefaultTableCellRenderer rightRenderer=new DefaultTableCellRenderer();
     rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
     DQtbl.getColumnModel().getColumn(columnMin).setCellRenderer(rightRenderer);
+    DQtbl.getColumnModel().getColumn(columnMin).setPreferredWidth(100);
     DQtbl.getColumnModel().getColumn(columnMax).setCellRenderer(rightRenderer);
+    DQtbl.getColumnModel().getColumn(columnMax).setPreferredWidth(100);
     DQtbl.getColumnModel().getColumn(columnCount).setCellRenderer(new RenderLabelBarChart(0,tblModel.getRowCount()));
-    //RendererRangeSlider rrs=new RendererRangeSlider();
-    //rrs.getUI().trackListener
+    DQtbl.getColumnModel().getColumn(columnCount).setPreferredWidth(150);
     DQtbl.getColumnModel().getColumn(columnRS).setCellRenderer(new IntRangeCell());
     DQtbl.getColumnModel().getColumn(columnRS).setCellEditor(new IntRangeCell());
+    DQtbl.getColumnModel().getColumn(columnRS).setPreferredWidth(250);
 
     JScrollPane scrollPane = new JScrollPane(DQtbl);
     scrollPane.setOpaque(true);
