@@ -77,18 +77,19 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       maxStep=decisionSteps.length-1;
     
     for (Flight f:vf)
-      for (int step=minStep; step<=maxStep && step<f.expl.length; step++)
-        if (f.expl==null || f.expl[step]==null)
-          ; //System.out.println("* no explanation: flight "+f.id+", step="+step);
-        else
-          if (f.expl[step].action>0 || bShowZeroActions) {
-            ExplanationItem[] e=f.expl[step].eItems,
-                              ee=Explanation.getExplItemsCombined(e);
-            maxNcond=Math.max(maxNcond,e.length);
-            maxNfeatures=Math.max(maxNfeatures,ee.length);
-            for (int i=0; i<ee.length; i++)
-              features.add(ee[i].attr);
-          }
+      if (f.expl!=null)
+        for (int step=minStep; step<=maxStep && step<f.expl.length; step++)
+          if (f.expl[step]==null)
+            ; //System.out.println("* no explanation: flight "+f.id+", step="+step);
+          else
+            if (f.expl[step].action>0 || bShowZeroActions) {
+              ExplanationItem[] e=f.expl[step].eItems,
+                                ee=Explanation.getExplItemsCombined(e);
+              maxNcond=Math.max(maxNcond,e.length);
+              maxNfeatures=Math.max(maxNfeatures,ee.length);
+              for (int i=0; i<ee.length; i++)
+                features.add(ee[i].attr);
+            }
     //System.out.println("* N distinct features = "+features.size());
     ArrayList<String> list = new ArrayList<>(features);
     Collections.sort(list);
