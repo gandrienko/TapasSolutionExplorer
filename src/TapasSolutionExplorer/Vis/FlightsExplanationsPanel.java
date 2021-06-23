@@ -1,9 +1,6 @@
 package TapasSolutionExplorer.Vis;
 
-import TapasDataReader.ExTreeReconstructor;
-import TapasDataReader.Explanation;
-import TapasDataReader.ExplanationItem;
-import TapasDataReader.Flight;
+import TapasDataReader.*;
 import TapasExplTreeViewer.ui.ExTreePanel;
 import TapasSolutionExplorer.UI.ItemSelectionManager;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
@@ -397,6 +394,13 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     exTreeReconstructor.reconstructExTree(ale);
     //System.out.println("* N explanations for the tree: "+ale.size());
     updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+    
+    ArrayList<CommonExplanation> exList=CommonExplanation.getCommonExplanations(ale,
+        true,attrsInExpl,true);
+    if (exList==null)
+      System.out.println("Failed to reconstruct the list of common explanations!");
+    else
+      System.out.println("Made a list of "+exList.size()+" common explanations!");
   }
 
   public JFrame getFrame() {
