@@ -5,6 +5,7 @@ import TapasExplTreeViewer.ui.ExTreePanel;
 import TapasSolutionExplorer.UI.ItemSelectionManager;
 import TapasSolutionExplorer.UI.SingleHighlightManager;
 import TapasUtilities.RenderLabelBarChart;
+import TapasUtilities.RenderLabelTimeBars;
 import TapasUtilities.RenderLabel_ValueInSubinterval;
 
 
@@ -59,6 +60,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
    */
   protected ItemSelectionManager showDemandsStepSelector =null;
 
+  int maxStep;
+
   public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf,
                                    int decisionSteps[], int minStep, int maxStep,
                                    boolean bShowZeroActions) {
@@ -66,6 +69,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
     this.attrsInExpl=attrsInExpl;
     this.vf=vf;
+    this.maxStep=maxStep;
 
     // compute table statistics
     HashSet<String> features=new HashSet<>(10);
@@ -319,9 +323,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     tableListUnique.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(0,tableListModel.getRowCount()));
     tableListUnique.getColumnModel().getColumn(2).setCellRenderer(new RenderLabelBarChart(0,hFlights.size()));
     tableListUnique.getColumnModel().getColumn(3).setCellRenderer(new RenderLabelBarChart(0,maxStep));
-    tableListUnique.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,10));
-    tableListUnique.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
-    tableListUnique.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
+    tableListUnique.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelTimeBars(1));
+    tableListUnique.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelBarChart(0,10));
+    tableListUnique.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
+    tableListUnique.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
     JScrollPane scrollPaneListUnique = new JScrollPane(tableListUnique);
     scrollPaneListUnique.setOpaque(true);
 
@@ -409,7 +414,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         return dqPanel.isBQtrue(r);
       }
     });
-    // Modify Tree ToDo
+    // Modify Tree
     ArrayList<Explanation> ale=new ArrayList<>();
     for (int i=0; i<tableListModel.getRowCount(); i++)
       if (dqPanel.isBQtrue(i))
@@ -736,7 +741,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       this.exList=exList;
       fireTableDataChanged();
     }
-    private String columnNames[] = {"Order", "N cases", "N flights", "N steps", "Action", "N conditions", "N features"};
+    private String columnNames[] = {"Order", "N cases", "N flights", "N steps", "Steps", "Action", "N conditions", "N features"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -758,11 +763,23 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           return ce.nUses;
         case 2:
           return ce.uses.size();
-        case 4:
-          return ce.action;
+        case 3: case 4:
+          int steps[]=new int[maxStep];
+          for (int i=0; i<steps.length; i++)
+            steps[i]=0;
+          for (String s:ce.uses.keySet()) {
+            ArrayList<Explanation> ae=ce.uses.get(s);
+            for (Explanation e:ae)
+              steps[e.step/10]=1;
+          }
+          for (int i=1; i<steps.length; i++)
+            steps[i]+=steps[i-1];
+          return (col==3) ? steps[steps.length-1] : steps;
         case 5:
-          return ce.eItems.length;
+          return ce.action;
         case 6:
+          return ce.eItems.length;
+        case 7:
           HashSet<String> features=new HashSet<>(10);
           for (int i=0; i<ce.eItems.length; i++)
             features.add(ce.eItems[i].attr);
