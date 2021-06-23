@@ -227,7 +227,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         }
       }
     });
-    tableList.setPreferredScrollableViewportSize(new Dimension(1200, 500));
+    tableList.setPreferredScrollableViewportSize(new Dimension(1200, 300));
     tableList.setFillsViewportHeight(true);
     tableList.setAutoCreateRowSorter(true);
     tableList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -395,8 +395,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     //System.out.println("* N explanations for the tree: "+ale.size());
     updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
     
-    ArrayList<CommonExplanation> exList=CommonExplanation.getCommonExplanations(ale,
-        true,attrsInExpl,true);
+    ArrayList<CommonExplanation> exList=CommonExplanation.getCommonExplanations(ale,true,attrsInExpl,true);
     if (exList==null)
       System.out.println("Failed to reconstruct the list of common explanations!");
     else
