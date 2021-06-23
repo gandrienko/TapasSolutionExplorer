@@ -28,8 +28,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
      step2SelectBorder=BorderFactory.createDashedBorder(Color.darkGray,1.2f,2f,1f,false);
 
   protected JTable tableList=null,
+                   tableListUnique=null,
                    tableExpl=null;
   protected FlightsListOfExplTableModel tableListModel=null;
+  protected FlightsListOfUniqueExplTableModel tableListUniqueModel=null;
   protected JLabel lblExplTitle=null;
   protected FlightsSingleExplTableModel tableExplModel=null;
   protected int selectedRow=-1;
@@ -139,6 +141,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
     tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
+    tableListUniqueModel=new FlightsListOfUniqueExplTableModel();
 
     tableList=new JTable(tableListModel){
       public String getToolTipText(MouseEvent e) {
@@ -308,7 +311,21 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     Dimension minimumSize = new Dimension(100, 300);
     pExpl.setMinimumSize(minimumSize);
 
-    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitPaneVleft,splitPaneVright);
+    tableListUnique=new JTable(tableListUniqueModel);
+    tableListUnique.setPreferredScrollableViewportSize(new Dimension(200, 300));
+    tableListUnique.setFillsViewportHeight(true);
+    tableListUnique.setAutoCreateRowSorter(true);
+    tableListUnique.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    tableListUnique.setRowSelectionAllowed(true);
+    tableListUnique.setColumnSelectionAllowed(false);
+    JScrollPane scrollPaneListUnique = new JScrollPane(tableListUnique);
+    scrollPaneListUnique.setOpaque(true);
+
+    JSplitPane splitPaneVVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,splitPaneVleft,scrollPaneListUnique);
+    splitPaneVVleft.setOneTouchExpandable(true);
+    //splitPaneVVleft.setDividerLocation(500);
+
+    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitPaneVVleft,splitPaneVright);
     splitPane.setOneTouchExpandable(true);
     splitPane.setDividerLocation(1000);
     minimumSize = new Dimension(100, 300);
@@ -682,4 +699,22 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
   }
 
+  class FlightsListOfUniqueExplTableModel extends AbstractTableModel {
+    private String columnNames[] = {"N cases", "N flights", "N steps", "Action", "N conditions", "N features"};
+    public String getColumnName(int col) {
+      return columnNames[col];
+    }
+    public int getColumnCount() {
+      return columnNames.length;
+    }
+    public int getRowCount() {
+      return 0;
+    }
+    public Class getColumnClass(int c) {
+      return (getValueAt(0, c) == null) ? null : getValueAt(0, c).getClass();
+    }
+    public Object getValueAt(int row, int col) {
+      return 0;
+    }
+  }
 }
