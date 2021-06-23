@@ -316,8 +316,14 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     tableListUnique.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     tableListUnique.setRowSelectionAllowed(true);
     tableListUnique.setColumnSelectionAllowed(false);
+    tableListUnique.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(0,tableListModel.getRowCount()));
+    tableListUnique.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,10));
+    tableListUnique.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
+    tableListUnique.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
     JScrollPane scrollPaneListUnique = new JScrollPane(tableListUnique);
     scrollPaneListUnique.setOpaque(true);
+
+    fillTableOfUniqueExplanations();
 
     JSplitPane splitPaneVVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,splitPaneVleft,scrollPaneListUnique);
     splitPaneVVleft.setOneTouchExpandable(true);
@@ -339,6 +345,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
+        fillTableOfUniqueExplanations();
       }
     });
     cbExplAsInt.addActionListener(new ActionListener() {
@@ -351,6 +358,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
         }
+        else // note that fillTableOfUniqueExplanations() is called from setExpl(...)
+          fillTableOfUniqueExplanations();
       }
     });
 
@@ -363,6 +372,19 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     Dimension size=Toolkit.getDefaultToolkit().getScreenSize();
     frame.setLocation((size.width-frame.getWidth())/2,(size.height-frame.getHeight())/2);
     frame.setVisible(true);
+  }
+
+  public void fillTableOfUniqueExplanations() {
+    ArrayList<Explanation> ale=new ArrayList<>();
+    for (int i=0; i<tableListModel.getRowCount(); i++)
+      if (dqPanel.isBQtrue(i))
+        ale.add(vf.elementAt(tableListModel.rowFlNs[i]).expl[tableListModel.rowFlSteps[i]]);
+    ArrayList<CommonExplanation> exList=CommonExplanation.getCommonExplanations(ale,cbExplAsInt.isSelected(),attrsInExpl,cbExplCombine.isSelected());
+    if (exList==null)
+      System.out.println("Failed to reconstruct the list of common explanations!");
+    else
+      System.out.println("Made a list of "+exList.size()+" common explanations!");
+    tableListUniqueModel.setExList(exList);
   }
 
   public void tableChanged(TableModelEvent e) {
@@ -395,13 +417,16 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     exTreeReconstructor.reconstructExTree(ale);
     //System.out.println("* N explanations for the tree: "+ale.size());
     updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
-    
+
+    fillTableOfUniqueExplanations();
+/*
     ArrayList<CommonExplanation> exList=CommonExplanation.getCommonExplanations(ale,true,attrsInExpl,true);
     if (exList==null)
       System.out.println("Failed to reconstruct the list of common explanations!");
     else
       System.out.println("Made a list of "+exList.size()+" common explanations!");
     tableListUniqueModel.setExList(exList);
+*/
   }
 
   public JFrame getFrame() {
@@ -477,7 +502,6 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   protected void setExpl (Hashtable<String,int[]> attrsInExpl, Explanation expl, boolean bCombine, boolean bInt) {
     if (expl==null) {
       lblExplTitle.setText("");
-
     }
     else {
       lblExplTitle.setText(expl.FlightID + " @ " + expl.step + ", action=" + expl.action);
@@ -730,10 +754,17 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           return (Double.isNaN(ce.x1D)) ? row : ce.x1D;
         case 1:
           return ce.nUses;
+        case 2:
+          return ce.uses.size();
         case 4:
           return ce.action;
         case 5:
           return ce.eItems.length;
+        case 6:
+          HashSet<String> features=new HashSet<>(10);
+          for (int i=0; i<ce.eItems.length; i++)
+            features.add(ce.eItems[i].attr);
+          return features.size();
         default:
           return 0;
       }
