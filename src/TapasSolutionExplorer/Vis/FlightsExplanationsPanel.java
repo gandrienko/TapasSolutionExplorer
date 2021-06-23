@@ -401,6 +401,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       System.out.println("Failed to reconstruct the list of common explanations!");
     else
       System.out.println("Made a list of "+exList.size()+" common explanations!");
+    tableListUniqueModel.setExList(exList);
   }
 
   public JFrame getFrame() {
@@ -704,7 +705,12 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   }
 
   class FlightsListOfUniqueExplTableModel extends AbstractTableModel {
-    private String columnNames[] = {"N cases", "N flights", "N steps", "Action", "N conditions", "N features"};
+    ArrayList<CommonExplanation> exList=null;
+    public void setExList (ArrayList<CommonExplanation> exList) {
+      this.exList=exList;
+      fireTableDataChanged();
+    }
+    private String columnNames[] = {"Order", "N cases", "N flights", "N steps", "Action", "N conditions", "N features"};
     public String getColumnName(int col) {
       return columnNames[col];
     }
@@ -712,13 +718,25 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       return columnNames.length;
     }
     public int getRowCount() {
-      return 0;
+      return (exList==null) ? 0 : exList.size();
     }
     public Class getColumnClass(int c) {
       return (getValueAt(0, c) == null) ? null : getValueAt(0, c).getClass();
     }
     public Object getValueAt(int row, int col) {
-      return 0;
+      CommonExplanation ce=exList.get(row);
+      switch (col) {
+        case 0:
+          return (Double.isNaN(ce.x1D)) ? row : ce.x1D;
+        case 1:
+          return ce.nUses;
+        case 4:
+          return ce.action;
+        case 5:
+          return ce.eItems.length;
+        default:
+          return 0;
+      }
     }
   }
 }
