@@ -317,6 +317,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     tableListUnique.setRowSelectionAllowed(true);
     tableListUnique.setColumnSelectionAllowed(false);
     tableListUnique.getColumnModel().getColumn(1).setCellRenderer(new RenderLabelBarChart(0,tableListModel.getRowCount()));
+    tableListUnique.getColumnModel().getColumn(2).setCellRenderer(new RenderLabelBarChart(0,hFlights.size()));
+    tableListUnique.getColumnModel().getColumn(3).setCellRenderer(new RenderLabelBarChart(0,maxStep));
     tableListUnique.getColumnModel().getColumn(4).setCellRenderer(new RenderLabelBarChart(0,10));
     tableListUnique.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
     tableListUnique.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
