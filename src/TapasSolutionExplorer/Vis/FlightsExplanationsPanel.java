@@ -578,7 +578,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       int n = 0;
       for (Flight f : vf)
         for (int step = minStep; step <= maxStep; step++)
-          if (f.expl[step] != null && (f.expl[step].action > 0 || bShowZeroActions))
+          if (f.expl!=null && f.expl[step] != null && (f.expl[step].action > 0 || bShowZeroActions))
             n++;
       rowFlNs = new int[n];
       rowFlSteps = new int[n];
@@ -586,7 +586,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
       for (int i=0; i<vf.size(); i++) {
         Flight f=vf.elementAt(i);
         for (int step = minStep; step <= maxStep; step++)
-          if (f.expl[step] != null && (f.expl[step].action > 0 || bShowZeroActions)) {
+          if (f.expl!=null && f.expl[step] != null && (f.expl[step].action > 0 || bShowZeroActions)) {
             rowFlNs[n] = i;
             rowFlSteps[n] = step;
             n++;
