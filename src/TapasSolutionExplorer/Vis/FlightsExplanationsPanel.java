@@ -143,7 +143,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
     tableListModel=new FlightsListOfExplTableModel(vf,attrsInExpl,list,minStep,maxStep,bShowZeroActions);
     tableExplModel=new FlightsSingleExplTableModel(attrsInExpl);
-    tableListUniqueModel=new FlightsListOfUniqueExplTableModel();
+    tableListUniqueModel=new FlightsListOfUniqueExplTableModel(list,attrsInExpl);
 
     tableList=new JTable(tableListModel){
       public String getToolTipText(MouseEvent e) {
@@ -327,6 +327,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     tableListUnique.getColumnModel().getColumn(5).setCellRenderer(new RenderLabelBarChart(0,10));
     tableListUnique.getColumnModel().getColumn(6).setCellRenderer(new RenderLabelBarChart(0,maxNcond));
     tableListUnique.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
+    for (int i=0; i<list.size(); i++)
+      tableListUnique.getColumnModel().getColumn(8+i).setCellRenderer(new RenderLabel_ValueInSubinterval());
     JScrollPane scrollPaneListUnique = new JScrollPane(tableListUnique);
     scrollPaneListUnique.setOpaque(true);
 
@@ -737,16 +739,22 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
   class FlightsListOfUniqueExplTableModel extends AbstractTableModel {
     ArrayList<CommonExplanation> exList=null;
+    ArrayList<String> listOfFeatures=null;
+    Hashtable<String,int[]> attrsInExpl=null;
+    public FlightsListOfUniqueExplTableModel (ArrayList<String> listOfFeatures, Hashtable<String,int[]> attrsInExpl) {
+      this.listOfFeatures=listOfFeatures;
+      this.attrsInExpl=attrsInExpl;
+    }
     public void setExList (ArrayList<CommonExplanation> exList) {
       this.exList=exList;
       fireTableDataChanged();
     }
     private String columnNames[] = {"Order", "N cases", "N flights", "N steps", "Steps", "Action", "N conditions", "N features"};
     public String getColumnName(int col) {
-      return columnNames[col];
+      return ((col<columnNames.length) ? columnNames[col] : listOfFeatures.get(col-columnNames.length));
     }
     public int getColumnCount() {
-      return columnNames.length;
+      return columnNames.length+listOfFeatures.size();
     }
     public int getRowCount() {
       return (exList==null) ? 0 : exList.size();
@@ -785,7 +793,39 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
             features.add(ce.eItems[i].attr);
           return features.size();
         default:
-          return 0;
+          //return 0;
+          ExplanationItem ee[]=ce.eItems;
+          int n=-1;
+          for (int i=0; n==-1 && i<ee.length; i++)
+            if (ee[i].attr.equals(listOfFeatures.get(col-columnNames.length)))
+              n=i;
+          if (n==-1)
+            return new float[]{-1,0,1,0,1};
+          else {
+            //System.out.println("row="+row+", col="+col+", Ncond="+e.length+", Nfeatures="+ee.length+", featureN="+n+" "+ee[n].attr);
+            float v1=attrsInExpl.get(ee[n].attr)[0], v2=attrsInExpl.get(ee[n].attr)[1],
+                    v3=(float)ee[n].interval[0], v4=(float)ee[n].interval[1];
+            if (v3==Float.NEGATIVE_INFINITY)
+              v3=v1;
+            if (v4==Float.POSITIVE_INFINITY)
+              v4=v2;
+            if (ce.nUses==1)
+              return new float[]{ee[n].value,v1,v2,v3,v4};
+            else {
+              float f[]=new float[4+ce.nUses];
+              f[1]=v1;
+              f[2]=v2;
+              f[3]=v3;
+              f[4]=v4;
+              int i=0;
+              for (String fl:ce.uses.keySet())
+                for (Explanation e:ce.uses.get(fl)) {
+                  f[(i==0)?0:4+i]=e.eItems[n].value;
+                  i++;
+                }
+              return f;
+            }
+          }
       }
     }
   }
