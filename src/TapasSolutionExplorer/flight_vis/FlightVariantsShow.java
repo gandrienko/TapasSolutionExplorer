@@ -3,8 +3,8 @@ package TapasSolutionExplorer.flight_vis;
 import TapasDataReader.Record;
 import TapasSolutionExplorer.Data.FlightConstructor;
 import TapasSolutionExplorer.Data.FlightInSector;
-import TapasSolutionExplorer.UI.ItemSelectionManager;
-import TapasSolutionExplorer.UI.SingleHighlightManager;
+import TapasUtilities.ItemSelectionManager;
+import TapasUtilities.SingleHighlightManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

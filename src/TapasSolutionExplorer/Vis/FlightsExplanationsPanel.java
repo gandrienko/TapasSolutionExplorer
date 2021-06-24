@@ -2,8 +2,8 @@ package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.*;
 import TapasExplTreeViewer.ui.ExTreePanel;
-import TapasSolutionExplorer.UI.ItemSelectionManager;
-import TapasSolutionExplorer.UI.SingleHighlightManager;
+import TapasUtilities.ItemSelectionManager;
+import TapasUtilities.SingleHighlightManager;
 import TapasUtilities.RenderLabelBarChart;
 import TapasUtilities.RenderLabelTimeBars;
 import TapasUtilities.RenderLabel_ValueInSubinterval;

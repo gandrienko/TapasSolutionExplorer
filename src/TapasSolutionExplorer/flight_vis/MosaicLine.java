@@ -1,8 +1,5 @@
 package TapasSolutionExplorer.flight_vis;
 
-import TapasSolutionExplorer.UI.ChangeNotifier;
-import TapasSolutionExplorer.UI.SingleHighlightManager;
-
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -58,7 +55,7 @@ public class MosaicLine extends JPanel implements ChangeListener {
    * Supports simultaneous highlighting of flight versions and/or corresponding steps
    * in this component and other components
    */
-  protected SingleHighlightManager stepHighlighter=null;
+  protected TapasUtilities.SingleHighlightManager stepHighlighter=null;
   
   public MosaicLine(int nTiles, int orientation) {
     this.nTiles=nTiles; this.orientation=orientation;
@@ -180,11 +177,11 @@ public class MosaicLine extends JPanel implements ChangeListener {
     tileLabels[idx]=label;
   }
   
-  public SingleHighlightManager getStepHighlighter() {
+  public TapasUtilities.SingleHighlightManager getStepHighlighter() {
     return stepHighlighter;
   }
   
-  public void setStepHighlighter(SingleHighlightManager stepHighlighter) {
+  public void setStepHighlighter(TapasUtilities.SingleHighlightManager stepHighlighter) {
     this.stepHighlighter = stepHighlighter;
     if (stepHighlighter!=null)
       stepHighlighter.addChangeListener(this);
