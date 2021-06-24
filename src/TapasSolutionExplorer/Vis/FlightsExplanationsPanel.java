@@ -794,7 +794,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           return features.size();
         default:
           //return 0;
-          ExplanationItem ee[]=ce.eItems;
+          ExplanationItem e[]=ce.eItems,
+                  ee[]=Explanation.getExplItemsCombined(e);
           int n=-1;
           for (int i=0; n==-1 && i<ee.length; i++)
             if (ee[i].attr.equals(listOfFeatures.get(col-columnNames.length)))
@@ -817,11 +818,15 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
               f[2]=v2;
               f[3]=v3;
               f[4]=v4;
-              int i=0;
+              int nf=0;
               for (String fl:ce.uses.keySet())
-                for (Explanation e:ce.uses.get(fl)) {
-                  f[(i==0)?0:4+i]=e.eItems[n].value;
-                  i++;
+                for (Explanation ex:ce.uses.get(fl)) {
+                  int ne=-1;
+                  for (int i=0; i<ex.eItems.length && ne==-1; i++)
+                    if (ex.eItems[i].attr.equals(listOfFeatures.get(col-columnNames.length)))
+                      ne=i;
+                  f[(nf==0)?0:4+nf]=ex.eItems[ne].value;
+                  nf++;
                 }
               return f;
             }
