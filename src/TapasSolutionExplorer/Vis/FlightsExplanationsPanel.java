@@ -222,15 +222,25 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0, expl.eItems.length));
           setExpl(attrsInExpl, expl, cbExplCombine.isSelected(), cbExplAsInt.isSelected());
           boolean found=false;
-          for (int i=0; i<tableListUnique.getRowCount() && !found; i++) {
-            int rowInListUniqueModel=tableListUnique.convertRowIndexToModel(i);
-            found=CommonExplanation.sameExplanations(expl.eItems,tableListUniqueModel.exList.get(rowInListUniqueModel).eItems);
+          ExplanationItem ee[]=null;
+          if (cbExplCombine.isSelected())
+            ee=Explanation.getExplItemsCombined(expl.eItems);
+          else
+            ee=expl.eItems;
+          if (cbExplAsInt.isSelected())
+            ee=Explanation.getExplItemsAsIntegeres(ee,attrsInExpl);
+          for (int i=0; i<tableListUniqueModel.getRowCount() && !found; i++) {
+            //int rowInListUniqueModel=tableListUnique.convertRowIndexToModel(i);
+            found=CommonExplanation.sameExplanations(ee,tableListUniqueModel.exList.get(i).eItems);
             if (found) {
-              tableListUnique.getSelectionModel().setSelectionInterval(i, i);
-              Rectangle rect=tableListUnique.getCellRect(i,0,true);
+              int rowInTable=tableListUnique.convertRowIndexToView(i);
+              tableListUnique.getSelectionModel().setSelectionInterval(rowInTable, rowInTable);
+              Rectangle rect=tableListUnique.getCellRect(rowInTable,0,true);
               tableListUnique.scrollRectToVisible(rect);
             }
           }
+          if (!found)
+            tableListUnique.getSelectionModel().clearSelection();
           if (stepHighlighter!=null) {
             stepHighlighter.removeChangeListener(cl);
             stepHighlighter.highlight(new Integer(step));
