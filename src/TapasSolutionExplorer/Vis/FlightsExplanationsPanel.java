@@ -336,7 +336,12 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           int row=tableListUnique.convertRowIndexToModel(selectedRow);
           ExplanationItem eItems[] = tableListUniqueModel.exList.get(row).eItems;
           selectInTableOfExplanations(eItems);
+          ArrayList<Integer> selection=new ArrayList<Integer>(1);
+          selection.add(row);
+          pp.getSelector().updateSelection(selection);
         }
+        else
+          pp.getSelector().deselectAll();
       }
     });
     tableListUnique.setPreferredScrollableViewportSize(new Dimension(200, 300));
