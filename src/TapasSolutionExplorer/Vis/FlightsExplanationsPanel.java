@@ -1,12 +1,9 @@
 package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.*;
+import TapasExplTreeViewer.ui.ExListTableModel;
 import TapasExplTreeViewer.ui.ExTreePanel;
-import TapasUtilities.ItemSelectionManager;
-import TapasUtilities.SingleHighlightManager;
-import TapasUtilities.RenderLabelBarChart;
-import TapasUtilities.RenderLabelTimeBars;
-import TapasUtilities.RenderLabel_ValueInSubinterval;
+import TapasUtilities.*;
 
 
 import javax.swing.*;
@@ -737,19 +734,34 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
   }
 
-  class FlightsListOfUniqueExplTableModel extends AbstractTableModel {
+  class FlightsListOfUniqueExplTableModel extends AbstractTableModel implements ChangeListener {
     ArrayList<CommonExplanation> exList=null;
     ArrayList<String> listOfFeatures=null;
-    Hashtable<String,int[]> attrsInExpl=null;
-    public FlightsListOfUniqueExplTableModel (ArrayList<String> listOfFeatures, Hashtable<String,int[]> attrsInExpl) {
+    Hashtable<String,int[]> attrMinMax=null;
+    SwingWorker worker=null;
+    public FlightsListOfUniqueExplTableModel (ArrayList<String> listOfFeatures, Hashtable<String,int[]> attrMinMax) {
       this.listOfFeatures=listOfFeatures;
-      this.attrsInExpl=attrsInExpl;
+      this.attrMinMax=attrMinMax;
     }
     public void setExList (ArrayList<CommonExplanation> exList) {
       this.exList=exList;
+      if (worker!=null)
+        worker.cancel(true);
+      double d[][]=CommonExplanation.computeDistances(exList,attrMinMax);
+      if (d!=null) {
+        worker = new SwingWorker() {
+          @Override
+          protected Object doInBackground() throws Exception {
+            MySammonsProjection sam = new MySammonsProjection(d, 1, 300, true);
+            sam.runProjection(5, 50, tableListUniqueModel);
+            return true;
+          }
+        };
+        worker.execute();
+      }
       fireTableDataChanged();
     }
-    private String columnNames[] = {"Order", "N cases", "N flights", "N steps", "Steps", "Action", "N conditions", "N features"};
+    private String columnNames[] = {"X", "N cases", "N flights", "N steps", "Steps", "Action", "N conditions", "N features"};
     public String getColumnName(int col) {
       return ((col<columnNames.length) ? columnNames[col] : listOfFeatures.get(col-columnNames.length));
     }
@@ -804,7 +816,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
             return new float[]{-1,0,1,0,1};
           else {
             //System.out.println("row="+row+", col="+col+", Ncond="+e.length+", Nfeatures="+ee.length+", featureN="+n+" "+ee[n].attr);
-            float v1=attrsInExpl.get(ee[n].attr)[0], v2=attrsInExpl.get(ee[n].attr)[1],
+            float v1=attrMinMax.get(ee[n].attr)[0], v2=attrMinMax.get(ee[n].attr)[1],
                     v3=(float)ee[n].interval[0], v4=(float)ee[n].interval[1];
             if (v3==Float.NEGATIVE_INFINITY)
               v3=v1;
@@ -831,6 +843,20 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
               return f;
             }
           }
+      }
+    }
+    public void stateChanged(ChangeEvent e) {
+      if (e.getSource() instanceof MySammonsProjection) {
+        MySammonsProjection sam=(MySammonsProjection)e.getSource();
+        double proj[][]=(sam.done)?sam.getProjection():sam.bestProjection;
+        if (proj==null)
+          return;
+        if (proj[0].length==1) { // 1D projection
+          System.out.println("Table: update 1D projection coordinates (column X)");
+          for (int i=0; i<proj.length && i<exList.size(); i++)
+            exList.get(i).x1D=proj[i][0];
+        }
+        fireTableDataChanged();
       }
     }
   }
