@@ -221,26 +221,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           Explanation expl = vf.elementAt(tableListModel.rowFlNs[row]).expl[step];
           tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0, expl.eItems.length));
           setExpl(attrsInExpl, expl, cbExplCombine.isSelected(), cbExplAsInt.isSelected());
-          boolean found=false;
-          ExplanationItem ee[]=null;
-          if (cbExplCombine.isSelected())
-            ee=Explanation.getExplItemsCombined(expl.eItems);
-          else
-            ee=expl.eItems;
-          if (cbExplAsInt.isSelected())
-            ee=Explanation.getExplItemsAsIntegeres(ee,attrsInExpl);
-          for (int i=0; i<tableListUniqueModel.getRowCount() && !found; i++) {
-            //int rowInListUniqueModel=tableListUnique.convertRowIndexToModel(i);
-            found=CommonExplanation.sameExplanations(ee,tableListUniqueModel.exList.get(i).eItems);
-            if (found) {
-              int rowInTable=tableListUnique.convertRowIndexToView(i);
-              tableListUnique.getSelectionModel().setSelectionInterval(rowInTable, rowInTable);
-              Rectangle rect=tableListUnique.getCellRect(rowInTable,0,true);
-              tableListUnique.scrollRectToVisible(rect);
-            }
-          }
-          if (!found)
-            tableListUnique.getSelectionModel().clearSelection();
+          selectInTableOfUniqueExplanations(expl);
           if (stepHighlighter!=null) {
             stepHighlighter.removeChangeListener(cl);
             stepHighlighter.highlight(new Integer(step));
@@ -377,13 +358,14 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     cbExplCombine.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        fillTableOfUniqueExplanations();
         if (selectedRow>=0) {
           updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          selectInTableOfUniqueExplanations(expl);
         }
-        fillTableOfUniqueExplanations();
       }
     });
     cbExplAsInt.addActionListener(new ActionListener() {
@@ -395,6 +377,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           int row=tableList.convertRowIndexToModel(selectedRow);
           Explanation expl=vf.elementAt(tableListModel.rowFlNs[row]).expl[tableListModel.rowFlSteps[row]];
           setExpl(attrsInExpl,expl,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
+          selectInTableOfUniqueExplanations(expl);
         }
         else // note that fillTableOfUniqueExplanations() is called from setExpl(...)
           fillTableOfUniqueExplanations();
@@ -423,6 +406,29 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     else
       System.out.println("Made a list of "+exList.size()+" common explanations!");
     tableListUniqueModel.setExList(exList);
+  }
+
+  public void selectInTableOfUniqueExplanations (Explanation expl) {
+    boolean found=false;
+    ExplanationItem ee[]=null;
+    if (cbExplCombine.isSelected())
+      ee=Explanation.getExplItemsCombined(expl.eItems);
+    else
+      ee=expl.eItems;
+    if (cbExplAsInt.isSelected())
+      ee=Explanation.getExplItemsAsIntegeres(ee,attrsInExpl);
+    for (int i=0; i<tableListUniqueModel.getRowCount() && !found; i++) {
+      //int rowInListUniqueModel=tableListUnique.convertRowIndexToModel(i);
+      found=CommonExplanation.sameExplanations(ee,tableListUniqueModel.exList.get(i).eItems);
+      if (found) {
+        int rowInTable=tableListUnique.convertRowIndexToView(i);
+        tableListUnique.getSelectionModel().setSelectionInterval(rowInTable, rowInTable);
+        Rectangle rect=tableListUnique.getCellRect(rowInTable,0,true);
+        tableListUnique.scrollRectToVisible(rect);
+      }
+    }
+    if (!found)
+      tableListUnique.getSelectionModel().clearSelection();
   }
 
   public void tableChanged(TableModelEvent e) {
