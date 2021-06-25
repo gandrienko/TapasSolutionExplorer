@@ -221,6 +221,16 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           Explanation expl = vf.elementAt(tableListModel.rowFlNs[row]).expl[step];
           tableExpl.getColumnModel().getColumn(0).setCellRenderer(new RenderLabelBarChart(0, expl.eItems.length));
           setExpl(attrsInExpl, expl, cbExplCombine.isSelected(), cbExplAsInt.isSelected());
+          boolean found=false;
+          for (int i=0; i<tableListUnique.getRowCount() && !found; i++) {
+            int rowInListUniqueModel=tableListUnique.convertRowIndexToModel(i);
+            found=CommonExplanation.sameExplanations(expl.eItems,tableListUniqueModel.exList.get(rowInListUniqueModel).eItems);
+            if (found) {
+              tableListUnique.getSelectionModel().setSelectionInterval(i, i);
+              Rectangle rect=tableListUnique.getCellRect(i,0,true);
+              tableListUnique.scrollRectToVisible(rect);
+            }
+          }
           if (stepHighlighter!=null) {
             stepHighlighter.removeChangeListener(cl);
             stepHighlighter.highlight(new Integer(step));
