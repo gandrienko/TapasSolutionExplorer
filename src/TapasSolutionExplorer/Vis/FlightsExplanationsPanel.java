@@ -362,10 +362,9 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
     JSplitPane splitPaneVVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,splitPaneVleft,scrollPaneListUnique);
     splitPaneVVleft.setOneTouchExpandable(true);
-    //splitPaneVVleft.setDividerLocation(500);
 
     JSplitPane splitPaneVVright=new JSplitPane(JSplitPane.VERTICAL_SPLIT,splitPaneVright,pp);
-    splitPaneVVleft.setOneTouchExpandable(true);
+    splitPaneVVright.setOneTouchExpandable(true);
 
     JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitPaneVVleft,splitPaneVVright);
     splitPane.setOneTouchExpandable(true);
