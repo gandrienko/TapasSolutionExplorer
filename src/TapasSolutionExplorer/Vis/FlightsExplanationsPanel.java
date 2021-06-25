@@ -310,7 +310,19 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     Dimension minimumSize = new Dimension(100, 300);
     pExpl.setMinimumSize(minimumSize);
 
-    tableListUnique=new JTable(tableListUniqueModel);
+    tableListUnique=new JTable(tableListUniqueModel){
+      public String getToolTipText(MouseEvent e) {
+        java.awt.Point p = e.getPoint();
+        int rowIndex = rowAtPoint(p); //, colIndex = columnAtPoint(p);
+        if (rowIndex >= 0) {
+          int realRowIndex = convertRowIndexToModel(rowIndex); //, realColIndex = convertColumnIndexToModel(colIndex);
+          //if (realColIndex <=7)
+          return tableListUniqueModel.exList.get(realRowIndex).toHTML();
+        }
+        else
+          return "";
+      }
+    };
     tableListUnique.setPreferredScrollableViewportSize(new Dimension(200, 300));
     tableListUnique.setFillsViewportHeight(true);
     tableListUnique.setAutoCreateRowSorter(true);
