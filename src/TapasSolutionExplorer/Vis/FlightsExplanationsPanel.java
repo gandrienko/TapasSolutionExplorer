@@ -324,6 +324,18 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           return "";
       }
     };
+    //ChangeListener cl=this;
+    tableListUnique.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+      @Override
+      public void valueChanged(ListSelectionEvent e) {
+        selectedRow=tableListUnique.getSelectedRow();
+        if (selectedRow>=0) {
+          int row=tableListUnique.convertRowIndexToModel(selectedRow);
+          ExplanationItem eItems[] = tableListUniqueModel.exList.get(row).eItems;
+          selectInTableOfExplanations(eItems);
+        }
+      }
+    });
     tableListUnique.setPreferredScrollableViewportSize(new Dimension(200, 300));
     tableListUnique.setFillsViewportHeight(true);
     tableListUnique.setAutoCreateRowSorter(true);
@@ -429,6 +441,29 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     }
     if (!found)
       tableListUnique.getSelectionModel().clearSelection();
+  }
+
+  public void selectInTableOfExplanations (ExplanationItem eItems[]) {
+    boolean found=false;
+    for (int i=0; i<tableListModel.getRowCount() && !found; i++) {
+      //int rowInListUniqueModel=tableListUnique.convertRowIndexToModel(i);
+      Flight f=vf.elementAt(tableListModel.rowFlNs[i]);
+      ExplanationItem ee[]=f.expl[tableListModel.rowFlSteps[i]].eItems;
+      if (cbExplCombine.isSelected())
+        ee=Explanation.getExplItemsCombined(ee);
+      if (cbExplAsInt.isSelected())
+        ee=Explanation.getExplItemsAsIntegeres(ee,attrsInExpl);
+      found=CommonExplanation.sameExplanations(eItems,ee);
+      if (found) {
+        int rowInTable=tableList.convertRowIndexToView(i);
+        tableList.getSelectionModel().setSelectionInterval(rowInTable, rowInTable);
+        Rectangle rect=tableList.getCellRect(rowInTable,0,true);
+        tableList.scrollRectToVisible(rect);
+      }
+    }
+    if (!found)
+      tableList.getSelectionModel().clearSelection();
+
   }
 
   public void tableChanged(TableModelEvent e) {
