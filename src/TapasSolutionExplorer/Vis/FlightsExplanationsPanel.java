@@ -3,6 +3,7 @@ package TapasSolutionExplorer.Vis;
 import TapasDataReader.*;
 import TapasExplTreeViewer.ui.ExListTableModel;
 import TapasExplTreeViewer.ui.ExTreePanel;
+import TapasExplTreeViewer.vis.ProjectionPlot2D;
 import TapasUtilities.*;
 
 
@@ -37,6 +38,8 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   protected ExTreeReconstructor exTreeReconstructor=null;
   protected ExTreePanel exTreePanel=null;
   protected DynamicQueryPanel dqPanel=null;
+  protected ProjectionPlot2D pp=null;
+
   protected JFrame frame=null;
   protected JSplitPane splitPaneVright=null;
   protected JCheckBox cbExplCombine=null, cbExplAsInt=null;
@@ -354,13 +357,17 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     JScrollPane scrollPaneListUnique = new JScrollPane(tableListUnique);
     scrollPaneListUnique.setOpaque(true);
 
+    pp=new ProjectionPlot2D();
     fillTableOfUniqueExplanations();
 
     JSplitPane splitPaneVVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,splitPaneVleft,scrollPaneListUnique);
     splitPaneVVleft.setOneTouchExpandable(true);
     //splitPaneVVleft.setDividerLocation(500);
 
-    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitPaneVVleft,splitPaneVright);
+    JSplitPane splitPaneVVright=new JSplitPane(JSplitPane.VERTICAL_SPLIT,splitPaneVright,pp);
+    splitPaneVVleft.setOneTouchExpandable(true);
+
+    JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitPaneVVleft,splitPaneVVright);
     splitPane.setOneTouchExpandable(true);
     splitPane.setDividerLocation(1000);
     minimumSize = new Dimension(100, 300);
@@ -825,6 +832,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
         worker = new SwingWorker() {
           @Override
           protected Object doInBackground() throws Exception {
+            pp.setDistanceMatrix(d);
             MySammonsProjection sam = new MySammonsProjection(d, 1, 300, true);
             sam.runProjection(5, 50, tableListUniqueModel);
             return true;
