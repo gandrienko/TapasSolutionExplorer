@@ -505,7 +505,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     exTreeReconstructor=new ExTreeReconstructor();
     exTreeReconstructor.setAttrMinMaxValues(attrsInExpl);
     exTreeReconstructor.reconstructExTree(ale);
-    //System.out.println("* N explanations for the tree: "+ale.size());
+    System.out.println("* N explanations for the tree: "+ale.size());
+    for (Explanation eee:ale)
+      System.out.print(" "+eee.action);
+    System.out.println();
     updateExTreePanel(splitPaneVright,cbExplCombine.isSelected(),cbExplAsInt.isSelected());
 
     fillTableOfUniqueExplanations();
@@ -823,21 +826,26 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     ArrayList<String> listOfFeatures=null;
     Hashtable<String,int[]> attrMinMax=null;
     SwingWorker worker=null;
+    MySammonsProjection sam=null;
     public FlightsListOfUniqueExplTableModel (ArrayList<String> listOfFeatures, Hashtable<String,int[]> attrMinMax) {
       this.listOfFeatures=listOfFeatures;
       this.attrMinMax=attrMinMax;
     }
     public void setExList (ArrayList<CommonExplanation> exList) {
       this.exList=exList;
-      if (worker!=null)
+      if (sam!=null)
+        sam.forceToStop();
+      if (worker!=null) {
         worker.cancel(true);
+        worker=null;
+      }
       double d[][]=CommonExplanation.computeDistances(exList,attrMinMax);
       if (d!=null) {
         worker = new SwingWorker() {
           @Override
           protected Object doInBackground() throws Exception {
             pp.setDistanceMatrix(d);
-            MySammonsProjection sam = new MySammonsProjection(d, 1, 300, true);
+            sam = new MySammonsProjection(d, 1, 300, true);
             sam.runProjection(5, 50, tableListUniqueModel);
             return true;
           }
@@ -930,7 +938,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           }
       }
     }
-    public void stateChanged(ChangeEvent e) {
+    public synchronized void stateChanged(ChangeEvent e) {
       if (e.getSource() instanceof MySammonsProjection) {
         MySammonsProjection sam=(MySammonsProjection)e.getSource();
         double proj[][]=(sam.done)?sam.getProjection():sam.bestProjection;
