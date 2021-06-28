@@ -314,6 +314,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     pExpl.setMinimumSize(minimumSize);
 
     pp=new ProjectionPlot2D();
+    pp.setPreferredSize(new Dimension(200,200));
     SingleHighlightManager highlighter=pp.getHighlighter();
     ItemSelectionManager selector=pp.getSelector();
 
