@@ -309,12 +309,14 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     splitPaneVleft.setDividerLocation(500);
     splitPaneVright=new JSplitPane(JSplitPane.VERTICAL_SPLIT,pExpl,exTreePanel);
     splitPaneVright.setOneTouchExpandable(true);
-    splitPaneVright.setDividerLocation(500);
-    Dimension minimumSize = new Dimension(100, 300);
-    pExpl.setMinimumSize(minimumSize);
+    //splitPaneVright.setDividerLocation(500);
+    //Dimension minimumSize = new Dimension(100, 300);
+    //pExpl.setMinimumSize(minimumSize);
+    pExpl.setPreferredSize(new Dimension(200,200));
 
     pp=new ProjectionPlot2D();
     pp.setPreferredSize(new Dimension(200,200));
+    pp.setMinimumSize(new Dimension(100,100));
     SingleHighlightManager highlighter=pp.getHighlighter();
     ItemSelectionManager selector=pp.getSelector();
 
@@ -386,9 +388,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     JSplitPane splitPane=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,splitPaneVVleft,splitPaneVVright);
     splitPane.setOneTouchExpandable(true);
     splitPane.setDividerLocation(1000);
-    minimumSize = new Dimension(100, 300);
-    scrollPaneList.setMinimumSize(minimumSize);
-    scrollPaneExpl.setMinimumSize(minimumSize);
+    //minimumSize = new Dimension(100, 300);
+    scrollPaneList.setPreferredSize(new Dimension(200,200)); //.setMinimumSize(minimumSize);
+    scrollPaneExpl.setPreferredSize(new Dimension(200,200)); //.setMinimumSize(minimumSize);
+    scrollPaneExpl.setMinimumSize(new Dimension(100,100)); //.setMinimumSize(minimumSize);
 
     cbExplCombine.addActionListener(new ActionListener() {
       @Override
