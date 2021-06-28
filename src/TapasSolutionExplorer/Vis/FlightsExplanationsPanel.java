@@ -1,7 +1,6 @@
 package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.*;
-import TapasExplTreeViewer.ui.ExListTableModel;
 import TapasExplTreeViewer.ui.ExTreePanel;
 import TapasExplTreeViewer.vis.ProjectionPlot2D;
 import TapasUtilities.*;
@@ -314,17 +313,24 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     Dimension minimumSize = new Dimension(100, 300);
     pExpl.setMinimumSize(minimumSize);
 
+    pp=new ProjectionPlot2D();
+    SingleHighlightManager highlighter=pp.getHighlighter();
+    ItemSelectionManager selector=pp.getSelector();
+
     tableListUnique=new JTable(tableListUniqueModel){
       public String getToolTipText(MouseEvent e) {
         java.awt.Point p = e.getPoint();
         int rowIndex = rowAtPoint(p); //, colIndex = columnAtPoint(p);
         if (rowIndex >= 0) {
           int realRowIndex = convertRowIndexToModel(rowIndex); //, realColIndex = convertColumnIndexToModel(colIndex);
+          highlighter.highlight(new Integer(realRowIndex));
           //if (realColIndex <=7)
           return tableListUniqueModel.exList.get(realRowIndex).toHTML();
         }
-        else
+        else {
+          highlighter.clearHighlighting();
           return "";
+        }
       }
     };
     //ChangeListener cl=this;
@@ -359,10 +365,15 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     tableListUnique.getColumnModel().getColumn(7).setCellRenderer(new RenderLabelBarChart(0,maxNfeatures));
     for (int i=0; i<list.size(); i++)
       tableListUnique.getColumnModel().getColumn(8+i).setCellRenderer(new RenderLabel_ValueInSubinterval());
+
+    TableRowsSelectionManager rowSelMan=new TableRowsSelectionManager();
+    rowSelMan.setTable(tableListUnique);
+    rowSelMan.setHighlighter(highlighter);
+    rowSelMan.setSelector(selector);
+
     JScrollPane scrollPaneListUnique = new JScrollPane(tableListUnique);
     scrollPaneListUnique.setOpaque(true);
 
-    pp=new ProjectionPlot2D();
     fillTableOfUniqueExplanations();
 
     JSplitPane splitPaneVVleft=new JSplitPane(JSplitPane.VERTICAL_SPLIT,splitPaneVleft,scrollPaneListUnique);
