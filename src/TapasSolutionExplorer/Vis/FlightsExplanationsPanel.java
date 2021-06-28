@@ -2,7 +2,7 @@ package TapasSolutionExplorer.Vis;
 
 import TapasDataReader.*;
 import TapasExplTreeViewer.ui.ExTreePanel;
-import TapasExplTreeViewer.vis.ProjectionPlot2D;
+import TapasExplTreeViewer.vis.ExplanationsProjPlot2D;
 import TapasUtilities.*;
 
 
@@ -37,7 +37,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   protected ExTreeReconstructor exTreeReconstructor=null;
   protected ExTreePanel exTreePanel=null;
   protected DynamicQueryPanel dqPanel=null;
-  protected ProjectionPlot2D pp=null;
+  protected ExplanationsProjPlot2D pp=null;
 
   protected JFrame frame=null;
   protected JSplitPane splitPaneVright=null;
@@ -314,7 +314,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     //pExpl.setMinimumSize(minimumSize);
     pExpl.setPreferredSize(new Dimension(200,200));
 
-    pp=new ProjectionPlot2D();
+    pp=new ExplanationsProjPlot2D();
     pp.setPreferredSize(new Dimension(200,200));
     pp.setMinimumSize(new Dimension(100,100));
     SingleHighlightManager highlighter=pp.getHighlighter();
@@ -860,6 +860,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           @Override
           protected Object doInBackground() throws Exception {
             pp.setDistanceMatrix(d);
+            pp.setExplanations(exList);
             sam = new MySammonsProjection(d, 1, 300, true);
             sam.runProjection(5, 50, tableListUniqueModel);
             return true;
