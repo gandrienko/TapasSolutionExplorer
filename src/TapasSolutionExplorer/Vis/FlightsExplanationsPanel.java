@@ -861,6 +861,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           @Override
           protected Object doInBackground() throws Exception {
             pp.setDistanceMatrix(d);
+            pp.setProjectionProvider(new SammonsMappingRunner());
             pp.setExplanations(exList);
             pp.setProjectionProvider(new SammonsMappingRunner());
             sam = new MySammonsProjection(d, 1, 300, true);
