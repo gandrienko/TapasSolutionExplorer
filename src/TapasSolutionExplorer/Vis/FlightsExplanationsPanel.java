@@ -3,6 +3,7 @@ package TapasSolutionExplorer.Vis;
 import TapasDataReader.*;
 import TapasExplTreeViewer.ui.ExTreePanel;
 import TapasExplTreeViewer.vis.ExplanationsProjPlot2D;
+import TapasExplTreeViewer.vis.SammonsMappingRunner;
 import TapasUtilities.*;
 
 
@@ -861,6 +862,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           protected Object doInBackground() throws Exception {
             pp.setDistanceMatrix(d);
             pp.setExplanations(exList);
+            pp.setProjectionProvider(new SammonsMappingRunner());
             sam = new MySammonsProjection(d, 1, 300, true);
             sam.runProjection(5, 50, tableListUniqueModel);
             return true;
