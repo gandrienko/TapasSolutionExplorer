@@ -47,7 +47,7 @@ public class FlightViewManager {
    * When this hashtable is not null and not empty,
    * it is a signal that the explanations have been loaded and can be used.
    */
-  protected Hashtable<String,int[]> explAttrMinMaxValues =null;
+  protected Hashtable<String,float[]> explAttrMinMaxValues =null;
   /**
    * Contains flight visualization. Created once when needed, after that just changes
    * what flight is shown.
@@ -192,7 +192,7 @@ public class FlightViewManager {
    * Called when explanations have been loaded in background mode using a thread.
    * @param attrs - ranges of attribute values used in the explanations
    */
-  public void explanationsReady(Hashtable<String,int[]> attrs) {
+  public void explanationsReady(Hashtable<String,float[]> attrs) {
     if (attrs!=null && !attrs.isEmpty()) {
       System.out.println("Successfully loaded explanations!");
       this.explAttrMinMaxValues = attrs;

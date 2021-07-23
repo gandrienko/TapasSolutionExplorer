@@ -218,7 +218,7 @@ public class SeeFlight {
         System.out.println("Failed to obtain sector capacities!");
     }
   
-    Hashtable<String,int[]> attrs=new Hashtable<String, int[]>();
+    Hashtable<String,float[]> attrs=new Hashtable<String, float[]>();
     final String pathToData=path;
     SwingWorker worker=new SwingWorker() {
       @Override

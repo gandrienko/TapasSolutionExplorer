@@ -609,11 +609,11 @@ public class DataKeeper {
 
   protected Hashtable<String, Flight> allFlights=null;
   protected boolean explanationsLoaded=false;
-  public Hashtable<String,int[]> attrsInExpl=null;
+  public Hashtable<String,float[]> attrsInExpl=null;
   public boolean isExplanationsLoaded() { return explanationsLoaded; }
 
   protected void loadExplanations (TreeSet<Integer> steps, String fn) {
-    attrsInExpl=new Hashtable<String, int[]>();
+    attrsInExpl=new Hashtable<String, float[]>();
     File f=new File(fn);
     final String pathToData=f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf("\\")+1);
     SwingWorker worker=new SwingWorker() {

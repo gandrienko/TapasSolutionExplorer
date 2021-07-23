@@ -33,7 +33,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   protected int selectedRow=-1;
 
   protected Vector<Flight> vf=null;
-  protected Hashtable<String,int[]> attrsInExpl=null;
+  protected Hashtable<String,float[]> attrsInExpl=null;
 
   protected ExTreeReconstructor exTreeReconstructor=null;
   protected ExTreePanel exTreePanel=null;
@@ -62,7 +62,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
 
   int maxStep;
 
-  public FlightsExplanationsPanel (Hashtable<String,int[]> attrsInExpl, Vector<Flight> vf,
+  public FlightsExplanationsPanel (Hashtable<String,float[]> attrsInExpl, Vector<Flight> vf,
                                    int decisionSteps[], int minStep, int maxStep,
                                    boolean bShowZeroActions) {
     super();
@@ -178,7 +178,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
             s+="<tr><td>Value</td><td>" + getFloatAsString(eItems[n].value) + "</td></tr>\n";
             s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)eItems[n].interval[0])+
                   " .. "+getFloatAsString((float)eItems[n].interval[1])+"]</td></tr>\n";
-            int minmax[]=attrsInExpl.get(eItems[n].attr);
+            float minmax[]=attrsInExpl.get(eItems[n].attr);
             s+="<tr><td>Global min..max</td><td>["+minmax[0]+" .. "+minmax[1]+"]</td></tr>\n";
             s+="</table>\n";
           }
@@ -265,7 +265,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           s+="<tr><td>Value</td><td>"+getFloatAsString(tableExplModel.eItems[realRowIndex].value)+"</td></tr>\n";
           s+="<tr><td>Condition min..max</td><td>["+getFloatAsString((float)tableExplModel.eItems[realRowIndex].interval[0])+
                   " .. "+getFloatAsString((float)tableExplModel.eItems[realRowIndex].interval[1])+"]</td></tr>\n";
-          int minmax[]=attrsInExpl.get(tableExplModel.eItems[realRowIndex].attr);
+          float minmax[]=attrsInExpl.get(tableExplModel.eItems[realRowIndex].attr);
           s+="<tr><td>Global min..max</td><td>["+minmax[0]+" .. "+minmax[1]+"]</td></tr>\n";
           s+="</table>\n";
           s+="</body></html>";
@@ -608,7 +608,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
     else
       return ""+f;
   }
-  protected void setExpl (Hashtable<String,int[]> attrsInExpl, Explanation expl, boolean bCombine, boolean bInt) {
+  protected void setExpl (Hashtable<String,float[]> attrsInExpl, Explanation expl, boolean bCombine, boolean bInt) {
     if (expl==null) {
       lblExplTitle.setText("");
     }
@@ -652,13 +652,13 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   class FlightsListOfExplTableModel extends AbstractTableModel {
     Vector<Flight> vf = null;
     ArrayList<String> listOfFeatures=null;
-    Hashtable<String,int[]> attrsInExpl=null;
+    Hashtable<String,float[]> attrsInExpl=null;
     int minStep, maxStep;
     boolean bShowZeroActions, bValuesAreInteger=false;
     public int rowFlNs[] = null;
     public int rowFlSteps[] = null;
 
-    public FlightsListOfExplTableModel(Vector<Flight> vf, Hashtable<String,int[]> attrsInExpl, ArrayList<String> listOfFeatures, int minStep, int maxStep, boolean bShowZeroActions) {
+    public FlightsListOfExplTableModel(Vector<Flight> vf, Hashtable<String,float[]> attrsInExpl, ArrayList<String> listOfFeatures, int minStep, int maxStep, boolean bShowZeroActions) {
       this.vf = vf;
       this.attrsInExpl=attrsInExpl;
       this.listOfFeatures=listOfFeatures;
@@ -776,10 +776,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   }
 
   class FlightsSingleExplTableModel extends AbstractTableModel {
-    protected Hashtable<String,int[]> attrsInExpl=null;
+    protected Hashtable<String,float[]> attrsInExpl=null;
     public int action=-1;
     public ExplanationItem eItems[]=null;
-    public FlightsSingleExplTableModel (Hashtable<String,int[]> attrsInExpl) {
+    public FlightsSingleExplTableModel (Hashtable<String,float[]> attrsInExpl) {
       this.attrsInExpl=attrsInExpl;
     }
     public void setExpl (ExplanationItem eItems[]) {
@@ -840,10 +840,10 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
   class FlightsListOfUniqueExplTableModel extends AbstractTableModel implements ChangeListener {
     ArrayList<CommonExplanation> exList=null;
     ArrayList<String> listOfFeatures=null;
-    Hashtable<String,int[]> attrMinMax=null;
+    Hashtable<String,float[]> attrMinMax=null;
     SwingWorker worker=null;
     MySammonsProjection sam=null;
-    public FlightsListOfUniqueExplTableModel (ArrayList<String> listOfFeatures, Hashtable<String,int[]> attrMinMax) {
+    public FlightsListOfUniqueExplTableModel (ArrayList<String> listOfFeatures, Hashtable<String,float[]> attrMinMax) {
       this.listOfFeatures=listOfFeatures;
       this.attrMinMax=attrMinMax;
     }
