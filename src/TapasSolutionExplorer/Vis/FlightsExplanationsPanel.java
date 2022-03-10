@@ -329,7 +329,7 @@ public class FlightsExplanationsPanel extends JPanel implements ChangeListener, 
           int realRowIndex = convertRowIndexToModel(rowIndex); //, realColIndex = convertColumnIndexToModel(colIndex);
           highlighter.highlight(new Integer(realRowIndex));
           //if (realColIndex <=7)
-          return tableListUniqueModel.exList.get(realRowIndex).toHTML(attrsInExpl);
+          return tableListUniqueModel.exList.get(realRowIndex).toHTML(null,attrsInExpl);
         }
         else {
           highlighter.clearHighlighting();
